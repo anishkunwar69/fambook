@@ -115,6 +115,7 @@ model Media {
   id        String    @id @default(uuid())
   url       String // Media URL
   type      MediaType // PHOTO or VIDEO
+  caption   String? // Optional caption for the media
   postId    String? // For home feed posts
   albumId   String? // For album media
   createdAt DateTime  @default(now())
