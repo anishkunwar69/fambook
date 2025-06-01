@@ -1,0 +1,409 @@
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String    @id @default(uuid())
+  externalId String    @unique // Clerk User ID
+  email      String    @unique
+  fullName   String
+  username   String?   @unique
+  imageUrl   String?
+  bio        String?
+  dob        DateTime?
+  apiCheck   String    @unique @default(uuid())
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  
+  // Added personal profile fields
+  firstName          String?
+  lastName           String?
+  biography          String?   @db.Text // expanded bio
+  profileImage       String?
+  coverImage         String?
+  dateOfBirth        DateTime?
+  relationshipStatus String? // e.g., "Married", "Single", etc.
+  languages          String[]  @default([])
+  interests          String[]  @default([]) // e.g., "Photography", "Hiking", etc.
+  privacySettings    Json? // Store user privacy preferences
+  currentPlace       String? // Current location
+  birthPlace         String? // Place of birth
+
+  // Relations
+  families        FamilyMember[] @relation("UserFamilies")
+  createdFamilies Family[]       @relation("FamilyCreator") // Relation for families created by this user
+  posts           Post[]
+  comments        Comment[]
+  likes           Like[]
+  familyMembers   FamilyMember[] @relation("UserFamilyMembers")
+  notifications   Notification[]
+  notes           Note[]
+  albums          Album[]        @relation("AlbumCreator")
+  rootNodes       RootNode[]
+  createdRoots    FamilyRoot[]
+  education       Education[] // New relation
+  workHistory     WorkHistory[] // New relation
+  lifeEvents      LifeEvent[] // Life timeline events
+  memories        Memory[] // Added user memories
+}
+
+model Family {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  familyPhoto String?
+  joinToken   String   @unique // For joining the family
+  createdById String // ID of the user who created the family
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  createdBy   User           @relation("FamilyCreator", fields: [createdById], references: [id])
+  members     FamilyMember[]
+  posts       Post[]
+  albums      Album[]
+  specialDays SpecialDay[]
+  roots       FamilyRoot[]
+}
+
+model FamilyMember {
+  id       String   @id @default(uuid())
+  userId   String
+  familyId String
+  role     Role     @default(MEMBER)
+  status   Status   @default(PENDING) // For join requests
+  joinedAt DateTime @default(now())
+
+  // Relations
+  user         User   @relation("UserFamilyMembers", fields: [userId], references: [id], onDelete: Cascade, map: "FamilyMember_userId_members_fkey")
+  family       Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  userFamilies User   @relation("UserFamilies", fields: [userId], references: [id], map: "FamilyMember_userId_families_fkey")
+
+  @@unique([userId, familyId])
+}
+
+model Post {
+  id        String   @id @default(uuid())
+  text      String? // Optional text content
+  media     Media[] // One-to-many relation with Media
+  userId    String
+  familyId  String
+  albumId   String? // Optional album association
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  family   Family    @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  album    Album?    @relation(fields: [albumId], references: [id])
+  comments Comment[]
+  likes    Like[]
+  memories Memory[] // Added relation to memories
+}
+
+model Media {
+  id        String    @id @default(uuid())
+  url       String // Media URL
+  type      MediaType // PHOTO or VIDEO
+  postId    String? // For home feed posts
+  albumId   String? // For album media
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // Relations
+  post  Post?  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  album Album? @relation(fields: [albumId], references: [id], onDelete: Cascade)
+}
+
+model Album {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  coverImage  String?
+  familyId    String
+  mediaCount  Int      @default(0) // Track total media count
+  mediaLimit  Int      @default(100) // Limit for both photos and videos
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  eventId     String?
+
+  // Relations
+  family    Family      @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  createdBy User        @relation("AlbumCreator", fields: [createdById], references: [id])
+  posts     Post[] // For posts created in album
+  media     Media[] // Direct media in album
+  comments  Comment[]
+  likes     Like[]
+  notes     Note[]
+  event     SpecialDay? @relation(fields: [eventId], references: [id])
+  memories  Memory[] // Added relation to memories
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  userId    String
+  postId    String?
+  albumId   String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post  Post?  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  album Album? @relation(fields: [albumId], references: [id], onDelete: Cascade)
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  userId    String
+  postId    String?
+  albumId   String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post  Post?  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  album Album? @relation(fields: [albumId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@unique([userId, albumId])
+}
+
+model SpecialDay {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  date        DateTime
+  time        String?   // Time of the event (e.g., "14:30", "2:30 PM")
+  venue       String?   // Venue/location of the event
+  type        EventType
+  familyId    String
+  createdAt   DateTime  @default(now())
+
+  // Relations
+  family Family  @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  albums Album[] // Opposite relation for Album.event
+}
+
+model Note {
+  id        String   @id @default(uuid())
+  content   String
+  albumId   String
+  userId    String
+  createdAt DateTime @default(now())
+
+  // Relations
+  album Album @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  type      NotificationType
+  content   String
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  ADMIN
+  MEMBER
+}
+
+enum Status {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum EventType {
+  BIRTHDAY
+  ANNIVERSARY
+  WEDDING
+  GRADUATION
+  HOLIDAY
+  OTHER
+}
+
+enum NotificationType {
+  NEW_POST
+  NEW_COMMENT
+  NEW_LIKE
+  JOIN_REQUEST
+  REQUEST_APPROVED
+  REQUEST_REJECTED
+  NEW_MEMBER
+  NEW_ALBUM
+  SPECIAL_DAY
+  NEW_ROOT
+}
+
+enum MediaType {
+  PHOTO
+  VIDEO
+}
+
+// For representing family tree nodes
+model FamilyRoot {
+  id          String   @id @default(uuid())
+  name        String // e.g., "Smith Family Tree"
+  description String?
+  familyId    String
+  createdById String
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  family    Family         @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  createdBy User           @relation(fields: [createdById], references: [id])
+  nodes     RootNode[]
+  relations RootRelation[]
+}
+
+// For representing individual people in the tree
+model RootNode {
+  id             String    @id @default(uuid())
+  rootId         String
+  userId         String? // Optional: for linking to existing family members
+  firstName      String
+  lastName       String
+  dateOfBirth    DateTime
+  dateOfDeath    DateTime?
+  gender         Gender
+  isAlive        Boolean   @default(true)
+  birthPlace     String? // Modified to be optional
+  currentPlace   String? // Modified to be optional
+  profileImage   String?
+  biography      String?   @db.Text
+  customFields   Json? // For storing additional custom fields
+  positionX      Float? // Store X coordinate
+  positionY      Float? // Store Y coordinate
+  createdAt      DateTime  @default(now())
+  linkedMemberId String? // ID of the linked family member
+  updatedAt      DateTime  @updatedAt
+
+  // Relations
+  root          FamilyRoot     @relation(fields: [rootId], references: [id], onDelete: Cascade)
+  user          User?          @relation(fields: [userId], references: [id])
+  fromRelations RootRelation[] @relation("FromNode")
+  toRelations   RootRelation[] @relation("ToNode")
+}
+
+// For representing relationships between nodes
+model RootRelation {
+  id           String       @id @default(uuid())
+  rootId       String
+  fromNodeId   String
+  toNodeId     String
+  relationType RelationType
+  marriageDate DateTime?
+  divorceDate  DateTime?
+  isActive     Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  // Relations
+  root     FamilyRoot @relation(fields: [rootId], references: [id], onDelete: Cascade)
+  fromNode RootNode   @relation("FromNode", fields: [fromNodeId], references: [id], onDelete: Cascade)
+  toNode   RootNode   @relation("ToNode", fields: [toNodeId], references: [id], onDelete: Cascade)
+
+  @@unique([fromNodeId, toNodeId, relationType])
+}
+
+// Add these enums
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum RelationType {
+  PARENT
+  CHILD
+  SPOUSE
+  SIBLING
+}
+
+// New models for education and work history
+
+model Education {
+  id           String   @id @default(uuid())
+  userId       String
+  institution  String
+  degree       String
+  fieldOfStudy String?
+  startYear    Int
+  endYear      Int?
+  description  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model WorkHistory {
+  id               String    @id @default(cuid())
+  userId           String
+  company          String
+  position         String
+  description      String?
+  startDate        DateTime
+  endDate          DateTime?
+  currentlyWorking Boolean   @default(false)
+  location         String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Life Timeline Events
+model LifeEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  eventDate DateTime
+  location  String?
+  eventType String // Birth, Marriage, Job, Move, etc.
+  eventIcon String? // Icon identifier for the event
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Memory {
+  id        String   @id @default(uuid())
+  userId    String
+  albumId   String?
+  postId    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  album Album? @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  post  Post?  @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, albumId])
+  @@unique([userId, postId])
+}
