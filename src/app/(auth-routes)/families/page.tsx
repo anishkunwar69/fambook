@@ -35,6 +35,7 @@ import {
   Search,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "react-hot-toast";
 import { z } from "zod";
@@ -337,6 +338,7 @@ function DeleteFamilyModal({
 
 export default function FamiliesPage() {
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>("approved");
   const [familyToDelete, setFamilyToDelete] = useState<{
     id: string;
@@ -479,6 +481,27 @@ export default function FamiliesPage() {
             : "border-rose-100/50 hover:border-rose-200"
         )}
       >
+        {/* Pending Requests Badge - Positioned at top of card */}
+        {hasJoinRequests && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="absolute -top-3 left-4 z-10 cursor-pointer"
+            onClick={() => {
+              router.push(`/families/${family.id}/requests`);
+            }}
+          >
+            <div className="bg-gradient-to-r from-rose-500 to-rose-600 text-white px-3 py-1 rounded-full shadow-lg border-2 border-white hover:bg-rose-600 hover:border-rose-700">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                <span className="text-xs font-medium">
+                  {family.pendingRequestsCount} pending request{family.pendingRequestsCount !== 1 ? 's' : ''}
+                </span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {family.isAdmin && !isPending && (
           <div className="absolute top-4 right-4 flex items-center space-x-1">
             <Button
@@ -507,35 +530,6 @@ export default function FamiliesPage() {
             </Button>
           </div>
         )}
-
-        {/* Join Requests Alert Banner */}
-        {/* {hasJoinRequests && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-4 bg-gradient-to-r from-rose-50 to-amber-50 border border-rose-200 rounded-lg p-3"
-          >
-            <div className="flex items-center gap-2">
-              <div className="bg-rose-500 w-2 h-2 rounded-full animate-pulse" />
-              <span className="text-rose-700 font-medium text-sm">
-                {family.pendingRequestsCount} pending join request{family.pendingRequestsCount !== 1 ? 's' : ''}
-              </span>
-              <Link
-                href={`/families/${family.id}/requests`}
-                onClick={(e) => e.stopPropagation()}
-                className="ml-auto"
-              >
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-6 px-2 text-xs bg-white/80 border-rose-300 text-rose-600 hover:bg-rose-50"
-                >
-                  Review
-                </Button>
-              </Link>
-            </div>
-          </motion.div>
-        )} */}
 
         {/* Status Badge */}
         {isPending && (
@@ -614,40 +608,6 @@ export default function FamiliesPage() {
               <p className="text-xs text-gray-600">Events</p>
             </div>
           </div>
-        )}
-
-        {/* Join Requests Preview for Admins */}
-        {family.isAdmin && !isPending && family.pendingRequestsCount > 0 && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            className="mb-4 bg-gradient-to-r from-rose-50/50 to-amber-50/50 rounded-lg p-3 border border-rose-100"
-          >
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="font-medium text-rose-700 text-sm flex items-center gap-2">
-                <div className="w-2 h-2 bg-rose-500 rounded-full animate-pulse" />
-                Pending Requests
-              </h4>
-              <span className="text-xs text-rose-600 bg-rose-100 px-2 py-1 rounded-full">
-                {family.pendingRequestsCount}
-              </span>
-            </div>
-            <p className="text-xs text-gray-600 mb-3">
-              {family.pendingRequestsCount} {family.pendingRequestsCount === 1 ? 'person wants' : 'people want'} to join your family
-            </p>
-            <Link
-              href={`/families/${family.id}/requests`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Button
-                size="sm"
-                className="w-full bg-rose-50 hover:bg-rose-100 text-rose-500 h-8"
-                variant="ghost"
-              >
-                Review Requests
-              </Button>
-            </Link>
-          </motion.div>
         )}
 
         {/* Action Buttons */}
