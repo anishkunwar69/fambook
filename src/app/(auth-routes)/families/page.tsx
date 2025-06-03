@@ -32,11 +32,24 @@ import {
   Share2,
   Trash2,
   Users,
+  Search,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { toast } from "react-hot-toast";
 import { z } from "zod";
+
+// Add debounce utility function
+function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+}
 
 type Tab = "approved" | "pending";
 
@@ -333,8 +346,25 @@ export default function FamiliesPage() {
     null
   );
   const [currentPage, setCurrentPage] = useState(1); // Added for pagination
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const queryClient = useQueryClient();
   const { user: clerkUser, isSignedIn } = useUser();
+
+  // Debounced search handler
+  const debouncedSetSearch = useCallback(
+    debounce((value: string) => {
+      setDebouncedSearch(value);
+      setCurrentPage(1); // Reset page when search changes
+    }, 500),
+    []
+  );
+
+  // Handle search input
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+    debouncedSetSearch(e.target.value);
+  };
 
   const {
     data: families,
@@ -432,6 +462,7 @@ export default function FamiliesPage() {
 
   const renderFamilyCard = (family: FamilyWithStatus, index: number) => {
     const isPending = family.userMembershipStatus === "PENDING";
+    const hasJoinRequests = family.isAdmin && family.pendingRequestsCount > 0;
 
     return (
       <motion.div
@@ -443,6 +474,8 @@ export default function FamiliesPage() {
           "bg-white/80 backdrop-blur-md rounded-2xl p-6 border transition-all group relative",
           isPending 
             ? "border-amber-200 hover:border-amber-300" 
+            : hasJoinRequests
+            ? "border-rose-200 hover:border-rose-300 shadow-md"
             : "border-rose-100/50 hover:border-rose-200"
         )}
       >
@@ -474,6 +507,35 @@ export default function FamiliesPage() {
             </Button>
           </div>
         )}
+
+        {/* Join Requests Alert Banner */}
+        {/* {hasJoinRequests && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 bg-gradient-to-r from-rose-50 to-amber-50 border border-rose-200 rounded-lg p-3"
+          >
+            <div className="flex items-center gap-2">
+              <div className="bg-rose-500 w-2 h-2 rounded-full animate-pulse" />
+              <span className="text-rose-700 font-medium text-sm">
+                {family.pendingRequestsCount} pending join request{family.pendingRequestsCount !== 1 ? 's' : ''}
+              </span>
+              <Link
+                href={`/families/${family.id}/requests`}
+                onClick={(e) => e.stopPropagation()}
+                className="ml-auto"
+              >
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-6 px-2 text-xs bg-white/80 border-rose-300 text-rose-600 hover:bg-rose-50"
+                >
+                  Review
+                </Button>
+              </Link>
+            </div>
+          </motion.div>
+        )} */}
 
         {/* Status Badge */}
         {isPending && (
@@ -554,6 +616,40 @@ export default function FamiliesPage() {
           </div>
         )}
 
+        {/* Join Requests Preview for Admins */}
+        {family.isAdmin && !isPending && family.pendingRequestsCount > 0 && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            className="mb-4 bg-gradient-to-r from-rose-50/50 to-amber-50/50 rounded-lg p-3 border border-rose-100"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="font-medium text-rose-700 text-sm flex items-center gap-2">
+                <div className="w-2 h-2 bg-rose-500 rounded-full animate-pulse" />
+                Pending Requests
+              </h4>
+              <span className="text-xs text-rose-600 bg-rose-100 px-2 py-1 rounded-full">
+                {family.pendingRequestsCount}
+              </span>
+            </div>
+            <p className="text-xs text-gray-600 mb-3">
+              {family.pendingRequestsCount} {family.pendingRequestsCount === 1 ? 'person wants' : 'people want'} to join your family
+            </p>
+            <Link
+              href={`/families/${family.id}/requests`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Button
+                size="sm"
+                className="w-full bg-rose-50 hover:bg-rose-100 text-rose-500 h-8"
+                variant="ghost"
+              >
+                Review Requests
+              </Button>
+            </Link>
+          </motion.div>
+        )}
+
         {/* Action Buttons */}
         <div className="space-y-2">
           {isPending ? (
@@ -622,12 +718,13 @@ export default function FamiliesPage() {
     );
   };
 
-  const filteredFamilies =
-    families?.filter(
-      (family) =>
-        family.userMembershipStatus ===
-        (activeTab === "approved" ? "APPROVED" : "PENDING")
-  ) ?? [];
+  const filteredFamilies = (families || []).filter((family) => {
+    const matchesSearch = debouncedSearch
+      ? family.name.toLowerCase().includes(debouncedSearch.toLowerCase())
+      : true;
+    const matchesTab = family.userMembershipStatus === (activeTab === "approved" ? "APPROVED" : "PENDING");
+    return matchesSearch && matchesTab;
+  });
 
   // Paginate families - Added for pagination
   const totalPages = Math.ceil(filteredFamilies.length / FAMILIES_PER_PAGE);
@@ -637,7 +734,7 @@ export default function FamiliesPage() {
   );
 
   return (
-    <div className="p-8">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-8">
       {/* Breadcrumb */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -662,32 +759,42 @@ export default function FamiliesPage() {
         <span className="text-rose-500 font-medium">My Families</span>
       </motion.div>
 
-      {/* Header Section */}
-      <div className="flex items-center justify-between mb-8">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-        >
-          <h1 className="text-3xl font-lora font-bold text-gray-800 mb-2">
-            My Families ❤️
-          </h1>
-          <p className="text-gray-600">
-            Manage your family spaces and connections
-          </p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-        >
+      {/* Header Section - Updated to match feed page style */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white/80 backdrop-blur-md rounded-2xl p-6 border border-rose-100/50 mb-8"
+      >
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-lora font-bold text-gray-800 mb-2">
+              My Families ❤️
+            </h1>
+            <p className="text-gray-600">
+              Manage your family spaces and connections
+            </p>
+          </div>
           <Link href="/families/create">
-            <Button className="bg-rose-500 hover:bg-rose-600">
-              <PlusCircle className="w-4 h-4 mr-2" />
+            <Button className="bg-rose-500 hover:bg-rose-600 flex items-center gap-2">
+              <PlusCircle className="w-4 h-4" />
               Create Family
             </Button>
           </Link>
-        </motion.div>
-      </div>
+        </div>
+
+        {/* Search Section */}
+        <div className="flex flex-col sm:flex-row gap-4 items-center">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              placeholder="Search families by name..."
+              value={search}
+              onChange={handleSearchChange}
+              className="pl-10 bg-white"
+            />
+          </div>
+        </div>
+      </motion.div>
 
       {/* Tabs Navigation */}
       {renderTabs()}
@@ -734,16 +841,20 @@ export default function FamiliesPage() {
             <Users className="w-8 h-8 text-rose-500" />
           </div>
           <h3 className="text-xl font-lora font-bold text-gray-800 mb-2">
-            {activeTab === "approved" 
-              ? "No Families Yet" 
-              : "No Pending Requests"}
+            {search 
+              ? "No Families Found" 
+              : activeTab === "approved" 
+                ? "No Families Yet" 
+                : "No Pending Requests"}
           </h3>
           <p className="text-gray-600 max-w-md mx-auto mb-6">
-            {activeTab === "approved"
-              ? "Start your journey by creating a new family space or joining an existing one."
-              : "You don't have any pending join requests at the moment."}
+            {search
+              ? `No families found matching "${search}". Try a different search term.`
+              : activeTab === "approved"
+                ? "Start your journey by creating a new family space or joining an existing one."
+                : "You don't have any pending join requests at the moment."}
           </p>
-          {activeTab === "approved" && (
+          {!search && activeTab === "approved" && (
             <div className="flex items-center justify-center gap-4">
               <Link href="/families/create">
                 <Button className="bg-rose-500 hover:bg-rose-600">

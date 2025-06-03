@@ -15,23 +15,24 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { Family, FamilyMember } from "@/types/family.types";
-import { useQuery } from "@tanstack/react-query";
-import { motion, AnimatePresence } from "framer-motion";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  Calendar,
   ChevronRight,
-  Clock,
+  ExternalLink,
   Home,
   Image as ImageIcon,
+  Loader2,
   MessageSquare,
-  Settings,
   Shield,
-  UserCheck,
+  TreePine,
   UserPlus,
   Users,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useEffect } from "react";
+import { useInView } from "react-intersection-observer";
 
 type FamilyWithExtra = Family & {
   currentUserId: string;
@@ -59,6 +60,181 @@ type FamilyStats = {
     };
   };
 };
+
+type FamilyMemberWithUser = {
+  id: string;
+  role: "ADMIN" | "MEMBER";
+  joinedAt: string;
+  user: {
+    id: string;
+    fullName: string;
+    username: string | null;
+    imageUrl: string | null;
+  };
+};
+
+function MemberSkeletonCard() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex items-center gap-3 p-4 rounded-lg bg-gray-50/80 border border-gray-100/50"
+    >
+      <div className="w-12 h-12 bg-gray-200 rounded-full animate-pulse" />
+      <div className="flex-1">
+        <div className="h-4 bg-gray-200 rounded animate-pulse mb-2" />
+        <div className="h-3 bg-gray-200 rounded animate-pulse w-1/2" />
+      </div>
+      <div className="w-20 h-8 bg-gray-200 rounded animate-pulse" />
+    </motion.div>
+  );
+}
+
+function FamilyHeaderSkeleton() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="relative mb-8 overflow-hidden"
+    >
+      <div className="bg-white/80 backdrop-blur-md rounded-2xl p-8 border border-rose-100/50">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="h-10 bg-gray-200 rounded animate-pulse w-64" />
+          <div className="h-7 bg-gray-200 rounded-full animate-pulse w-16" />
+        </div>
+        <div className="h-4 bg-gray-200 rounded animate-pulse w-96 max-w-full" />
+      </div>
+    </motion.div>
+  );
+}
+
+function QuickActionsSkeleton() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="mb-8"
+    >
+      <div className="bg-white/80 backdrop-blur-md rounded-2xl p-6 border border-rose-100/50">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="bg-gray-200 w-10 h-10 rounded-lg animate-pulse" />
+          <div>
+            <div className="h-5 bg-gray-200 rounded animate-pulse w-32 mb-2" />
+            <div className="h-4 bg-gray-200 rounded animate-pulse w-48" />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, index) => (
+            <div key={index} className="bg-white/80 backdrop-blur-md rounded-lg p-4 border border-rose-100/50">
+              <div className="flex flex-col items-center gap-2 text-center">
+                <div className="bg-gray-200 w-12 h-12 rounded-lg animate-pulse" />
+                <div>
+                  <div className="h-4 bg-gray-200 rounded animate-pulse w-16 mb-1" />
+                  <div className="h-3 bg-gray-200 rounded animate-pulse w-20" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function AdminActionsSkeleton() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="mb-8"
+    >
+      <div className="bg-amber-50/50 border border-amber-100 rounded-xl p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="bg-gray-200 w-10 h-10 rounded-lg animate-pulse" />
+          <div>
+            <div className="h-5 bg-gray-200 rounded animate-pulse w-32 mb-2" />
+            <div className="h-4 bg-gray-200 rounded animate-pulse w-40" />
+          </div>
+        </div>
+
+        <div className="max-w-[100%]">
+          <div className="bg-white/80 backdrop-blur-md rounded-lg p-4 border border-amber-100/50">
+            <div className="flex items-center gap-3">
+              <div className="bg-gray-200 w-10 h-10 rounded-lg animate-pulse" />
+              <div>
+                <div className="h-4 bg-gray-200 rounded animate-pulse w-28 mb-2" />
+                <div className="h-3 bg-gray-200 rounded animate-pulse w-36" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function MembersCardSkeleton() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.2 }}
+    >
+      <Card className="bg-white/80 backdrop-blur-md border-rose-100/50 overflow-hidden">
+        <CardHeader className="border-b border-rose-100/20 bg-gradient-to-r from-rose-50/50 via-rose-100/30 to-transparent">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="h-6 bg-gray-200 rounded animate-pulse w-40 mb-2" />
+              <div className="h-4 bg-gray-200 rounded animate-pulse w-48" />
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="h-4 bg-gray-200 rounded animate-pulse w-20" />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="p-6">
+          <div className="space-y-4">
+            {[...Array(5)].map((_, index) => (
+              <MemberSkeletonCard key={index} />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+}
+
+function FullPageSkeleton() {
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-8">
+      {/* Breadcrumb Skeleton */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center gap-2 text-sm text-gray-600 mb-8"
+      >
+        <div className="h-4 bg-gray-200 rounded animate-pulse w-12" />
+        <div className="w-4 h-4 bg-gray-200 rounded animate-pulse" />
+        <div className="h-4 bg-gray-200 rounded animate-pulse w-16" />
+        <div className="w-4 h-4 bg-gray-200 rounded animate-pulse" />
+        <div className="h-4 bg-gray-200 rounded animate-pulse w-24" />
+      </motion.div>
+
+      {/* Family Header Skeleton */}
+      <FamilyHeaderSkeleton />
+
+      {/* Quick Actions Skeleton */}
+      <QuickActionsSkeleton />
+
+      {/* Admin Actions Skeleton - Always show for skeleton */}
+      <AdminActionsSkeleton />
+
+      {/* Members Card Skeleton */}
+      <MembersCardSkeleton />
+    </div>
+  );
+}
 
 export default function FamilyPage() {
   const { familyId } = useParams();
@@ -88,12 +264,80 @@ export default function FamilyPage() {
     },
   });
 
+  // Infinite query for family members
+  const MEMBERS_PER_PAGE = 20;
+  const { ref: loadMoreRef, inView } = useInView({
+    threshold: 0.5,
+  });
+
+  const {
+    data: membersPages,
+    isLoading: isMembersLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    isError: isMembersError,
+  } = useInfiniteQuery({
+    queryKey: ["family-members", familyId],
+    queryFn: async ({ pageParam = 1 }) => {
+      const searchParams = new URLSearchParams({
+        page: pageParam.toString(),
+        limit: MEMBERS_PER_PAGE.toString(),
+      });
+
+      const response = await fetch(
+        `/api/families/${familyId}/members?${searchParams}`
+      );
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.message);
+      }
+      return result.data;
+    },
+    getNextPageParam: (lastPage, allPages) => {
+      return lastPage.length === MEMBERS_PER_PAGE
+        ? allPages.length + 1
+        : undefined;
+    },
+    initialPageParam: 1,
+    enabled: !!familyId,
+  });
+
+  // Load more members when scrolling to the bottom
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // Flatten members pages
+  const allMembers = membersPages?.pages.flat() || [];
+
   const isAdmin = family?.members.some(
     (member: FamilyMember) =>
       member.userId === family.currentUserId && member.role === "ADMIN"
   );
 
   const isLoading = isFamilyLoading || isStatsLoading;
+
+  // Show full page skeleton while loading
+  if (isLoading) {
+    return <FullPageSkeleton />;
+  }
+
+  if (!family) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-8">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center text-gray-600 p-8 bg-white/80 rounded-2xl border border-rose-100/50"
+        >
+          Family not found
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-8">
@@ -122,83 +366,200 @@ export default function FamilyPage() {
       </motion.div>
 
       {/* Family Header with enhanced animations */}
-      {!isLoading && family && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="relative mb-8 overflow-hidden group"
-        >
-          <div className="bg-white/80 backdrop-blur-md rounded-2xl p-8 border border-rose-100/50 transition-all duration-300 hover:bg-white/90 hover:border-rose-200/70">
-            <motion.div 
-              className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-rose-100/20 to-amber-100/20 rounded-full blur-3xl -z-10"
-              animate={{
-                scale: [1, 1.2, 1],
-                rotate: [0, 90, 0],
-              }}
-              transition={{
-                duration: 20,
-                repeat: Infinity,
-                ease: "linear"
-              }}
-              style={{
-                translateX: "50%",
-                translateY: "-50%"
-              }}
-            />
-            <motion.div 
-              className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-rose-100/20 to-purple-100/20 rounded-full blur-3xl -z-10"
-              animate={{
-                scale: [1, 1.1, 1],
-                rotate: [0, -90, 0],
-              }}
-              transition={{
-                duration: 15,
-                repeat: Infinity,
-                ease: "linear"
-              }}
-              style={{
-                translateX: "-50%",
-                translateY: "50%"
-              }}
-            />
-            
-            <h1 className="text-4xl font-lora font-bold text-gray-800 mb-3 flex items-center gap-3">
-              <span className="hover:text-rose-600 transition-colors">{family.name}</span>
-              {isAdmin && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <motion.span 
-                        className="text-sm font-normal bg-amber-100/50 text-amber-700 px-3 py-1 rounded-full"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        Admin
-                      </motion.span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>You have admin privileges for this family</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-            </h1>
-            {family.description && (
-              <motion.p 
-                className="text-gray-600 max-w-2xl"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 }}
-              >
-                {family.description}
-              </motion.p>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative mb-8 overflow-hidden group"
+      >
+        <div className="bg-white/80 backdrop-blur-md rounded-2xl p-8 border border-rose-100/50 transition-all duration-300 hover:bg-white/90 hover:border-rose-200/70">
+          <motion.div 
+            className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-rose-100/20 to-amber-100/20 rounded-full blur-3xl -z-10"
+            animate={{
+              scale: [1, 1.2, 1],
+              rotate: [0, 90, 0],
+            }}
+            transition={{
+              duration: 20,
+              repeat: Infinity,
+              ease: "linear"
+            }}
+            style={{
+              translateX: "50%",
+              translateY: "-50%"
+            }}
+          />
+          <motion.div 
+            className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-rose-100/20 to-purple-100/20 rounded-full blur-3xl -z-10"
+            animate={{
+              scale: [1, 1.1, 1],
+              rotate: [0, -90, 0],
+            }}
+            transition={{
+              duration: 15,
+              repeat: Infinity,
+              ease: "linear"
+            }}
+            style={{
+              translateX: "-50%",
+              translateY: "50%"
+            }}
+          />
+          
+          <h1 className="text-4xl font-lora font-bold text-gray-800 mb-3 flex items-center gap-3">
+            <span className="hover:text-rose-600 transition-colors">{family.name}</span>
+            {isAdmin && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <motion.span 
+                      className="text-sm font-normal bg-amber-100/50 text-amber-700 px-3 py-1 rounded-full"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      Admin
+                    </motion.span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>You have admin privileges for this family</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
-          </div>
-        </motion.div>
-      )}
+          </h1>
+          {family.description && (
+            <motion.p 
+              className="text-gray-600 max-w-2xl"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              {family.description}
+            </motion.p>
+          )}
+        </div>
+      </motion.div>
 
-      {/* Admin Actions with enhanced interactivity */}
-      {isAdmin && family && (
+      {/* Quick Actions Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-8"
+      >
+        <div className="bg-white/80 backdrop-blur-md rounded-2xl p-6 border border-rose-100/50">
+          <div className="flex items-center gap-3 mb-6">
+            <motion.div 
+              className="bg-rose-100 w-10 h-10 rounded-lg flex items-center justify-center"
+              whileHover={{ rotate: 15 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <MessageSquare className="w-5 h-5 text-rose-600" />
+            </motion.div>
+            <div>
+              <h3 className="font-medium text-gray-800">Quick Actions</h3>
+              <p className="text-sm text-gray-600">
+                Navigate to different family sections
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {/* Feed */}
+            <Link href={`/feed?family=${familyId}`}>
+              <motion.div 
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                className="bg-white/80 backdrop-blur-md rounded-lg p-4 border border-rose-100/50 transition-all duration-300 hover:border-rose-300 hover:shadow-lg group cursor-pointer"
+              >
+                <div className="flex flex-col items-center gap-2 text-center">
+                  <div className="bg-rose-50 w-12 h-12 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <MessageSquare className="w-6 h-6 text-rose-500" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-800 group-hover:text-rose-600 transition-colors text-sm">
+                      Feed
+                    </h4>
+                    <p className="text-xs text-gray-500">
+                      Family posts
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            </Link>
+
+            {/* Albums */}
+            <Link href={`/albums`}>
+              <motion.div 
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                className="bg-white/80 backdrop-blur-md rounded-lg p-4 border border-rose-100/50 transition-all duration-300 hover:border-rose-300 hover:shadow-lg group cursor-pointer"
+              >
+                <div className="flex flex-col items-center gap-2 text-center">
+                  <div className="bg-rose-50 w-12 h-12 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <ImageIcon className="w-6 h-6 text-rose-500" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-800 group-hover:text-rose-600 transition-colors text-sm">
+                      Albums
+                    </h4>
+                    <p className="text-xs text-gray-500">
+                      Photo albums
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            </Link>
+
+            {/* Events */}
+            <Link href={`/events`}>
+              <motion.div 
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                className="bg-white/80 backdrop-blur-md rounded-lg p-4 border border-rose-100/50 transition-all duration-300 hover:border-rose-300 hover:shadow-lg group cursor-pointer"
+              >
+                <div className="flex flex-col items-center gap-2 text-center">
+                  <div className="bg-rose-50 w-12 h-12 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <ImageIcon className="w-6 h-6 text-rose-500" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-800 group-hover:text-rose-600 transition-colors text-sm">
+                      Events
+                    </h4>
+                    <p className="text-xs text-gray-500">
+                      Family events
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            </Link>
+
+            {/* Family Tree */}
+            <Link href={`/roots`}>
+              <motion.div 
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                className="bg-white/80 backdrop-blur-md rounded-lg p-4 border border-rose-100/50 transition-all duration-300 hover:border-rose-300 hover:shadow-lg group cursor-pointer"
+              >
+                <div className="flex flex-col items-center gap-2 text-center">
+                  <div className="bg-rose-50 w-12 h-12 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <TreePine className="w-6 h-6 text-rose-500" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-800 group-hover:text-rose-600 transition-colors text-sm">
+                      Tree
+                    </h4>
+                    <p className="text-xs text-gray-500">
+                      Family tree
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            </Link>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Admin Actions with enhanced interactivity - Only Join Requests */}
+      {isAdmin && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -216,12 +577,12 @@ export default function FamilyPage() {
               <div>
                 <h3 className="font-medium text-gray-800">Admin Actions</h3>
                 <p className="text-sm text-gray-600">
-                  Manage your family settings and member requests
+                  Manage member requests
                 </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="max-w-[100%]">
               {/* Join Requests Card */}
               <Link href={`/families/${familyId}/requests`}>
                 <motion.div 
@@ -265,366 +626,147 @@ export default function FamilyPage() {
                   </div>
                 </motion.div>
               </Link>
-
-              {/* Family Settings Card */}
-              <Link href={`/families/${familyId}/settings`}>
-                <motion.div 
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="bg-white/80 backdrop-blur-md rounded-lg p-4 border border-amber-100/50 transition-all duration-300 hover:border-amber-300 hover:shadow-lg group cursor-pointer"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="bg-amber-50 w-10 h-10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                      >
-                        <Settings className="w-5 h-5 text-amber-500" />
-                      </motion.div>
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-gray-800 group-hover:text-amber-600 transition-colors">
-                        Family Settings
-                      </h4>
-                      <p className="text-sm text-gray-500">
-                        Manage family preferences
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-              </Link>
-
-              {/* Member Management Card */}
-              <Link href={`/families/${familyId}/members`}>
-                <motion.div 
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="bg-white/80 backdrop-blur-md rounded-lg p-4 border border-amber-100/50 transition-all duration-300 hover:border-amber-300 hover:shadow-lg group cursor-pointer"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="bg-amber-50 w-10 h-10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Users className="w-5 h-5 text-amber-500" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-gray-800 group-hover:text-amber-600 transition-colors">
-                        Members
-                      </h4>
-                      <p className="text-sm text-gray-500">
-                        Manage family members
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-              </Link>
             </div>
           </div>
         </motion.div>
       )}
 
-      {/* Main Content with enhanced loading state */}
-      <div>
-        {isLoading ? (
-          <div className="flex items-center justify-center min-h-[400px]">
-            <motion.div 
-              className="relative"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            >
-              <div className="w-12 h-12 border-4 border-rose-100 rounded-full animate-spin border-t-rose-500" />
-              <motion.div 
-                className="w-12 h-12 border-4 border-amber-100 rounded-full absolute inset-0"
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
-            </motion.div>
-          </div>
-        ) : !family ? (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center text-gray-600 p-8 bg-white/80 rounded-2xl border border-rose-100/50"
-          >
-            Family not found
-          </motion.div>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-8"
-          >
-            {/* Family Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Members Info Card */}
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                <Card className="bg-white/80 backdrop-blur-md border-rose-100/50 overflow-hidden">
-                  <CardHeader className="border-b border-rose-100/20 bg-gradient-to-r from-rose-50/50 via-rose-100/30 to-transparent">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="font-lora text-xl text-rose-700">
-                          Members
-                        </CardTitle>
-                        <CardDescription>
-                          Family member information
-                        </CardDescription>
-                      </div>
-                      <Link href={`/families/${familyId}/members`}>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="gap-2 hover:bg-rose-50 hover:text-rose-500 transition-colors"
-                        >
-                          <Users className="w-4 h-4" />
-                          View All
-                        </Button>
-                      </Link>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-6">
-                    <div className="grid grid-cols-2 gap-4">
-                      {/* Active Members */}
-                      <motion.div
-                        whileHover={{ scale: 1.02 }}
-                        transition={{ type: "spring", stiffness: 300 }}
-                        className="bg-gradient-to-br from-rose-50/80 to-rose-100/30 rounded-lg p-4 border border-rose-200/50 shadow-sm"
-                      >
-                        <div className="flex items-center gap-2 mb-2">
-                          <div className="bg-rose-100 rounded-full p-2">
-                            <UserCheck className="w-5 h-5 text-rose-500" />
-                          </div>
-                          <span className="font-medium text-gray-800">
-                            Active
-                          </span>
-                        </div>
-                        <div className="text-3xl font-bold text-rose-500">
-                          {stats?.members.approved || 0}
-                        </div>
-                        <p className="text-sm text-gray-600">
-                          Approved members
-                        </p>
-                      </motion.div>
-
-                      {/* Pending Members */}
-                      <motion.div
-                        whileHover={{ scale: 1.02 }}
-                        transition={{ type: "spring", stiffness: 300 }}
-                        className="bg-gradient-to-br from-amber-50/80 to-amber-50/40 rounded-lg p-4 border border-amber-100/50 shadow-sm"
-                      >
-                        <div className="flex items-center gap-2 mb-2">
-                          <div className="bg-amber-100 rounded-full p-2">
-                            <Clock className="w-5 h-5 text-amber-500" />
-                          </div>
-                          <span className="font-medium text-gray-800">
-                            Pending
-                          </span>
-                        </div>
-                        <div className="text-3xl font-bold text-amber-500">
-                          {stats?.members.pending || 0}
-                        </div>
-                        <p className="text-sm text-gray-600">
-                          Awaiting approval
-                        </p>
-                      </motion.div>
-                    </div>
-
-                    {/* Recent Members */}
-                    <div className="mt-6">
-                      <h4 className="font-medium text-gray-800 mb-3 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Users className="w-4 h-4 text-gray-500" />
-                          Recent Members
-                        </div>
-                        <span className="text-sm text-gray-500">
-                          {family.members.length}{" "}
-                          {family.members.length === 1 ? "member" : "members"}
-                        </span>
-                      </h4>
-                      <div className="relative">
-                        <div className="space-y-2 max-h-[240px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-rose-200 scrollbar-track-gray-50 hover:scrollbar-thumb-rose-300">
-                          {family.members.map((member, index) => (
-                            <motion.div
-                              initial={{ opacity: 0, x: -20 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: index * 0.05 }}
-                              key={member.id}
-                              className="flex items-center gap-3 p-3 rounded-lg bg-gray-50/80 hover:bg-rose-50/50 transition-all border border-gray-100/50 group"
-                            >
-                              <div className="relative">
-                                <img
-                                  src={
-                                    member.user.imageUrl ||
-                                    "/placeholder-avatar.png"
-                                  }
-                                  alt={member.user.fullName}
-                                  className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm group-hover:border-rose-100 transition-colors"
-                                />
-                                {member.role === "ADMIN" && (
-                                  <div className="absolute -top-1 -right-1 bg-amber-500 w-4 h-4 rounded-full border-2 border-white" />
-                                )}
-                              </div>
-                              <div className="flex-1">
-                                <p className="font-medium text-gray-800 text-sm group-hover:text-rose-600 transition-colors">
-                                  {member.user.fullName}
-                                </p>
-                                <p className="text-xs text-gray-500 capitalize flex items-center gap-1">
-                                  <span
-                                    className={`w-1.5 h-1.5 rounded-full ${
-                                      member.role === "ADMIN"
-                                        ? "bg-amber-500"
-                                        : "bg-rose-500"
-                                    }`}
-                                  />
-                                  {member.role.toLowerCase()}
-                                </p>
-                              </div>
-                            </motion.div>
-                          ))}
-                        </div>
-                        <div className="absolute bottom-0 left-0 right-2 h-6 bg-gradient-to-t from-white to-transparent pointer-events-none" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-
-              {/* Family Activity Card */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 }}
-              >
-                <Card className="bg-white/80 backdrop-blur-md border-rose-100/50 overflow-hidden">
-                  <CardHeader className="border-b border-rose-100/20 bg-gradient-to-r from-rose-50/50 via-rose-100/30 to-transparent">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="font-lora text-xl text-rose-700">
-                          Family Activity
-                        </CardTitle>
-                        <CardDescription>
-                          Recent content and engagement
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-6">
-                    <div className="space-y-6">
-                      {/* Posts Activity */}
-                      <motion.div
-                        whileHover={{ scale: 1.02 }}
-                        transition={{ type: "spring", stiffness: 300 }}
-                        className="bg-gradient-to-br from-rose-50/80 to-rose-100/30 rounded-lg p-4 border border-rose-200/50 shadow-sm"
-                      >
-                        <div className="flex items-center gap-2 mb-3">
-                          <div className="bg-rose-100 rounded-full p-2">
-                            <MessageSquare className="w-5 h-5 text-rose-500" />
-                          </div>
-                          <span className="font-medium text-gray-800">
-                            Posts Activity
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-3 gap-4">
-                          {[
-                            {
-                              label: "Last 24h",
-                              value: stats?.content.posts.last24Hours,
-                            },
-                            {
-                              label: "This Week",
-                              value: stats?.content.posts.lastWeek,
-                            },
-                            {
-                              label: "This Month",
-                              value: stats?.content.posts.lastMonth,
-                            },
-                          ].map((item, index) => (
-                            <motion.div
-                              key={item.label}
-                              initial={{ opacity: 0, y: 20 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: index * 0.1 }}
-                              className="text-center"
-                            >
-                              <div className="text-2xl font-bold text-rose-500">
-                                {item.value || 0}
-                              </div>
-                              <p className="text-xs text-gray-600">
-                                {item.label}
-                              </p>
-                            </motion.div>
-                          ))}
-                        </div>
-                      </motion.div>
-
-                      {/* Albums & Media */}
-                      <motion.div
-                        whileHover={{ scale: 1.02 }}
-                        transition={{ type: "spring", stiffness: 300 }}
-                        className="bg-gradient-to-br from-rose-50/80 to-rose-100/30 rounded-lg p-4 border border-rose-200/50 shadow-sm"
-                      >
-                        <div className="flex items-center gap-2 mb-3">
-                          <div className="bg-rose-100 rounded-full p-2">
-                            <ImageIcon className="w-5 h-5 text-rose-500" />
-                          </div>
-                          <span className="font-medium text-gray-800">
-                            Albums & Media
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="text-center">
-                            <div className="text-2xl font-bold text-rose-500">
-                              {stats?.content.albums.total || 0}
-                            </div>
-                            <p className="text-xs text-gray-600">
-                              Total Albums
-                            </p>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-2xl font-bold text-rose-500">
-                              {stats?.content.albums.totalMedia || 0}
-                            </div>
-                            <p className="text-xs text-gray-600">Total Media</p>
-                          </div>
-                        </div>
-                      </motion.div>
-
-                      {/* Upcoming Events */}
-                      <motion.div
-                        whileHover={{ scale: 1.02 }}
-                        transition={{ type: "spring", stiffness: 300 }}
-                        className="bg-gradient-to-br from-rose-50/80 to-rose-100/30 rounded-lg p-4 border border-rose-200/50 shadow-sm"
-                      >
-                        <div className="flex items-center gap-2 mb-3">
-                          <div className="bg-rose-100 rounded-full p-2">
-                            <Calendar className="w-5 h-5 text-rose-500" />
-                          </div>
-                          <span className="font-medium text-gray-800">
-                            Upcoming Events
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <div className="text-3xl font-bold text-rose-500">
-                            {stats?.content.events.upcoming || 0}
-                          </div>
-                          <p className="text-sm text-gray-600">
-                            {stats?.content.events.upcoming === 0
-                              ? "No upcoming events"
-                              : stats?.content.events.upcoming === 1
-                                ? "Upcoming event"
-                                : "Upcoming events"}
-                          </p>
-                        </div>
-                      </motion.div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
+      {/* Main Content - Full Width Members Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <Card className="bg-white/80 backdrop-blur-md border-rose-100/50 overflow-hidden">
+          <CardHeader className="border-b border-rose-100/20 bg-gradient-to-r from-rose-50/50 via-rose-100/30 to-transparent">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="font-lora text-xl text-rose-700">
+                  Family Members
+                </CardTitle>
+                <CardDescription>
+                  All approved family members
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="text-sm text-gray-600">
+                  <span className="font-medium">{stats?.members.approved || 0}</span> members
+                </div>
+              </div>
             </div>
-          </motion.div>
-        )}
-      </div>
+          </CardHeader>
+          <CardContent className="p-6">
+            {isMembersLoading ? (
+              <div className="space-y-4">
+                {[...Array(5)].map((_, index) => (
+                  <MemberSkeletonCard key={index} />
+                ))}
+              </div>
+            ) : isMembersError ? (
+              <div className="text-center py-8">
+                <p className="text-red-500 mb-4">Failed to load members</p>
+                <Button
+                  onClick={() => window.location.reload()}
+                  variant="outline"
+                  size="sm"
+                >
+                  Retry
+                </Button>
+              </div>
+            ) : allMembers.length === 0 ? (
+              <div className="text-center py-8">
+                <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500">No members found</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <AnimatePresence mode="popLayout">
+                  {allMembers.map((member: FamilyMemberWithUser, index: number) => (
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 20 }}
+                      transition={{ delay: index * 0.02 }}
+                      key={member.id}
+                      className="flex items-center gap-4 p-4 rounded-lg bg-gray-50/80 hover:bg-rose-50/50 transition-all border border-gray-100/50 group"
+                    >
+                      <div className="relative">
+                        <img
+                          src={
+                            member.user.imageUrl ||
+                            "/placeholder-avatar.png"
+                          }
+                          alt={member.user.fullName}
+                          className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm group-hover:border-rose-100 transition-colors"
+                        />
+                        {member.role === "ADMIN" && (
+                          <div className="absolute -top-1 -right-1 bg-amber-500 w-4 h-4 rounded-full border-2 border-white" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-800 text-sm group-hover:text-rose-600 transition-colors">
+                          {member.user.fullName}
+                        </p>
+                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${
+                              member.role === "ADMIN"
+                                ? "bg-amber-500"
+                                : "bg-rose-500"
+                            }`}
+                          />
+                          <span className="capitalize">{member.role.toLowerCase()}</span>
+                          {member.user.username && (
+                            <>
+                              <span>•</span>
+                              <span>@{member.user.username}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Link href={`/profile/${member.user.id}`}>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="gap-2 hover:bg-rose-50 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"
+                                >
+                                  <ExternalLink className="w-3 h-3" />
+                                  Profile
+                                </Button>
+                              </Link>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>View {member.user.fullName}'s profile</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+
+                {/* Load More Trigger */}
+                <div ref={loadMoreRef} className="pt-4 flex justify-center">
+                  {isFetchingNextPage ? (
+                    <Loader2 className="w-6 h-6 text-rose-500 animate-spin" />
+                  ) : hasNextPage ? (
+                    <span className="text-gray-500 text-sm">Loading more members...</span>
+                  ) : (
+                    <span className="flex items-center gap-2 text-sm text-rose-600 px-4 py-2 bg-rose-50 rounded-full border border-rose-200 shadow-sm">
+                      <Users className="w-4 h-4" />
+                      All members loaded
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 }

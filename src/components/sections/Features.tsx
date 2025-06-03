@@ -1,14 +1,12 @@
 "use client";
 import { motion, useInView } from "framer-motion";
 import {
-  Bell,
-  Camera,
   Check,
   Home,
-  Image as PhotoIcon,
-  TreePine,
-  Play,
   Pause,
+  Image as PhotoIcon,
+  Play,
+  TreePine,
 } from "lucide-react";
 import { useRef, useState } from "react";
 import Container from "../Container";
@@ -24,10 +22,10 @@ export default function Features() {
     if (video) {
       if (video.paused) {
         video.play();
-        setVideoPaused(prev => ({ ...prev, [index]: false }));
+        setVideoPaused((prev) => ({ ...prev, [index]: false }));
       } else {
         video.pause();
-        setVideoPaused(prev => ({ ...prev, [index]: true }));
+        setVideoPaused((prev) => ({ ...prev, [index]: true }));
       }
     }
   };
@@ -44,6 +42,7 @@ export default function Features() {
         "Beautiful templates",
         "Easy sharing within family",
       ],
+      url: "https://res.cloudinary.com/dmq5tx0bd/video/upload/f_auto:video,q_auto/jqbnidstesn7zvqv5l09",
     },
     {
       icon: <TreePine className="w-8 h-8 text-rose-500" />,
@@ -56,18 +55,7 @@ export default function Features() {
         "Share stories & traditions",
         "Educational for kids",
       ],
-    },
-    {
-      icon: <Bell className="w-8 h-8 text-rose-500" />,
-      title: "Smart Family Reminders",
-      description:
-        "Never miss a birthday, anniversary, or special moment. Get gentle reminders to celebrate what matters most.",
-      benefits: [
-        "Automatic birthday alerts",
-        "Anniversary reminders",
-        "Custom event notifications",
-        "Family milestone tracking",
-      ],
+      url: "https://res.cloudinary.com/dmq5tx0bd/video/upload/f_auto:video,q_auto/bw1ch73cdcxp8byrqyug",
     },
     {
       icon: <Home className="w-8 h-8 text-rose-500" />,
@@ -80,6 +68,7 @@ export default function Features() {
         "Comment & react together",
         "Video calls integration",
       ],
+      url: "https://res.cloudinary.com/dmq5tx0bd/video/upload/f_auto:video,q_auto/gzuwet0vgeht9usgdsev",
     },
   ];
 
@@ -136,10 +125,8 @@ export default function Features() {
                     ))}
                   </div>
                 </div>
-                <div
-                  className={`${index % 2 === 1 ? "md:order-1" : ""}`}
-                >
-                  <div className="bg-gradient-to-br from-rose-50 to-amber-50 rounded-2xl p-4 min-h-[400px]">
+                <div className={`${index % 2 === 1 ? "md:order-1" : ""}`}>
+                  <div className="bg-gradient-to-br from-orange-500 to-rose-500 rounded-2xl p-4">
                     <div className="w-full h-full bg-white rounded-xl shadow-lg overflow-hidden relative group">
                       <video
                         ref={(el) => {
@@ -152,13 +139,10 @@ export default function Features() {
                         playsInline
                         poster=""
                       >
-                        <source
-                          src="https://res.cloudinary.com/dmq5tx0bd/video/upload/f_auto:video,q_auto/vefmarugpqrv2kuf1uch"
-                          type="video/mp4"
-                        />
+                        <source src={feature.url} type="video/mp4" />
                         Your browser does not support the video tag.
                       </video>
-                      
+
                       {/* Play/Pause Control */}
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         <button
@@ -183,7 +167,7 @@ export default function Features() {
                   </div>
                 </div>
               </motion.div>
-              
+
               {/* Subtle separator - only show between features, not after the last one */}
               {index < features.length - 1 && (
                 <motion.div

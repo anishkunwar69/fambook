@@ -15,6 +15,7 @@ import {
   CalendarDays,
   User,
   Loader2,
+  LayoutDashboard,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -46,7 +47,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   // Base navigation items (always available)
   const baseNavigationItems = [
-    { icon: Home, label: "Home", href: "/dashboard" },
+    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
     { icon: Users, label: "Families", href: "/families" },
     { icon: Heart, label: "Feed", href: "/feed" },
     { icon: ImageIcon, label: "Albums", href: "/albums" },
