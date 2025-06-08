@@ -171,12 +171,21 @@ export async function POST(
         throw new Error("Member or family not found");
       }
 
-      // Update member status
-      const updatedMember = await tx.familyMember.update({
-        where: { id: memberId },
-        data: { status: action as "APPROVED" | "REJECTED" },
-        include: { user: true },
-      });
+      let updatedMember;
+      if (action === "REJECTED") {
+        // If rejected, delete the membership record entirely
+        updatedMember = await tx.familyMember.delete({
+          where: { id: memberId },
+          include: { user: true }, // still include user for the notification
+        });
+      } else {
+        // If approved, update the status
+        updatedMember = await tx.familyMember.update({
+          where: { id: memberId },
+          data: { status: "APPROVED" },
+          include: { user: true },
+        });
+      }
 
       // Create notification for the requesting user
       await tx.notification.create({
@@ -224,6 +233,11 @@ export async function POST(
         action,
       },
     });
+
+
+    //close transaction
+    await prisma.$disconnect();
+
   } catch (error) {
     console.error("Failed to update request:", error);
     return NextResponse.json(

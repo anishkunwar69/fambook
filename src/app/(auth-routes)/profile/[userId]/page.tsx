@@ -8,6 +8,7 @@ import {
   TabName,
   TabVisibilitySettings,
 } from "@/components/profile/TabVisibilitySettings";
+import { UserPostsTab } from "@/components/profile/UserPostsTab";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -19,72 +20,50 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertCircle, Settings, Shield, UserX } from "lucide-react";
+import { motion } from "framer-motion";
+import {
+  AlertCircle,
+  ChevronRight,
+  Home,
+  Loader2,
+  Lock,
+  Settings,
+  Shield,
+  UserX,
+} from "lucide-react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { UserPostsTab } from "@/components/profile/UserPostsTab";
 
-// Loading Skeleton Component
-function ProfilePageSkeleton() {
+function BasicLoading() {
   return (
-    <div className="min-h-screen bg-gray-50/50 animate-pulse">
-      {/* Header Skeleton */}
-      <div className="relative">
-        {/* Cover Image Skeleton */}
-        <div className="h-80 bg-gray-200 w-full"></div>
-
-        {/* Profile Content Skeleton */}
-        <div className="container mx-auto px-4 relative">
-          <div className="bg-white rounded-t-3xl shadow-xl -mt-16 relative z-10 p-8">
-            <div className="flex flex-col lg:flex-row gap-8">
-              {/* Profile Image Skeleton */}
-              <div className="flex-shrink-0">
-                <div className="w-32 h-32 bg-gray-200 rounded-full border-4 border-white shadow-lg"></div>
-              </div>
-
-              {/* Profile Info Skeleton */}
-              <div className="flex-1 space-y-4">
-                <div className="h-8 bg-gray-200 rounded w-64"></div>
-                <div className="h-4 bg-gray-200 rounded w-32"></div>
-                <div className="h-4 bg-gray-200 rounded w-48"></div>
-                <div className="h-16 bg-gray-200 rounded w-full"></div>
-              </div>
-            </div>
-          </div>
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <Loader2 className="h-12 w-12 animate-spin text-rose-500" />
+        <div className="text-center">
+          <p className="text-lg font-semibold text-gray-700">
+            Loading profile...
+          </p>
+          <p className="text-sm text-gray-500">Please wait a moment.</p>
         </div>
       </div>
+    </div>
+  );
+}
 
-      {/* Tabs Skeleton */}
-      <div className="container mx-auto px-4 mt-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex gap-6">
-            <div className="h-10 bg-gray-200 rounded w-32"></div>
-            <div className="h-10 bg-gray-200 rounded w-24"></div>
-            <div className="h-10 bg-gray-200 rounded w-36"></div>
-          </div>
-          <div className="h-8 bg-gray-200 rounded w-20"></div>
-        </div>
-
-        {/* Content Skeleton */}
-        <div className="space-y-6">
-          <div className="bg-white rounded-xl p-6 shadow-sm border">
-            <div className="h-6 bg-gray-200 rounded w-48 mb-4"></div>
-            <div className="space-y-3">
-              <div className="h-4 bg-gray-200 rounded w-full"></div>
-              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl p-6 shadow-sm border">
-            <div className="h-6 bg-gray-200 rounded w-36 mb-4"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="h-20 bg-gray-200 rounded"></div>
-              <div className="h-20 bg-gray-200 rounded"></div>
-            </div>
-          </div>
-        </div>
+function PrivateContentMessage({ tabName }: { tabName: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center bg-white/80 backdrop-blur-md rounded-2xl p-12 text-center border border-rose-100/50 min-h-[300px]">
+      <div className="bg-rose-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
+        <Lock className="w-8 h-8 text-rose-500" />
       </div>
+      <h3 className="text-xl font-lora font-bold text-gray-800 mb-2">
+        Content is Private
+      </h3>
+      <p className="text-gray-600 max-w-md mx-auto">
+        This user has chosen to make their &apos;{tabName}&apos; tab visible
+        only to certain family members.
+      </p>
     </div>
   );
 }
@@ -94,28 +73,28 @@ function UserNotFound() {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full text-center">
-        <div className="bg-white rounded-2xl shadow-lg p-8 border">
+        <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border">
           {/* Icon */}
-          <div className="relative mb-6">
-            <div className="w-20 h-20 bg-gray-100 rounded-full mx-auto flex items-center justify-center">
-              <UserX className="w-10 h-10 text-gray-400" />
+          <div className="relative mb-4 sm:mb-6">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-full mx-auto flex items-center justify-center">
+              <UserX className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
             </div>
-            <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-rose-100 rounded-full flex items-center justify-center">
-              <AlertCircle className="w-4 h-4 text-rose-500" />
+            <div className="absolute -bottom-1 -right-1 w-6 h-6 sm:w-8 sm:h-8 bg-rose-100 rounded-full flex items-center justify-center">
+              <AlertCircle className="w-3 h-3 sm:w-4 sm:h-4 text-rose-500" />
             </div>
           </div>
 
           {/* Content */}
-          <h1 className="text-2xl font-bold text-gray-900 mb-3">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 sm:mb-3">
             User Not Found
           </h1>
-          <p className="text-gray-600 mb-6 leading-relaxed">
+          <p className="text-gray-600 mb-4 sm:mb-6 leading-relaxed text-sm sm:text-base">
             We couldn't find a user with this profile. They may have deactivated
             their account or the link might be incorrect.
           </p>
 
           {/* Actions */}
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             <Link href="/dashboard">
               <Button className="w-full bg-rose-500 hover:bg-rose-600 text-white">
                 Return to Dashboard
@@ -129,7 +108,7 @@ function UserNotFound() {
           </div>
 
           {/* Help text */}
-          <p className="text-xs text-gray-500 mt-6">
+          <p className="text-xs text-gray-500 mt-4 sm:mt-6">
             Need help? Contact support if you believe this is an error.
           </p>
         </div>
@@ -181,7 +160,7 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<string>(tabParam || "details"); // Changed default to details
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   // UI state
   const [isPrivacyDialogOpen, setIsPrivacyDialogOpen] = useState(false);
   const [activePrivacyTab, setActivePrivacyTab] = useState<TabName | undefined>(
@@ -199,8 +178,8 @@ export default function ProfilePage() {
   } = useCurrentUser();
 
   // Fetch profile data
-  const { 
-    data: profileData, 
+  const {
+    data: profileData,
     isLoading: isProfileLoading,
     error: profileError,
   } = useQuery({
@@ -243,8 +222,8 @@ export default function ProfilePage() {
   const tabVisibility = useMemo(() => {
     return (
       visibilityData?.tabVisibility || {
-      memories: "everyone",
-      timeline: "everyone",
+        memories: "everyone",
+        timeline: "everyone",
         details: "everyone",
         posts: "everyone",
       }
@@ -261,32 +240,27 @@ export default function ProfilePage() {
     return visibilityData?.viewerFamilyIds || [];
   }, [visibilityData]);
 
-  // Check tab visibility (removed overview)
+  // Check tab visibility
   const isTabVisible = (tabName: TabName): boolean => {
     // Owner can always see all tabs
     if (isSelf) {
       return true;
     }
-    
+
     // Default to visible if settings not loaded
     if (!tabVisibility) {
-      console.log(`Tab visibility settings not loaded for ${tabName}`);
       return true;
     }
-    
+
     const visibility = tabVisibility[tabName];
-    
+
     // Everyone can see this tab
     if (visibility === "everyone") {
-      console.log(`Tab ${tabName} is visible to everyone`);
       return true;
     }
-    
+
     // Check if user is in the required family
     const canSeeTab = viewerFamilyIds.includes(visibility);
-    console.log(
-      `Tab ${tabName} visible only to family ${visibility}, user can see: ${canSeeTab}`
-    );
     return canSeeTab;
   };
 
@@ -425,7 +399,7 @@ export default function ProfilePage() {
     setActivePrivacyTab(undefined);
   };
 
-  // Tab privacy indicator (removed overview)
+  // Tab privacy indicator
   const renderTabPrivacyIndicator = (tabName: TabName) => {
     if (!isSelf || !tabVisibility) return null;
 
@@ -443,9 +417,7 @@ export default function ProfilePage() {
                 openPrivacyDialog(tabName);
               }}
             >
-              <Shield
-                className={`h-3.5 w-3.5 text-gray-400`}
-              />
+              <Shield className={`h-3.5 w-3.5 text-gray-400`} />
             </span>
           </TooltipTrigger>
           <TooltipContent>
@@ -462,29 +434,10 @@ export default function ProfilePage() {
 
   // Handle URL tab parameter changes
   useEffect(() => {
-    if (tabParam && ["memories", "timeline", "details"].includes(tabParam)) {
-      // Removed overview
-      setActiveTab(tabParam);
-    }
-  }, [tabParam]);
-
-  // Handle URL tab parameter changes
-  useEffect(() => {
-    if (tabParam && ["memories", "timeline", "details", "posts"].includes(tabParam)) {
-      setActiveTab(tabParam);
-    }
-  }, [tabParam]);
-
-  // Handle URL tab parameter changes
-  useEffect(() => {
-    if (tabParam && ["memories", "timeline", "details", "posts"].includes(tabParam)) {
-      setActiveTab(tabParam);
-    }
-  }, [tabParam]);
-
-  // Handle URL tab parameter changes
-  useEffect(() => {
-    if (tabParam && ["memories", "timeline", "details", "posts"].includes(tabParam)) {
+    if (
+      tabParam &&
+      ["memories", "timeline", "details", "posts"].includes(tabParam)
+    ) {
       setActiveTab(tabParam);
     }
   }, [tabParam]);
@@ -511,91 +464,6 @@ export default function ProfilePage() {
       });
     }
   }, [visibilityData, tabVisibility, isSelf, viewerFamilyIds]);
-
-  // Reset to visible tab if current tab isn't visible (removed overview logic)
-  useEffect(() => {
-    if (isInitialLoad || isSelf) return;
-
-    const isCurrentTabVisible =
-      (activeTab === "memories" && isMemoriesVisible) ||
-      (activeTab === "timeline" && isTimelineVisible) ||
-      (activeTab === "details" && isDetailsVisible);
-
-    if (!isCurrentTabVisible) {
-      if (isDetailsVisible)
-        setActiveTab("details"); // Details first priority
-      else if (isMemoriesVisible) setActiveTab("memories");
-      else if (isTimelineVisible) setActiveTab("timeline");
-    }
-
-    setIsInitialLoad(false);
-  }, [
-    activeTab,
-    isSelf,
-    isInitialLoad,
-    isMemoriesVisible,
-    isTimelineVisible,
-    isDetailsVisible,
-  ]);
-
-  // Handle URL tab parameter changes
-  useEffect(() => {
-    if (tabParam && ["memories", "timeline", "details", "posts"].includes(tabParam)) {
-      setActiveTab(tabParam);
-    }
-  }, [tabParam]);
-
-  // Show user fetch error
-  useEffect(() => {
-    if (userError) {
-      toast({
-        title: "Error",
-        description: "Failed to load user data. Please try again.",
-        variant: "destructive",
-      });
-    }
-  }, [userError, toast]);
-
-  // Debug visibility info
-  useEffect(() => {
-    if (visibilityData) {
-      console.log("Tab Visibility (Frontend):", {
-        tabVisibility,
-        isSelf,
-        viewerFamilyIds,
-        tabSettings: visibilityData.tabVisibility,
-      });
-    }
-  }, [visibilityData, tabVisibility, isSelf, viewerFamilyIds]);
-
-  // Reset to visible tab if current tab isn't visible
-  useEffect(() => {
-    if (isInitialLoad || isSelf) return;
-
-    const isCurrentTabVisible =
-      (activeTab === "memories" && isMemoriesVisible) ||
-      (activeTab === "timeline" && isTimelineVisible) ||
-      (activeTab === "details" && isDetailsVisible) ||
-      (activeTab === "posts" && isPostsVisible);
-
-    if (!isCurrentTabVisible) {
-      if (isDetailsVisible)
-        setActiveTab("details"); // Details first priority
-      else if (isPostsVisible) setActiveTab("posts");
-      else if (isMemoriesVisible) setActiveTab("memories");
-      else if (isTimelineVisible) setActiveTab("timeline");
-    }
-
-    setIsInitialLoad(false);
-  }, [
-    activeTab,
-    isSelf,
-    isInitialLoad,
-    isMemoriesVisible,
-    isTimelineVisible,
-    isDetailsVisible,
-    isPostsVisible,
-  ]);
 
   // NOW WE CAN DO CONDITIONAL RETURNS AFTER ALL HOOKS ARE CALLED
 
@@ -606,83 +474,94 @@ export default function ProfilePage() {
 
   // Loading state
   if (isUserLoading || isProfileLoading || isVisibilityLoading) {
-    return <ProfilePageSkeleton />;
+    return <BasicLoading />;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/50 pb-11">
-      <ProfileHeader
-        userId={userId}
-        isCurrentUser={isSelf}
-        profileData={headerProfileData}
-        familyData={headerFamilyData}
-      />
+    <div className="min-h-screen bg-be pb-8 sm:pb-11">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-2 text-sm text-gray-500 mb-6"
+        >
+          <Link
+            href="/"
+            className="hover:text-rose-500 transition-colors flex items-center"
+          >
+            <Home className="w-3.5 h-3.5 mr-1" />
+            <span>Home</span>
+          </Link>
+          <ChevronRight className="w-3.5 h-3.5" />
+          <span className="text-rose-500 font-medium">
+            {isSelf ? "Your Profile" : profile.fullName}
+          </span>
+        </motion.div>
+        <ProfileHeader
+          userId={userId}
+          isCurrentUser={isSelf}
+          profileData={headerProfileData}
+          familyData={headerFamilyData}
+        />
+      </div>
 
-      <div className="container mx-auto px-4 mt-6">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 mt-4 sm:mt-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <div className="flex items-center justify-between mb-2">
-            <TabsList className="w-full justify-start h-12 bg-transparent  rounded-none p-0">
-              {isDetailsVisible && (
-                <TabsTrigger
-                  value="details"
-                  className="data-[state=active]:border-rose-500 rounded-none border-b-2 border-transparent"
-                >
-                  <span className="flex items-center">
-                    Personal Details
-                    {renderTabPrivacyIndicator("details")}
-                  </span>
-                </TabsTrigger>
-              )}
-              {isMemoriesVisible && (
-                <TabsTrigger
-                  value="memories"
-                  className="data-[state=active]:border-rose-500 rounded-none border-b-2 border-transparent"
-                >
-                  <span className="flex items-center">
-                    Memories
-                    {renderTabPrivacyIndicator("memories")}
-                  </span>
-                </TabsTrigger>
-              )}
-              {isTimelineVisible && (
-                <TabsTrigger
-                  value="timeline"
-                  className="data-[state=active]:border-rose-500 rounded-none border-b-2 border-transparent"
-                >
-                  <span className="flex items-center">
-                    Life Timeline
-                    {renderTabPrivacyIndicator("timeline")}
-                  </span>
-                </TabsTrigger>
-              )}
-              {isPostsVisible && (
-                <TabsTrigger
-                  value="posts"
-                  className="data-[state=active]:border-rose-500 rounded-none border-b-2 border-transparent"
-                >
-                  <span className="flex items-center">
-                    Post
-                    {renderTabPrivacyIndicator("posts")}
-                  </span>
-                </TabsTrigger>
-              )}
+          <div className="flex flex-col items-center md:flex-row md:items-center justify-between gap-4 mb-2">
+            <TabsList className="flex w-full md:justify-start h-10 sm:h-12 bg-transparent rounded-none p-0 md:overflow-x-auto">
+              <TabsTrigger
+                value="details"
+                className="flex flex-1 md:flex-none justify-center items-center data-[state=active]:border-rose-500 rounded-none border-b-2 border-transparent text-sm sm:text-base md:whitespace-nowrap px-3 sm:px-4"
+              >
+                <span className="flex items-center gap-1 sm:gap-2">
+                  <span className="hidden sm:inline">Personal Details</span>
+                  <span className="sm:hidden">Details</span>
+                  {renderTabPrivacyIndicator("details")}
+                </span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="memories"
+                className="flex flex-1 md:flex-none justify-center items-center data-[state=active]:border-rose-500 rounded-none border-b-2 border-transparent text-sm sm:text-base md:whitespace-nowrap px-3 sm:px-4"
+              >
+                <span className="flex items-center gap-1 sm:gap-2">
+                  Memories
+                  {renderTabPrivacyIndicator("memories")}
+                </span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="timeline"
+                className="flex flex-1 md:flex-none justify-center items-center data-[state=active]:border-rose-500 rounded-none border-b-2 border-transparent text-sm sm:text-base md:whitespace-nowrap px-3 sm:px-4"
+              >
+                <span className="flex items-center gap-1 sm:gap-2">
+                  <span className="hidden sm:inline">Life Timeline</span>
+                  <span className="sm:hidden">Timeline</span>
+                  {renderTabPrivacyIndicator("timeline")}
+                </span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="posts"
+                className="flex flex-1 md:flex-none justify-center items-center data-[state=active]:border-rose-500 rounded-none border-b-2 border-transparent text-sm sm:text-base md:whitespace-nowrap px-3 sm:px-4"
+              >
+                <span className="flex items-center gap-1 sm:gap-2">
+                  Posts
+                  {renderTabPrivacyIndicator("posts")}
+                </span>
+              </TabsTrigger>
             </TabsList>
-            
-            {/* visual separator */}
 
             {/* Privacy Settings Button */}
             {isSelf && (
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="flex items-center gap-1.5 text-sm border"
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="flex items-center gap-1 md:gap-1.5 text-xs md:text-sm border w-full md:w-auto"
                       onClick={() => openPrivacyDialog()}
                     >
-                      <Settings className="h-4 w-4" />
-                      Privacy
+                      <Settings className="h-3 w-3 md:h-4 md:w-4" />
+                      <span>Privacy</span>
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -693,35 +572,43 @@ export default function ProfilePage() {
             )}
           </div>
 
-          <div className="mt-6">
-            {isDetailsVisible && (
-              <TabsContent value="details">
-                <PersonalDetails 
+          <div className="mt-4 sm:mt-6">
+            <TabsContent value="details">
+              {isDetailsVisible ? (
+                <PersonalDetails
                   userId={userId}
                   isCurrentUser={isSelf}
                   personalDetails={personalDetailsData}
                   onPersonalDetailsUpdated={refreshProfileData}
                 />
-              </TabsContent>
-            )}
+              ) : (
+                <PrivateContentMessage tabName="Personal Details" />
+              )}
+            </TabsContent>
 
-            {isMemoriesVisible && (
-              <TabsContent value="memories">
+            <TabsContent value="memories">
+              {isMemoriesVisible ? (
                 <MemoriesGallery userId={userId} isCurrentUser={isSelf} />
-              </TabsContent>
-            )}
+              ) : (
+                <PrivateContentMessage tabName="Memories" />
+              )}
+            </TabsContent>
 
-            {isTimelineVisible && (
-              <TabsContent value="timeline">
+            <TabsContent value="timeline">
+              {isTimelineVisible ? (
                 <LifeTimeline userId={userId} isCurrentUser={isSelf} />
-              </TabsContent>
-            )}
+              ) : (
+                <PrivateContentMessage tabName="Life Timeline" />
+              )}
+            </TabsContent>
 
-            {isPostsVisible && (
-              <TabsContent value="posts">
+            <TabsContent value="posts">
+              {isPostsVisible ? (
                 <UserPostsTab userId={userId} isCurrentUser={isSelf} />
-              </TabsContent>
-            )}
+              ) : (
+                <PrivateContentMessage tabName="Posts" />
+              )}
+            </TabsContent>
           </div>
         </Tabs>
       </div>

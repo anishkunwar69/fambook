@@ -331,13 +331,15 @@ export function MemberDetailsDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl bg-white max-h-[90vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle className="font-lora text-2xl text-gray-800">
-            {mode === "add"
-              ? "Add Family Member"
-              : mode === "edit"
-                ? "Edit Family Member"
-                : "View Family Member"}
-          </DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="font-lora text-2xl text-gray-800">
+              {mode === "add"
+                ? "Add Family Member"
+                : mode === "edit"
+                  ? "Edit Family Member"
+                  : "View Family Member"}
+            </DialogTitle>
+          </div>
           <DialogDescription className="text-gray-600">
             Fill in the details of your family member. Required fields are
             marked with an asterisk (*).
@@ -349,7 +351,7 @@ export function MemberDetailsDialog({
             className="space-y-6 overflow-y-auto pr-2 pb-4"
           >
             {/* Essential Information */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormField
                 control={form.control}
                 name="firstName"

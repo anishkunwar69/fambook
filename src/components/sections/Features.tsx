@@ -102,9 +102,9 @@ export default function Features() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={isInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ delay: 0.2 + index * 0.1 }}
-                className={`grid md:grid-cols-2 gap-12 items-start ${index % 2 === 1 ? "md:grid-cols-2" : ""}`}
+                className={`grid lg:grid-cols-2 gap-12 items-start ${index % 2 === 1 ? "lg:grid-cols-2" : ""}`}
               >
-                <div className={index % 2 === 1 ? "md:order-2" : ""}>
+                <div className={index % 2 === 1 ? "lg:order-2" : ""}>
                   <div className="bg-rose-50 w-16 h-16 rounded-xl flex items-center justify-center mb-6">
                     {feature.icon}
                   </div>
@@ -125,7 +125,9 @@ export default function Features() {
                     ))}
                   </div>
                 </div>
-                <div className={`${index % 2 === 1 ? "md:order-1" : ""}`}>
+                <div
+                  className={`order-first lg:order-none ${index % 2 === 1 ? "lg:order-1" : ""}`}
+                >
                   <div className="bg-gradient-to-br from-orange-500 to-rose-500 rounded-2xl p-4">
                     <div className="w-full h-full bg-white rounded-xl shadow-lg overflow-hidden relative group">
                       <video

@@ -27,14 +27,14 @@ import { z } from "zod";
 import { useEffect } from "react";
 import { SpecialDay, EventType as PageEventType } from "@/app/(auth-routes)/events/page"; // Assuming types are exported from events page
 
-const eventTypesList: PageEventType[] = [
+const eventTypesList = [
   "BIRTHDAY",
   "ANNIVERSARY",
   "WEDDING",
   "GRADUATION",
   "HOLIDAY",
   "OTHER",
-];
+] as const;
 
 const editEventFormSchema = z.object({
   title: z
@@ -51,11 +51,11 @@ const editEventFormSchema = z.object({
   }),
   time: z
     .string()
-    .optional(),
+    .min(1, "Time is required"),
   venue: z
     .string()
-    .max(200, "Venue must be less than 200 characters")
-    .optional(),
+    .min(1, "Venue is required")
+    .max(200, "Venue must be less than 200 characters"),
   type: z.enum(eventTypesList, {
     required_error: "Please select an event type",
   }),
@@ -197,7 +197,7 @@ export function EditEventForm({
           name="time"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Time (Optional)</FormLabel>
+              <FormLabel>Time</FormLabel>
               <FormControl>
                 <Input
                   type="time"
@@ -217,7 +217,7 @@ export function EditEventForm({
           name="venue"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Venue (Optional)</FormLabel>
+              <FormLabel>Venue</FormLabel>
               <FormControl>
                 <Input
                   placeholder="Enter venue or location"

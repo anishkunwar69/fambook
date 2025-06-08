@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Plus, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
@@ -33,38 +34,38 @@ export function InterestsFormDialog({
   const [newInterest, setNewInterest] = useState("");
 
   useEffect(() => {
-    if (interests) {
-      setInterestsList([...interests]);
-    } else {
-      setInterestsList([]);
+    if (isOpen) { 
+      setInterestsList(interests ? [...interests] : []);
+      setNewInterest(""); 
     }
   }, [interests, isOpen]);
 
   const handleAddInterest = () => {
-    if (newInterest.trim() === "") return;
+    const trimmedInterest = newInterest.trim();
+    if (trimmedInterest === "") return;
     
-    // Check if the interest already exists (case insensitive)
-    if (
-      interestsList.some(
-        (interest) => interest.toLowerCase() === newInterest.trim().toLowerCase()
-      )
-    ) {
+    if (interestsList.some((interest) => interest.toLowerCase() === trimmedInterest.toLowerCase())) {
       toast({
         title: "Duplicate interest",
-        description: "This interest is already in your list",
+        description: "This interest is already in your list.",
         variant: "destructive",
       });
       return;
     }
-    
-    setInterestsList((prevList) => [...prevList, newInterest.trim()]);
+    if (interestsList.length >= 20) { 
+        toast({
+            title: "Limit reached",
+            description: "You can add a maximum of 20 interests.",
+            variant: "destructive",
+        });
+        return;
+    }
+    setInterestsList((prevList) => [...prevList, trimmedInterest]);
     setNewInterest("");
   };
 
-  const handleRemoveInterest = (index: number) => {
-    const updatedInterests = [...interestsList];
-    updatedInterests.splice(index, 1);
-    setInterestsList(updatedInterests);
+  const handleRemoveInterest = (interestToRemove: string) => { 
+    setInterestsList((prevList) => prevList.filter(interest => interest !== interestToRemove));
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -82,128 +83,122 @@ export function InterestsFormDialog({
     const trimmedNewInterest = newInterest.trim();
 
     if (trimmedNewInterest !== "") {
-      if (
-        !finalInterestsList.some(
-          (interest) => interest.toLowerCase() === trimmedNewInterest.toLowerCase()
-        )
-      ) {
-        finalInterestsList.push(trimmedNewInterest);
-        // Clear the input field as we are now considering this interest for submission
-        setNewInterest(""); 
-      } else if (interestsList.length === finalInterestsList.length) {
-        // If it's a duplicate of an item already in the *badges* (interestsList)
-        // and not just a duplicate of what was in the input field before this submit handler ran,
-        // we can clear the input field. Otherwise, user might be surprised it clears.
-        // This handles the case where user types a duplicate and hits save.
-        setNewInterest("");
+      if (!finalInterestsList.some((interest) => interest.toLowerCase() === trimmedNewInterest.toLowerCase())) {
+        if (finalInterestsList.length < 20) {
+            finalInterestsList.push(trimmedNewInterest);
+        } else {
+            toast({
+                title: "Limit reached during save",
+                description: "Could not add the last typed interest as the maximum is 20.",
+                variant: "destructive",
+            });
+        }
       }
     }
+    setNewInterest(""); 
     
     try {
       const response = await fetch(`/api/users/${userId}/interests`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          interests: finalInterestsList, // Send the potentially updated list
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ interests: finalInterestsList }),
       });
       
       const responseData = await response.json();
-      
       if (responseData.success) {
-        toast({
-          title: "Success",
-          description: "Interests updated successfully",
-        });
-        // Update the local list to reflect the saved state, including the potentially added newInterest
+        toast({ title: "Success", description: "Interests updated successfully" });
         setInterestsList(finalInterestsList);
         onSuccess();
       } else {
         throw new Error(responseData.message || "Failed to update interests");
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update interests",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: error instanceof Error ? error.message : "Failed to update interests", variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
   };
   
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Edit Interests</DialogTitle>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      if (!open) onClose();
+    }}>
+      <DialogContent className="sm:max-w-lg bg-white dark:bg-gray-800 p-6">
+        <DialogHeader className="mb-4">
+          <DialogTitle className="text-xl font-semibold text-gray-800 dark:text-gray-100">Edit Interests & Hobbies</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
-            <div className="flex flex-col space-y-4">
-              <div className="flex items-center space-x-2">
-                <Input
-                  value={newInterest}
-                  onChange={(e) => setNewInterest(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Add an interest (e.g., Photography, Hiking, Cooking)"
-                  className="flex-1"
-                />
-                <Button
-                  type="button"
-                  onClick={handleAddInterest}
-                  variant="outline"
-                  size="icon"
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-              
-              <div className="flex flex-wrap gap-2 mt-2">
-                {interestsList.length > 0 ? (
-                  interestsList.map((interest, index) => (
-                    <Badge
-                      key={index}
-                      variant="secondary"
-                      className="flex items-center gap-1 px-3 py-1"
-                    >
-                      {interest}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveInterest(index)}
-                        className="ml-1 hover:text-destructive focus:outline-none"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  ))
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    No interests added yet. Add some interests to show on your profile.
-                  </p>
-                )}
-              </div>
-              
-              <p className="text-xs text-muted-foreground mt-2">
-                Tip: Type an interest and press Enter or click the + button to add it to your list.
-              </p>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <Label htmlFor="newInterest" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Add an interest or hobby
+            </Label>
+            <div className="flex items-center space-x-2">
+              <Input
+                id="newInterest"
+                value={newInterest}
+                onChange={(e) => setNewInterest(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="e.g., Photography, Hiking"
+                className="flex-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+              />
+              <Button
+                type="button"
+                onClick={handleAddInterest}
+                variant="outline"
+                className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+              >
+                <Plus className="h-4 w-4 mr-1 sm:mr-2" /> Add
+              </Button>
             </div>
+             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1.5">
+              Max 20 interests. Press Enter or click Add.
+            </p>
           </div>
           
-          <DialogFooter>
+          <div>
+            <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Your Interests
+            </Label>
+            {interestsList.length > 0 ? (
+              <div className="flex flex-wrap gap-2 p-3 rounded-md border bg-gray-50 dark:bg-gray-700/30 dark:border-gray-700 min-h-[80px]">
+                {interestsList.map((interest, index) => (
+                  <Badge
+                    key={index}
+                    variant="secondary"
+                    className="text-sm bg-rose-100 text-rose-700 hover:bg-rose-200 dark:bg-rose-700/30 dark:text-rose-300 dark:hover:bg-rose-700/50 border border-rose-200 dark:border-rose-600/50 shadow-sm"
+                  >
+                    {interest}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveInterest(interest)}
+                      className="ml-1.5 p-0.5 rounded-full hover:bg-rose-500/20 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                      aria-label={`Remove ${interest}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            ) : (
+              <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400 border rounded-md bg-gray-50 dark:bg-gray-700/30 dark:border-gray-700">
+                No interests added yet. Add some to express yourself!
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter className="pt-6">
             <Button
               type="button"
               variant="outline"
               onClick={onClose}
               disabled={isSubmitting}
+              className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              className="bg-rose-500 hover:bg-rose-600"
+              className="bg-rose-500 hover:bg-rose-600 text-white dark:bg-rose-600 dark:hover:bg-rose-700"
               disabled={isSubmitting}
             >
               {isSubmitting ? (

@@ -554,9 +554,9 @@ export function MemoriesGallery({
         <TabsContent value="albums" className="mt-6">
           {memories.length > 0 ? (
             <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-4 sm:gap-6">
               {memories.map((memory: MemoryType) => (
-                <Card key={memory.id} className="overflow-hidden">
+                <Card key={memory.id} className="overflow-hidden group relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all rounded-lg">
                   {memory.album && (
                     <div className="relative">
                       {isActuallyCurrentUser && (
@@ -564,45 +564,44 @@ export function MemoriesGallery({
                           variant="destructive"
                           size="icon"
                           className="absolute top-2 right-2 h-8 w-8 rounded-full bg-black/60 hover:bg-black/80 z-10"
-                            onClick={() => handleDeleteMemory(memory)}
+                          onClick={() => handleDeleteMemory(memory)}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-4 w-4 text-white" />
                         </Button>
                       )}
-                      <div
-                        className="h-48 bg-cover bg-center cursor-pointer"
-                        style={{
-                          backgroundImage: memory.album.coverImage
-                            ? `url(${memory.album.coverImage})`
-                            : "none",
-                          backgroundColor: memory.album.coverImage
-                            ? undefined
-                            : "#f3f4f6",
-                        }}
-                        onClick={() =>
-                          router.push(`/albums/${memory.album?.id}`)
-                        }
-                      >
-                        {!memory.album.coverImage && (
-                          <div className="h-full flex items-center justify-center">
-                            <Album className="h-12 w-12 text-gray-400" />
-                          </div>
-                        )}
-                      </div>
-                      <CardContent className="p-4">
-                        <h3 className="font-semibold text-lg truncate">
-                          {memory.album.name}
-                        </h3>
-                        <p className="text-sm text-gray-500">
-                          {memory.album.mediaCount}{" "}
-                            {memory.album.mediaCount === 1 ? "photo" : "photos"}{" "}
-                            •{" "}
-                          {format(
-                            new Date(memory.album.createdAt),
-                            "MMM d, yyyy"
+                      <Link href={`/albums/${memory.album?.id}`} className="block">
+                        <div
+                          className="aspect-[4/3] bg-cover bg-center relative"
+                          style={{
+                            backgroundImage: memory.album.coverImage
+                              ? `url(${memory.album.coverImage})`
+                              : "none",
+                          }}
+                        >
+                          {!memory.album.coverImage && (
+                            <div className="h-full flex items-center justify-center bg-gray-100 dark:bg-gray-700">
+                              <Album className="h-12 w-12 text-gray-400 dark:text-gray-500" />
+                            </div>
                           )}
-                        </p>
-                      </CardContent>
+                          {/* Gradient overlay for text visibility */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent opacity-70 group-hover:opacity-80 transition-opacity"></div>
+                          
+                          {/* Content positioned above gradient */}
+                          <div className="absolute bottom-3 left-3 right-3 z-10">
+                              <h3 className="font-semibold text-lg text-white truncate group-hover:text-rose-100 transition-colors">
+                                {memory.album.name}
+                              </h3>
+                              <p className="text-sm text-gray-200 group-hover:text-rose-200 transition-colors">
+                                {memory.album.mediaCount}{" "}
+                                {memory.album.mediaCount === 1 ? "item" : "items"} •{" "}
+                                {format(
+                                  new Date(memory.album.createdAt),
+                                  "MMM d, yyyy"
+                                )}
+                              </p>
+                          </div>
+                        </div>
+                      </Link>
                     </div>
                   )}
                 </Card>

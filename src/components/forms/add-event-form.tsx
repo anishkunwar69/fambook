@@ -15,15 +15,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { z } from "zod";
-import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
 
 const eventTypes = [
   "BIRTHDAY",
@@ -46,13 +44,11 @@ const formSchema = z.object({
   date: z.date({
     required_error: "Please select a date",
   }),
-  time: z
-    .string()
-    .optional(),
+  time: z.string().min(1, "Time is required"),
   venue: z
     .string()
-    .max(200, "Venue must be less than 200 characters")
-    .optional(),
+    .min(1, "Venue is required")
+    .max(200, "Venue must be less than 200 characters"),
   type: z.enum(eventTypes, {
     required_error: "Please select an event type",
   }),
@@ -172,9 +168,9 @@ export function AddEventForm({ onSuccess, defaultDate }: AddEventFormProps) {
                 <Input
                   type="date"
                   {...field}
-                  value={field.value ? format(field.value, 'yyyy-MM-dd') : ''}
-                  onChange={e => field.onChange(new Date(e.target.value))}
-                  min={format(new Date(), 'yyyy-MM-dd')}
+                  value={field.value ? format(field.value, "yyyy-MM-dd") : ""}
+                  onChange={(e) => field.onChange(new Date(e.target.value))}
+                  min={format(new Date(), "yyyy-MM-dd")}
                   className="bg-white border-gray-200"
                 />
               </FormControl>
@@ -188,7 +184,7 @@ export function AddEventForm({ onSuccess, defaultDate }: AddEventFormProps) {
           name="time"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Time (Optional)</FormLabel>
+              <FormLabel>Time</FormLabel>
               <FormControl>
                 <Input
                   type="time"
@@ -208,7 +204,7 @@ export function AddEventForm({ onSuccess, defaultDate }: AddEventFormProps) {
           name="venue"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Venue (Optional)</FormLabel>
+              <FormLabel>Venue</FormLabel>
               <FormControl>
                 <Input
                   placeholder="Enter venue or location"
@@ -282,4 +278,4 @@ export function AddEventForm({ onSuccess, defaultDate }: AddEventFormProps) {
       </form>
     </Form>
   );
-} 
+}

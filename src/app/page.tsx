@@ -2,7 +2,6 @@ import Comparisons from "@/components/sections/Comparisons";
 import Features from "@/components/sections/Features";
 import Footer from "@/components/sections/Footer";
 import Hero2 from "@/components/sections/Hero2";
-import Testimonials from "@/components/sections/Testimonials";
 
 export default async function HomePage() {
   return (
@@ -11,7 +10,7 @@ export default async function HomePage() {
         <Hero2 />
         <Features />
         <Comparisons />
-        <Testimonials />
+        {/* <Testimonials /> */}
         <Footer />
       </section>
     </>

@@ -52,7 +52,7 @@ import { toast } from "react-hot-toast";
 import { LiaRingSolid } from "react-icons/lia";
 
 type TimeFrame = "ALL" | "THIS WEEK" | "THIS MONTH" | "THIS YEAR";
-type EventType =
+export type EventType =
   | "BIRTHDAY"
   | "ANNIVERSARY"
   | "WEDDING"
@@ -60,7 +60,7 @@ type EventType =
   | "HOLIDAY"
   | "OTHER";
 
-type SpecialDay = {
+export type SpecialDay = {
   id: string;
   title: string;
   description: string | null;
@@ -124,44 +124,39 @@ const EVENTS_PER_PAGE = 6;
 // Skeleton Card Component for Events
 function EventSkeletonCard() {
   return (
-    <div className="relative group rounded-xl border border-gray-100 bg-white/80 p-6 animate-pulse">
+    <div className="relative group rounded-xl border border-gray-100 bg-white/80 p-4 sm:p-6 animate-pulse">
       {/* Skeleton Event Type Icon */}
       <div className="absolute -top-3 -right-3">
-        <div className="w-10 h-10 rounded-full bg-gray-200 border-4 border-white"></div>
+        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-200 border-4 border-white"></div>
       </div>
 
       {/* Skeleton Status Badge */}
       <div className="absolute top-2 left-2">
-        <div className="h-5 bg-gray-200 rounded-full w-20"></div>
+        <div className="h-4 sm:h-5 bg-gray-200 rounded-full w-16 sm:w-20"></div>
       </div>
 
       {/* Skeleton Main Content */}
-      <div className="mb-4 mt-6">
+      <div className="mb-3 sm:mb-4 mt-4 sm:mt-6">
         <div className="flex flex-col gap-1 mb-3">
-          <div className="h-4 bg-gray-200 rounded w-1/3 mb-1"></div> {/* Day */}
-          <div className="h-6 bg-gray-200 rounded w-1/2 mb-1"></div>{" "}
-          {/* Month Day */}
-          <div className="h-4 bg-gray-200 rounded w-1/4"></div> {/* Year */}
+          <div className="h-3 sm:h-4 bg-gray-200 rounded w-1/3 mb-1"></div>
+          <div className="h-5 sm:h-6 bg-gray-200 rounded w-1/2 mb-1"></div>
+          <div className="h-3 sm:h-4 bg-gray-200 rounded w-1/4"></div>
         </div>
-        <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div> {/* Title */}
-        <div className="h-5 bg-gray-200 rounded w-1/3 mb-2"></div>{" "}
-        {/* Family Name */}
-        <div className="h-4 bg-gray-200 rounded w-full mb-1"></div>{" "}
-        {/* Description Line 1 */}
-        <div className="h-4 bg-gray-200 rounded w-5/6"></div>{" "}
-        {/* Description Line 2 */}
+        <div className="h-5 sm:h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+        <div className="h-4 sm:h-5 bg-gray-200 rounded w-1/3 mb-2"></div>
+        <div className="h-3 sm:h-4 bg-gray-200 rounded w-full mb-1"></div>
+        <div className="h-3 sm:h-4 bg-gray-200 rounded w-5/6"></div>
       </div>
 
       {/* Skeleton Footer */}
-      <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-        <div className="h-5 bg-gray-200 rounded-full w-24"></div>{" "}
-        {/* Event Type */}
-        <div className="h-5 bg-gray-200 rounded w-20"></div> {/* Days Until */}
+      <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-gray-100">
+        <div className="h-4 sm:h-5 bg-gray-200 rounded-full w-20 sm:w-24"></div>
+        <div className="h-4 sm:h-5 bg-gray-200 rounded w-16 sm:w-20"></div>
       </div>
 
       {/* Skeleton Album Button */}
-      <div className="absolute bottom-4 right-4">
-        <div className="h-8 bg-gray-200 rounded-md w-28"></div>
+      <div className="absolute bottom-3 sm:bottom-4 right-3 sm:right-4">
+        <div className="h-7 sm:h-8 bg-gray-200 rounded-md w-24 sm:w-28"></div>
       </div>
     </div>
   );
@@ -430,22 +425,22 @@ export default function EventsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-8">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8">
       {/* Breadcrumb */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-2 text-sm text-gray-600 mb-8"
+        className="flex items-center gap-2 text-sm text-gray-600 mb-6 sm:mb-8 overflow-x-auto whitespace-nowrap"
       >
         <Link
           href="/"
-          className="hover:text-rose-500 transition-colors flex items-center gap-1"
+          className="hover:text-rose-500 transition-colors flex items-center gap-1 shrink-0"
         >
           <Home className="w-4 h-4" />
           <span>Home</span>
         </Link>
-        <ChevronRight className="w-4 h-4" />
-        <span className="text-rose-500 font-medium">Events</span>
+        <ChevronRight className="w-4 h-4 shrink-0" />
+        <span className="text-rose-500 font-medium shrink-0">Events</span>
       </motion.div>
 
       <Dialog open={isAddEventOpen} onOpenChange={setIsAddEventOpen}>
@@ -453,21 +448,21 @@ export default function EventsPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white/80 backdrop-blur-md rounded-2xl p-6 border border-rose-100/50 mb-8"
+          className="bg-white/80 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-rose-100/50 mb-6 sm:mb-8"
         >
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-4 sm:gap-6">
             {/* Title and Add Event Button */}
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-lora font-bold text-gray-800 mb-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
+              <div className="text-center sm:text-left">
+                <h1 className="text-2xl sm:text-3xl font-lora font-bold text-gray-800 mb-2">
                   Family Events 🎉
                 </h1>
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-sm sm:text-base">
                   Keep track of all your family's special moments
                 </p>
               </div>
               <DialogTrigger asChild>
-                <Button className="bg-rose-500 hover:bg-rose-600">
+                <Button className="bg-rose-500 hover:bg-rose-600 w-full sm:w-auto">
                   <Plus className="w-4 h-4 mr-2" />
                   Add Event
                 </Button>
@@ -475,78 +470,92 @@ export default function EventsPage() {
             </div>
 
             {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              {/* Time Frame Filter */}
-              <Select
-                value={timeFrame}
-                onValueChange={(value: TimeFrame) =>
-                  handleTimeFrameChange(value)
-                }
-              >
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Select time frame" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">All Events</SelectItem>
-                  <SelectItem value="THIS WEEK">This Week</SelectItem>
-                  <SelectItem value="THIS MONTH">This Month</SelectItem>
-                  <SelectItem value="THIS YEAR">This Year</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex flex-col gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                {/* Search Input - Takes full width on sm, 1/4 on lg+ */}
+                <div className="relative sm:col-span-2 lg:col-span-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Input
+                    placeholder="Search events..."
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    className="pl-10 w-full h-10 sm:h-auto"
+                  />
+                </div>
 
-              {/* Family Filter */}
-              <Select value={selectedFamily} onValueChange={setSelectedFamily}>
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Select family" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">All Families</SelectItem>
-                  {families?.map((family: any) => (
-                    <SelectItem key={family.id} value={family.id}>
-                      {family.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                {/* Time Frame Filter - 1/2 width on sm, 1/4 on lg+ */}
+                <div className="sm:col-span-1">
+                  <Select
+                    value={timeFrame}
+                    onValueChange={(value: TimeFrame) =>
+                      handleTimeFrameChange(value)
+                    }
+                  >
+                    <SelectTrigger className="w-full h-10 sm:h-auto">
+                      <SelectValue placeholder="Select time frame" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ALL">All Events</SelectItem>
+                      <SelectItem value="THIS WEEK">This Week</SelectItem>
+                      <SelectItem value="THIS MONTH">This Month</SelectItem>
+                      <SelectItem value="THIS YEAR">This Year</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input
-                  placeholder="Search events..."
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  className="pl-10"
-                />
+                {/* Family Filter - 1/2 width on sm, 1/4 on lg+ */}
+                <div className="sm:col-span-1">
+                  <Select
+                    value={selectedFamily}
+                    onValueChange={setSelectedFamily}
+                  >
+                    <SelectTrigger className="w-full h-10 sm:h-auto">
+                      <SelectValue placeholder="Select family" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ALL">All Families</SelectItem>
+                      {families?.map((family: any) => (
+                        <SelectItem key={family.id} value={family.id}>
+                          {family.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Category Filter - Full width on sm, 1/4 on lg+ */}
+                <div className="sm:col-span-2 lg:col-span-1">
+                  <Select
+                    value={selectedCategory}
+                    onValueChange={(value: EventType | "ALL") =>
+                      setSelectedCategory(value)
+                    }
+                  >
+                    <SelectTrigger className="w-full h-10 sm:h-auto">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ALL">All Categories</SelectItem>
+                      {eventTypes.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          <div className="flex items-center gap-2">
+                            <div
+                              className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full ${eventTypeColors[type as keyof typeof eventTypeColors]} flex items-center justify-center`}
+                            >
+                              {getEventIcon(
+                                type as keyof typeof eventTypeIcons
+                              )}
+                            </div>
+                            <span className="text-sm sm:text-base">
+                              {type.charAt(0) + type.slice(1).toLowerCase()}
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-
-              {/* Category Filter */}
-              <Select
-                value={selectedCategory}
-                onValueChange={(value: EventType | "ALL") =>
-                  setSelectedCategory(value)
-                }
-              >
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">All Categories</SelectItem>
-                  {eventTypes.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={`w-8 h-8 rounded-full ${eventTypeColors[type as keyof typeof eventTypeColors]} flex items-center justify-center`}
-                        >
-                          {getEventIcon(type as keyof typeof eventTypeIcons)}
-                        </div>
-                        <span>
-                          {type.charAt(0) + type.slice(1).toLowerCase()}
-                        </span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
           </div>
         </motion.div>
@@ -557,31 +566,33 @@ export default function EventsPage() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="mb-6 p-4 bg-sky-50 border border-sky-200 rounded-lg flex items-start gap-3 text-sm text-sky-700 shadow-sm"
+            className="mb-4 sm:mb-6 p-3 sm:p-4 bg-sky-50 border border-sky-200 rounded-lg flex items-start gap-2 sm:gap-3 text-sm text-sky-700 shadow-sm"
           >
-            <Info className="w-5 h-5 mt-0.5 flex-shrink-0" />
+            <Info className="w-4 h-4 sm:w-5 sm:h-5 mt-0.5 flex-shrink-0" />
             <div className="flex-grow">
-              <p className="font-medium">Keep your event list tidy!</p>
-              <p className="text-sky-600">
+              <p className="font-medium text-xs sm:text-sm">
+                Keep your event list tidy!
+              </p>
+              <p className="text-sky-600 text-xs sm:text-sm">
                 You can safely delete past events. Don&apos;t worry, any albums
                 created for these events won&apos;t be deleted{" "}
-                <span className="text-xl">🫶🏻</span>
+                <span className="text-base sm:text-xl">🫶🏻</span>
               </p>
             </div>
             <Button
               variant="ghost"
               size="icon"
-              className="text-sky-500 hover:bg-sky-100 hover:text-sky-700 -mr-2 -mt-2 h-8 w-8"
+              className="text-sky-500 hover:bg-sky-100 hover:text-sky-700 -mr-1 sm:-mr-2 -mt-1 sm:-mt-2 h-6 w-6 sm:h-8 sm:w-8"
               onClick={() => setShowPastEventTip(false)}
             >
-              <X className="w-4 h-4" />
+              <X className="w-3 h-3 sm:w-4 sm:h-4" />
             </Button>
           </motion.div>
         )}
 
         {/* Events Grid */}
-        <div className="space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="space-y-6 sm:space-y-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-4 sm:gap-6">
             <AnimatePresence mode="popLayout">
               {isLoading ? (
                 <div key="loading-skeletons" className="contents">
@@ -593,21 +604,21 @@ export default function EventsPage() {
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="col-span-full bg-white/80 backdrop-blur-md rounded-2xl p-8 text-center border border-rose-100/50"
+                  className="col-span-full bg-white/80 backdrop-blur-md rounded-2xl p-6 sm:p-8 text-center border border-rose-100/50"
                 >
-                  <div className="bg-rose-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <CalendarIcon className="w-8 h-8 text-rose-500" />
+                  <div className="bg-rose-50 w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                    <CalendarIcon className="w-6 h-6 sm:w-8 sm:h-8 text-rose-500" />
                   </div>
-                  <h3 className="text-xl font-lora font-bold text-gray-800 mb-2">
+                  <h3 className="text-lg sm:text-xl font-lora font-bold text-gray-800 mb-2">
                     No Events Found
                   </h3>
-                  <p className="text-gray-600 max-w-md mx-auto mb-6">
+                  <p className="text-gray-600 max-w-md mx-auto mb-4 sm:mb-6 text-sm sm:text-base">
                     {debouncedSearchQuery
                       ? "No events match your search criteria. Try adjusting your search or filters."
                       : "Start adding special events to keep track of important dates!"}
                   </p>
                   <DialogTrigger asChild>
-                    <Button className="bg-rose-500 hover:bg-rose-600">
+                    <Button className="bg-rose-500 hover:bg-rose-600 w-full sm:w-auto">
                       Add Your First Event
                     </Button>
                   </DialogTrigger>
@@ -624,7 +635,7 @@ export default function EventsPage() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
                       transition={{ delay: index * 0.05 }}
-                      className={`relative group rounded-xl border p-6 transition-all duration-300 backdrop-blur-sm ${
+                      className={`relative group rounded-xl border p-4 sm:p-6 transition-all duration-300 backdrop-blur-sm ${
                         status === "Occurred"
                           ? "bg-gray-100 border-gray-300 opacity-70 filter grayscale hover:opacity-100 hover:filter-none"
                           : "bg-white/80 border-gray-100 hover:border-rose-200 hover:shadow-lg"
@@ -632,33 +643,33 @@ export default function EventsPage() {
                     >
                       {/* Edit and Delete buttons for family admin */}
                       {event.isFamilyAdmin && (
-                        <div className="absolute top-2 right-2 z-10 flex items-center space-x-1 pr-5 pt-2">
+                        <div className="absolute top-2 right-2 z-10 flex items-center space-x-1 pr-3 sm:pr-5 pt-2">
                           <div className="bg-gray-100 backdrop-blur-sm p-0.5 rounded-md shadow-sm">
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="text-gray-500 hover:text-blue-500 hover:bg-blue-50/50 w-7 h-7"
+                              className="text-gray-500 hover:text-blue-500 hover:bg-blue-50/50 w-6 h-6 sm:w-7 sm:h-7"
                               onClick={(e) => {
-                                e.stopPropagation(); // Prevent card click if any
+                                e.stopPropagation();
                                 handleEditEventClick(event);
                               }}
                               title="Edit Event"
                             >
-                              <Pencil className="w-4 h-4" />
+                              <Pencil className="w-3 h-3 sm:w-4 sm:h-4" />
                             </Button>
                           </div>
                           <div className="bg-gray-100 backdrop-blur-sm p-0.5 rounded-md shadow-sm">
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="text-gray-500 hover:text-red-500 hover:bg-red-50/50 w-7 h-7"
+                              className="text-gray-500 hover:text-red-500 hover:bg-red-50/50 w-6 h-6 sm:w-7 sm:h-7"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleDeleteEventClick(event);
                               }}
                               title="Delete Event"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                             </Button>
                           </div>
                         </div>
@@ -667,7 +678,7 @@ export default function EventsPage() {
                       {/* Event Type Icon */}
                       <div className="absolute -top-3 -right-3">
                         <div
-                          className={`w-10 h-10 rounded-full ${eventTypeColors[event.type]} flex items-center justify-center border-4 border-white shadow-sm`}
+                          className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full ${eventTypeColors[event.type]} flex items-center justify-center border-4 border-white shadow-sm`}
                         >
                           {getEventIcon(
                             event.type as keyof typeof eventTypeIcons
@@ -685,53 +696,47 @@ export default function EventsPage() {
                           ) : (
                             <Clock className="w-3 h-3" />
                           )}
-                          {status}
+                          <span className="hidden sm:inline">{status}</span>
                         </span>
                       </div>
 
                       {/* Main Content */}
-                      <div className="mb-4 mt-6">
+                      <div className="mb-3 sm:mb-4 mt-4 sm:mt-6">
                         <div className="flex flex-col gap-1 mb-3">
-                          <div className="text-sm font-medium text-gray-500">
+                          <div className="text-xs sm:text-sm font-medium text-gray-500">
                             {format(eventDate, "EEEE")}
                           </div>
-                          <div className="text-2xl font-bold text-gray-800">
+                          <div className="text-lg sm:text-2xl font-bold text-gray-800">
                             {format(eventDate, "MMMM d")}
                           </div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-xs sm:text-sm text-gray-500">
                             {format(eventDate, "yyyy")}
                           </div>
                         </div>
-
-                        <h3 className="text-xl font-semibold text-rose-500 mb-2 pr-6">
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-1 sm:mb-2 line-clamp-2">
                           {event.title}
                         </h3>
-                        {event.family && (
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="text-sm text-gray-600 bg-gray-100/80 px-2 py-1 rounded-full">
-                              {event.family.name}
-                            </span>
-                          </div>
-                        )}
+                        <p className="text-xs sm:text-sm text-rose-600 font-medium mb-2">
+                          {event.family?.name}
+                        </p>
                         {event.description && (
-                          <p className="text-gray-600 text-sm mb-2">
+                          <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 sm:line-clamp-3">
                             {event.description}
                           </p>
                         )}
-
-                        {/* Time and Venue Information */}
-                        {(event.time || event.venue) && (
-                          <div className="space-y-1 mb-2">
-                            {event.time && (
-                              <div className="flex items-center gap-2 text-sm text-gray-600">
-                                <Clock className="w-4 h-4 text-rose-400" />
-                                <span>{event.time}</span>
+                        {/* Venue and Time Section - Re-added/Corrected */}
+                        {(event.venue || event.time) && (
+                          <div className="mt-2 space-y-0.5 text-xs sm:text-sm text-gray-500">
+                            {event.venue && (
+                              <div className="flex items-center gap-1.5">
+                                <MapPin className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0 text-gray-400" />
+                                <span className="truncate">{event.venue}</span>
                               </div>
                             )}
-                            {event.venue && (
-                              <div className="flex items-center gap-2 text-sm text-gray-600">
-                                <MapPin className="w-4 h-4 text-rose-400" />
-                                <span>{event.venue}</span>
+                            {event.time && (
+                              <div className="flex items-center gap-1.5">
+                                <Clock className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0 text-gray-400" />
+                                <span>{event.time}</span>
                               </div>
                             )}
                           </div>
@@ -739,40 +744,46 @@ export default function EventsPage() {
                       </div>
 
                       {/* Footer */}
-                      <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                        <span
-                          className={`text-xs font-medium px-3 py-1 rounded-full ${eventTypeColors[event.type]}`}
-                        >
-                          {event.type.charAt(0) +
-                            event.type.slice(1).toLowerCase()}
+                      <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-gray-100">
+                        <span className="text-xs sm:text-sm font-medium text-gray-600 capitalize">
+                          {event.type.toLowerCase()}
                         </span>
-                        <span className="text-sm text-gray-500">
-                          {getDaysUntilEvent(event.date)}
-                        </span>
+                        {/* Conditionally display days until event */}
+                        {status !== "Today" && (
+                          <span className="text-xs sm:text-sm text-gray-500">
+                            {getDaysUntilEvent(event.date)}
+                          </span>
+                        )}
                       </div>
 
                       {/* Album Status Badge */}
-                      <div className="absolute bottom-4 right-4">
+                      <div className="absolute bottom-3 sm:bottom-4 right-3 sm:right-4">
                         {event.albums && event.albums.length > 0 ? (
                           <Link href={`/albums/${event.albums[0].id}`}>
                             <Button
                               size="sm"
                               variant="outline"
-                              className="gap-2 bg-rose-500 hover:bg-rose-600 text-white"
+                              className="gap-1 sm:gap-2 bg-rose-500 hover:bg-rose-600 text-white h-7 sm:h-8 px-2 sm:px-3 text-xs sm:text-sm"
                             >
-                              <Camera className="w-4 h-4" />
-                              View Album
+                              <Camera className="w-3 h-3 sm:w-4 sm:h-4" />
+                              <span className="hidden sm:inline">
+                                View Album
+                              </span>
+                              <span className="sm:hidden">Album</span>
                             </Button>
                           </Link>
                         ) : (
                           <Button
                             size="sm"
                             variant="outline"
-                            className="gap-2 text-rose-500 hover:text-rose-600"
+                            className="gap-1 sm:gap-2 text-rose-500 hover:text-rose-600 h-7 sm:h-8 px-2 sm:px-3 text-xs sm:text-sm"
                             onClick={(e) => handleCreateAlbumClick(e, event)}
                           >
-                            <Camera className="w-4 h-4" />
-                            Create Album
+                            <Camera className="w-3 h-3 sm:w-4 sm:h-4" />
+                            <span className="hidden sm:inline">
+                              Create Album
+                            </span>
+                            <span className="sm:hidden">Create</span>
                           </Button>
                         )}
                       </div>
@@ -785,23 +796,23 @@ export default function EventsPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-2 mt-8">
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-4 mt-6 sm:mt-8">
               <Button
                 variant="outline"
                 onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 w-full sm:w-auto"
               >
                 Previous
               </Button>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map(
                   (pageNum) => (
                     <Button
                       key={pageNum}
                       variant={pageNum === currentPage ? "default" : "outline"}
                       onClick={() => setCurrentPage(pageNum)}
-                      className={`w-10 h-10 ${
+                      className={`w-8 h-8 sm:w-10 sm:h-10 text-sm ${
                         pageNum === currentPage
                           ? "bg-rose-500 hover:bg-rose-600"
                           : ""
@@ -818,7 +829,7 @@ export default function EventsPage() {
                   setCurrentPage((prev) => Math.min(prev + 1, totalPages))
                 }
                 disabled={currentPage === totalPages}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 w-full sm:w-auto"
               >
                 Next
               </Button>

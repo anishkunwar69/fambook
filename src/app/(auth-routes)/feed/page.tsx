@@ -2,10 +2,10 @@
 
 import { AdvancedCreatePostModal } from "@/components/AdvancedCreatePostModal";
 import CommentModal from "@/components/CommentModal";
-import { DeletePostConfirmationModal } from "@/components/DeletePostConfirmationModal";
 import { DeleteCommentConfirmationModal } from "@/components/DeleteCommentConfirmationModal";
-import { EditPostModal } from "@/components/EditPostModal";
+import { DeletePostConfirmationModal } from "@/components/DeletePostConfirmationModal";
 import { EditCommentModal } from "@/components/EditCommentModal";
+import { EditPostModal } from "@/components/EditPostModal";
 import LikesModal from "@/components/LikesModal";
 import { PhotoViewerModal } from "@/components/PhotoViewerModal";
 import { AddToMemoryButton } from "@/components/shared/AddToMemoryButton";
@@ -206,10 +206,7 @@ function CreatePostModal({
       queryClient.invalidateQueries({ queryKey: ["feed"] });
       toast.success("Post created successfully!");
       onClose();
-    },
-    onError: (error: Error) => {
-      toast.error("Error creating post");
-    },
+    }
   });
 
   // Handle post submission
@@ -229,11 +226,13 @@ function CreatePostModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create a Post</DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">
+            Create a Post
+          </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
           {/* Family Selection */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">
@@ -241,19 +240,24 @@ function CreatePostModal({
             </label>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-full justify-between">
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4" />
-                    {postToFamilies.size === 0
-                      ? "Select families..."
-                      : postToFamilies.size === (families?.length || 0)
-                        ? "All Families"
-                        : `${postToFamilies.size} ${postToFamilies.size === 1 ? "Family" : "Families"} Selected`}
+                <Button
+                  variant="outline"
+                  className="w-full justify-between h-10 sm:h-auto"
+                >
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <Users className="w-4 h-4 shrink-0" />
+                    <span className="truncate text-sm sm:text-base">
+                      {postToFamilies.size === 0
+                        ? "Select families..."
+                        : postToFamilies.size === (families?.length || 0)
+                          ? "All Families"
+                          : `${postToFamilies.size} ${postToFamilies.size === 1 ? "Family" : "Families"} Selected`}
+                    </span>
                   </div>
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-4 h-4 shrink-0" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-[--trigger-width]">
+              <DropdownMenuContent className="w-[--trigger-width] max-w-[90vw]">
                 <div className="p-2">
                   <Button
                     type="button"
@@ -268,7 +272,7 @@ function CreatePostModal({
                         );
                       }
                     }}
-                    className="w-full justify-start mb-2"
+                    className="w-full justify-start mb-2 h-8 sm:h-auto"
                   >
                     <div className="flex items-center gap-2">
                       {postToFamilies.size === (families?.length || 0) ? (
@@ -276,13 +280,15 @@ function CreatePostModal({
                       ) : (
                         <Users className="w-4 h-4" />
                       )}
-                      {postToFamilies.size === (families?.length || 0)
-                        ? "Clear All"
-                        : "Select All"}
+                      <span className="text-sm">
+                        {postToFamilies.size === (families?.length || 0)
+                          ? "Clear All"
+                          : "Select All"}
+                      </span>
                     </div>
                   </Button>
                   <div className="h-px bg-gray-100 -mx-2 mb-2" />
-                  <div className="max-h-[200px] overflow-y-auto space-y-1">
+                  <div className="max-h-[150px] sm:max-h-[200px] overflow-y-auto space-y-1">
                     {families?.map((family) => (
                       <Button
                         key={family.id}
@@ -300,17 +306,19 @@ function CreatePostModal({
                             return newSet;
                           });
                         }}
-                        className="w-full justify-start"
+                        className="w-full justify-start h-8 sm:h-auto"
                       >
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
                           {postToFamilies.has(family.id) ? (
-                            <div className="w-4 h-4 rounded-sm bg-rose-500 flex items-center justify-center">
+                            <div className="w-4 h-4 rounded-sm bg-rose-500 flex items-center justify-center shrink-0">
                               <Check className="w-3 h-3 text-white" />
                             </div>
                           ) : (
-                            <div className="w-4 h-4 rounded-sm border border-gray-300" />
+                            <div className="w-4 h-4 rounded-sm border border-gray-300 shrink-0" />
                           )}
-                          {family.name}
+                          <span className="truncate text-sm">
+                            {family.name}
+                          </span>
                         </div>
                       </Button>
                     ))}
@@ -325,10 +333,10 @@ function CreatePostModal({
             <motion.p
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-sm text-red-500 bg-red-50 p-3 rounded-md flex items-center gap-2"
+              className="text-sm text-red-500 bg-red-50 p-3 rounded-md flex items-start gap-2"
             >
-              <AlertTriangle className="w-4 h-4 shrink-0" />
-              {formError}
+              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+              <span className="flex-1">{formError}</span>
             </motion.p>
           )}
 
@@ -340,7 +348,7 @@ function CreatePostModal({
               placeholder="What's on your mind?"
               value={text}
               onChange={(e) => setText(e.target.value)}
-              className="min-h-[100px] bg-gray-50/50 border-0 focus-visible:ring-1 focus-visible:ring-rose-500 resize-none"
+              className="min-h-[80px] sm:min-h-[100px] bg-gray-50/50 border-0 focus-visible:ring-1 focus-visible:ring-rose-500 resize-none text-sm sm:text-base"
             />
           </div>
 
@@ -349,7 +357,7 @@ function CreatePostModal({
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
-              className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"
+              className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4"
             >
               {selectedFiles.map((file, index) => (
                 <div
@@ -364,17 +372,17 @@ function CreatePostModal({
                   <button
                     type="button"
                     onClick={() => removeFile(index)}
-                    className="absolute top-2 right-2 p-1 bg-black/50 rounded-full text-white hover:bg-black/70 transition-colors"
+                    className="absolute top-1 right-1 sm:top-2 sm:right-2 p-1 bg-black/50 rounded-full text-white hover:bg-black/70 transition-colors"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-3 h-3 sm:w-4 sm:h-4" />
                   </button>
                 </div>
               ))}
             </motion.div>
           )}
 
-          <div className="flex items-center justify-between pt-4 border-t">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0 pt-4 border-t">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
               <input
                 type="file"
                 ref={fileInputRef}
@@ -388,23 +396,23 @@ function CreatePostModal({
                 variant="outline"
                 size="sm"
                 onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 w-full sm:w-auto h-9 sm:h-auto"
               >
                 <Upload className="w-4 h-4" />
-                Add Media
+                <span className="text-sm">Add Media</span>
               </Button>
             </div>
             <Button
               type="submit"
               disabled={isPending || (!text && selectedFiles.length === 0)}
-              className="bg-rose-500 hover:bg-rose-600 flex items-center gap-2"
+              className="bg-rose-500 hover:bg-rose-600 flex items-center gap-2 w-full sm:w-auto h-9 sm:h-auto"
             >
               {isPending ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <Send className="w-4 h-4" />
               )}
-              Post
+              <span className="text-sm">Post</span>
             </Button>
           </div>
         </form>
@@ -458,30 +466,27 @@ function ScrollToTopButton() {
 // Skeleton Card Component for Posts
 function PostSkeletonCard() {
   return (
-    <div className="bg-white/80 backdrop-blur-md rounded-2xl p-6 border border-gray-200 animate-pulse">
+    <div className="bg-white/80 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-gray-200 animate-pulse">
       {/* Skeleton Post Header */}
-      <div className="flex items-center gap-4 mb-4">
-        <div className="w-12 h-12 rounded-full bg-gray-200"></div>{" "}
-        {/* Avatar */}
-        <div>
-          <div className="h-5 bg-gray-200 rounded w-32 mb-1.5"></div>{" "}
-          {/* User Name */}
-          <div className="h-4 bg-gray-200 rounded w-48"></div>{" "}
-          {/* Family & Date */}
+      <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gray-200"></div>
+        <div className="flex-1 min-w-0">
+          <div className="h-4 sm:h-5 bg-gray-200 rounded w-24 sm:w-32 mb-1 sm:mb-1.5"></div>
+          <div className="h-3 sm:h-4 bg-gray-200 rounded w-32 sm:w-48"></div>
         </div>
       </div>
 
       {/* Skeleton Post Text (optional) */}
-      <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
-      <div className="h-4 bg-gray-200 rounded w-5/6 mb-4"></div>
+      <div className="h-3 sm:h-4 bg-gray-200 rounded w-full mb-1 sm:mb-2"></div>
+      <div className="h-3 sm:h-4 bg-gray-200 rounded w-3/4 sm:w-5/6 mb-3 sm:mb-4"></div>
 
-      {/* Skeleton Media Grid (approximating space for one large item) */}
-      <div className="aspect-square rounded-lg bg-gray-200 mb-4"></div>
+      {/* Skeleton Media Grid */}
+      <div className="aspect-square rounded-lg bg-gray-200 mb-3 sm:mb-4"></div>
 
       {/* Skeleton Post Actions */}
-      <div className="flex items-center gap-6">
-        <div className="h-6 bg-gray-200 rounded w-20"></div> {/* Likes */}
-        <div className="h-6 bg-gray-200 rounded w-24"></div> {/* Comments */}
+      <div className="flex items-center gap-4 sm:gap-6 pt-3 sm:pt-4 border-t border-gray-100">
+        <div className="h-5 sm:h-6 bg-gray-200 rounded w-16 sm:w-20"></div>
+        <div className="h-5 sm:h-6 bg-gray-200 rounded w-20 sm:w-24"></div>
       </div>
     </div>
   );
@@ -584,7 +589,13 @@ export default function FeedPage() {
     error,
     refetch,
   } = useInfiniteQuery({
-    queryKey: ["feed", debouncedSearch, selectedFamilies],
+    queryKey: [
+      "feed",
+      debouncedSearch,
+      selectedFamilies.size > 0
+        ? Array.from(selectedFamilies)[0]
+        : "ALL_FAMILIES",
+    ],
     queryFn: async ({ pageParam = 1 }) => {
       const searchParams = new URLSearchParams({
         page: pageParam.toString(),
@@ -645,44 +656,49 @@ export default function FeedPage() {
       const previousFeed = queryClient.getQueryData(["feed"]);
 
       // Optimistically update feed
-      queryClient.setQueryData(["feed", debouncedSearch, selectedFamilies], (old: any) => {
-        if (!old) return old;
-        
-        return {
-          ...old,
-          pages: old.pages.map((page: Post[]) =>
-            page.map((post: Post) =>
-              post.id === postId
-                ? {
-                    ...post,
-                    isLiked: !post.isLiked,
-                    _count: {
-                      ...post._count,
-                      likes: post.isLiked 
-                        ? post._count.likes - 1 
-                        : post._count.likes + 1,
-                    },
-                  }
-                : post
-            )
-          ),
-        };
-      });
+      queryClient.setQueryData(
+        ["feed", debouncedSearch, selectedFamilies],
+        (old: any) => {
+          if (!old) return old;
+
+          return {
+            ...old,
+            pages: old.pages.map((page: Post[]) =>
+              page.map((post: Post) =>
+                post.id === postId
+                  ? {
+                      ...post,
+                      isLiked: !post.isLiked,
+                      _count: {
+                        ...post._count,
+                        likes: post.isLiked
+                          ? post._count.likes - 1
+                          : post._count.likes + 1,
+                      },
+                    }
+                  : post
+              )
+            ),
+          };
+        }
+      );
 
       // Update photo viewer state if it's open and shows this post
       if (photoViewerState.isOpen && photoViewerState.post?.id === postId) {
-        setPhotoViewerState(prev => ({
+        setPhotoViewerState((prev) => ({
           ...prev,
-          post: prev.post ? {
-            ...prev.post,
-            isLiked: !prev.post.isLiked,
-            _count: {
-              ...prev.post._count,
-              likes: prev.post.isLiked 
-                ? prev.post._count.likes - 1 
-                : prev.post._count.likes + 1,
-            },
-          } : null,
+          post: prev.post
+            ? {
+                ...prev.post,
+                isLiked: !prev.post.isLiked,
+                _count: {
+                  ...prev.post._count,
+                  likes: prev.post.isLiked
+                    ? prev.post._count.likes - 1
+                    : prev.post._count.likes + 1,
+                },
+              }
+            : null,
         }));
       }
 
@@ -691,26 +707,31 @@ export default function FeedPage() {
     onError: (error: Error, postId: string, context: any) => {
       // Revert optimistic update on error
       if (context?.previousFeed) {
-        queryClient.setQueryData(["feed", debouncedSearch, selectedFamilies], context.previousFeed);
+        queryClient.setQueryData(
+          ["feed", debouncedSearch, selectedFamilies],
+          context.previousFeed
+        );
       }
-      
+
       // Revert photo viewer state if needed
       if (photoViewerState.isOpen && photoViewerState.post?.id === postId) {
-        setPhotoViewerState(prev => ({
+        setPhotoViewerState((prev) => ({
           ...prev,
-          post: prev.post ? {
-            ...prev.post,
-            isLiked: !prev.post.isLiked,
-            _count: {
-              ...prev.post._count,
-              likes: prev.post.isLiked 
-                ? prev.post._count.likes - 1 
-                : prev.post._count.likes + 1,
-            },
-          } : null,
+          post: prev.post
+            ? {
+                ...prev.post,
+                isLiked: !prev.post.isLiked,
+                _count: {
+                  ...prev.post._count,
+                  likes: prev.post.isLiked
+                    ? prev.post._count.likes - 1
+                    : prev.post._count.likes + 1,
+                },
+              }
+            : null,
         }));
       }
-      
+
       toast.error("Failed to like post. Please try again.");
     },
     onSuccess: () => {
@@ -781,7 +802,11 @@ export default function FeedPage() {
   };
 
   const handleCloseDeleteCommentModal = () => {
-    setDeleteCommentModalState({ isOpen: false, commentId: null, postId: null });
+    setDeleteCommentModalState({
+      isOpen: false,
+      commentId: null,
+      postId: null,
+    });
   };
 
   const handleConfirmDeleteComment = () => {
@@ -797,7 +822,9 @@ export default function FeedPage() {
         method: "DELETE",
       });
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: "Failed to delete comment" }));
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Failed to delete comment" }));
         throw new Error(errorData.message);
       }
       if (response.status === 204) return null;
@@ -805,7 +832,9 @@ export default function FeedPage() {
     },
     onSuccess: () => {
       if (deleteCommentModalState.postId) {
-        queryClient.invalidateQueries({ queryKey: ["comments", deleteCommentModalState.postId] });
+        queryClient.invalidateQueries({
+          queryKey: ["comments", deleteCommentModalState.postId],
+        });
       }
       queryClient.invalidateQueries({ queryKey: ["feed"] });
       toast.success("Comment deleted successfully!");
@@ -851,71 +880,77 @@ export default function FeedPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-8">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8">
       {/* Breadcrumb */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-2 text-sm text-gray-600 mb-8"
+        className="flex items-center gap-2 text-sm text-gray-600 mb-6 sm:mb-8 overflow-x-auto whitespace-nowrap"
       >
         <Link
           href="/"
-          className="hover:text-rose-500 transition-colors flex items-center gap-1"
+          className="hover:text-rose-500 transition-colors flex items-center gap-1 shrink-0"
         >
           <Home className="w-4 h-4" />
           <span>Home</span>
         </Link>
-        <ChevronRight className="w-4 h-4" />
-        <span className="text-rose-500 font-medium">Family Feed</span>
+        <ChevronRight className="w-4 h-4 shrink-0" />
+        <span className="text-rose-500 font-medium shrink-0">Family Feed</span>
       </motion.div>
 
       {/* Feed Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white/80 backdrop-blur-md rounded-2xl p-6 border border-rose-100/50 mb-8"
+        className="bg-white/80 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-rose-100/50 mb-6 sm:mb-8"
       >
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-lora font-bold text-gray-800 mb-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 mb-4 sm:mb-6">
+          <div className="text-center sm:text-left">
+            <h1 className="text-2xl sm:text-3xl font-lora font-bold text-gray-800 mb-2">
               Family Feed 📸
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-600 text-sm sm:text-base">
               Stay updated with moments from all your families
             </p>
           </div>
           <Button
-            className="bg-rose-500 hover:bg-rose-600 flex items-center gap-2"
+            className="bg-rose-500 hover:bg-rose-600 flex items-center justify-center gap-2 w-full sm:w-auto"
             onClick={() => setIsCreatePostOpen(true)}
           >
             <Send className="w-4 h-4" />
-            Create Post
+            <span className="sm:inline">Create Post</span>
           </Button>
         </div>
 
         {/* Filters and Search */}
-        <div className="flex flex-col sm:flex-row gap-4 items-center">
-          <div className="relative flex-1">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+          <div className="relative w-full sm:flex-grow">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               placeholder="Search posts by creator name..."
               value={search}
               onChange={handleSearchChange}
-              className="pl-10 bg-white"
+              className="pl-10 bg-white w-full h-10 sm:h-auto"
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex justify-center sm:justify-start sm:flex-shrink-0">
             {/* Family Filter */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-2 w-full sm:w-auto"
+                >
                   <Users className="w-4 h-4" />
-                  {selectedFamilies.size === 0
-                    ? "All Families"
-                    : families?.find((f) => selectedFamilies.has(f.id))?.name}
+                  <span className="truncate">
+                    {selectedFamilies.size === 0
+                      ? "All Families"
+                      : families?.find((f) => selectedFamilies.has(f.id))
+                          ?.name || "Selected Family"}
+                  </span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="max-h-60 overflow-y-auto">
+              <DropdownMenuContent className="max-h-60 overflow-y-auto w-56">
                 <DropdownMenuRadioGroup
                   value={
                     selectedFamilies.size === 0
@@ -953,7 +988,7 @@ export default function FeedPage() {
 
       {/* Posts Section */}
       {isLoading ? (
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="max-w-2xl lg:max-w-4xl mx-auto space-y-4 sm:space-y-6">
           {[...Array(3)].map((_, index) => (
             <PostSkeletonCard key={index} />
           ))}
@@ -962,15 +997,15 @@ export default function FeedPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-red-50/50 backdrop-blur-md rounded-2xl p-12 text-center border border-red-100/50 text-red-700"
+          className="bg-red-50/50 backdrop-blur-md rounded-2xl p-6 sm:p-12 text-center border border-red-100/50 text-red-700"
         >
-          <div className="bg-red-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <AlertTriangle className="w-8 h-8 text-red-500" />
+          <div className="bg-red-100 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
+            <AlertTriangle className="w-6 h-6 sm:w-8 sm:h-8 text-red-500" />
           </div>
-          <h3 className="text-xl font-lora font-bold text-red-800 mb-2">
+          <h3 className="text-lg sm:text-xl font-lora font-bold text-red-800 mb-2">
             Failed to Load Feed
           </h3>
-          <p className="text-red-600 max-w-md mx-auto mb-6">
+          <p className="text-red-600 max-w-md mx-auto mb-4 sm:mb-6 text-sm sm:text-base">
             {error instanceof Error
               ? error.message
               : "An unknown error occurred while fetching posts."}
@@ -978,7 +1013,7 @@ export default function FeedPage() {
           <Button
             onClick={() => refetch()}
             variant="destructive"
-            className="bg-red-500 hover:bg-red-600 text-white"
+            className="bg-red-500 hover:bg-red-600 text-white w-full sm:w-auto"
           >
             Retry
           </Button>
@@ -987,28 +1022,31 @@ export default function FeedPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white/80 backdrop-blur-md rounded-2xl p-12 text-center border border-rose-100/50"
+          className="bg-white/80 backdrop-blur-md rounded-2xl p-6 sm:p-12 text-center border border-rose-100/50"
         >
-          <div className="bg-rose-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <Users className="w-8 h-8 text-rose-500" />
+          <div className="bg-rose-50 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
+            <Users className="w-6 h-6 sm:w-8 sm:h-8 text-rose-500" />
           </div>
-          <h3 className="text-xl font-lora font-bold text-gray-800 mb-2">
+          <h3 className="text-lg sm:text-xl font-lora font-bold text-gray-800 mb-2">
             No Posts Found
           </h3>
-          <p className="text-gray-600 max-w-md mx-auto mb-6">
+          <p className="text-gray-600 max-w-md mx-auto mb-4 sm:mb-6 text-sm sm:text-base">
             {search || selectedFamilies.size > 0
               ? "Try adjusting your search or filters to see more posts."
               : "Start sharing moments with your family or join more families to see their posts here."}
           </p>
-          <div className="flex items-center justify-center gap-4">
-            <Link href="/dashboard">
-              <Button variant="outline" className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+            <Link href="/dashboard" className="w-full sm:w-auto">
+              <Button
+                variant="outline"
+                className="flex items-center justify-center gap-2 w-full sm:w-auto"
+              >
                 <Users className="w-4 h-4" />
                 Join Families
               </Button>
             </Link>
             <Button
-              className="bg-rose-500 hover:bg-rose-600 flex items-center gap-2"
+              className="bg-rose-500 hover:bg-rose-600 flex items-center justify-center gap-2 w-full sm:w-auto"
               onClick={() => setIsCreatePostOpen(true)}
             >
               <ImageIcon className="w-4 h-4" />
@@ -1017,9 +1055,9 @@ export default function FeedPage() {
           </div>
         </motion.div>
       ) : (
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-2xl lg:max-w-4xl mx-auto">
           <>
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <AnimatePresence mode="popLayout">
                 {allPosts.map((post) => (
                   <PostCard
@@ -1040,15 +1078,20 @@ export default function FeedPage() {
             </div>
 
             {/* Load More Trigger */}
-            <div ref={loadMoreRef} className="pt-8 flex justify-center">
+            <div ref={loadMoreRef} className="pt-6 sm:pt-8 flex justify-center">
               {isFetchingNextPage ? (
-                <Loader2 className="w-6 h-6 text-rose-500 animate-spin" />
+                <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 text-rose-500 animate-spin" />
               ) : hasNextPage ? (
-                <span className="text-gray-500">Loading more posts...</span>
+                <span className="text-gray-500 text-sm">
+                  Loading more posts...
+                </span>
               ) : (
-                <span className="flex items-center gap-2 text-sm text-rose-600 px-4 py-2 bg-rose-50 rounded-full border border-rose-200 shadow-sm">
-                  <span className="text-2xl">🫶🏻</span>
-                  No more posts to load
+                <span className="flex items-center gap-2 text-xs sm:text-sm text-rose-600 px-3 sm:px-4 py-2 bg-rose-50 rounded-full border border-rose-200 shadow-sm">
+                  <span className="text-lg sm:text-2xl">🫶🏻</span>
+                  <span className="hidden sm:inline">
+                    No more posts to load
+                  </span>
+                  <span className="sm:hidden">All caught up!</span>
                 </span>
               )}
             </div>
@@ -1154,6 +1197,27 @@ function PostCard({
   const [showComments, setShowComments] = useState(false);
   const [showLikesModal, setShowLikesModal] = useState(false);
   const { user: currentUser } = useCurrentUser();
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const videoRefs = useRef<Map<string, HTMLVideoElement>>(new Map());
+  const { ref: inViewRef, inView } = useInView({ threshold: 0.5 });
+
+  const setRefs = useCallback(
+    (node: HTMLDivElement | null) => {
+      rootRef.current = node;
+      inViewRef(node);
+    },
+    [inViewRef]
+  );
+
+  useEffect(() => {
+    videoRefs.current.forEach((video) => {
+      if (inView) {
+        video.play().catch(() => {}); // Catch errors if autoplay is blocked
+      } else {
+        video.pause();
+      }
+    });
+  }, [inView]);
 
   const MAX_VISIBLE_CELLS = 4;
   const IMAGES_IN_CELLS_BEFORE_OVERLAY = 3;
@@ -1185,39 +1249,51 @@ function PostCard({
 
   return (
     <motion.div
+      ref={setRefs}
       layout
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="bg-white/80 backdrop-blur-md rounded-2xl p-6 border border-rose-100/50"
+      className="bg-white/80 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-rose-100/50"
     >
       {/* Post Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between mb-3 sm:mb-4">
+        <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
           <img
             src={post.user.imageUrl || "/placeholder-avatar.png"}
             alt={post.user.fullName}
-            className="w-12 h-12 rounded-full object-cover"
+            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover shrink-0"
           />
-          <div>
-            <h3 className="font-medium text-gray-800">{post.user.fullName}</h3>
-            <div className="flex items-center gap-2 text-sm text-gray-500">
+          <div className="min-w-0 flex-1">
+            <h3 className="font-medium text-gray-800 text-sm sm:text-base truncate">
+              {post.user.fullName}
+            </h3>
+            <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-500">
               <Link
                 href={`/families/${post.family.id}`}
-                className="hover:text-rose-500 transition-colors"
+                className="hover:text-rose-500 transition-colors truncate"
               >
                 {post.family.name}
               </Link>
-              <span>•</span>
-              <span>{format(new Date(post.createdAt), "MMM d, yyyy")}</span>
+              <span className="hidden sm:inline">•</span>
+              <span className="hidden sm:inline">
+                {format(new Date(post.createdAt), "MMM d, yyyy")}
+              </span>
+              <span className="sm:hidden">
+                {format(new Date(post.createdAt), "MMM d")}
+              </span>
             </div>
           </div>
         </div>
         {currentUser && currentUser.id === post.user.id && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <MoreHorizontal className="h-5 w-5 text-gray-500" />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full h-8 w-8 sm:h-auto sm:w-auto shrink-0"
+              >
+                <MoreHorizontal className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -1240,7 +1316,9 @@ function PostCard({
 
       {/* Post Content */}
       {post.text && (
-        <p className="text-gray-600 mb-4 whitespace-pre-wrap">{post.text}</p>
+        <p className="text-gray-600 mb-3 sm:mb-4 whitespace-pre-wrap text-sm sm:text-base">
+          {post.text}
+        </p>
       )}
 
       {/* Media Grid - Updated Logic */}
@@ -1254,8 +1332,15 @@ function PostCard({
             >
               {media.type === "VIDEO" ? (
                 <video
+                  ref={(el) => {
+                    if (el) videoRefs.current.set(media.id, el);
+                    else videoRefs.current.delete(media.id);
+                  }}
                   src={media.url}
                   className="w-full h-full object-cover"
+                  loop
+                  muted
+                  playsInline
                   // controls={false} // controls are typically not shown in grid view
                   // poster={media.thumbnailUrl || undefined} // Optional: if you have video thumbnails
                 />
@@ -1282,7 +1367,7 @@ function PostCard({
                 className="object-cover opacity-50 group-hover:opacity-40 transition-opacity"
               />
               <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                <span className="text-white text-3xl font-bold">
+                <span className="text-white text-xl sm:text-3xl font-bold">
                   +{overlayCount}
                 </span>
               </div>
@@ -1292,21 +1377,21 @@ function PostCard({
       )}
 
       {/* Post Actions - Updated for new layout and styling */}
-      <div className="flex items-center justify-between pt-6 text-gray-500 border-t border-gray-100 mt-6">
+      <div className="flex items-center justify-between pt-4 sm:pt-6 text-gray-500 border-t border-gray-100 mt-4 sm:mt-6">
         {/* Left side: Likes and Comments */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 sm:gap-4">
           <TooltipProvider>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5 sm:gap-1">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
-                    className="flex items-center gap-1.5 hover:text-rose-500 transition-colors relative rounded-md px-2 py-1.5 hover:bg-rose-50/70 group"
+                    className="flex items-center gap-1 sm:gap-1.5 hover:text-rose-500 transition-colors relative rounded-md px-1.5 sm:px-2 py-1 sm:py-1.5 hover:bg-rose-50/70 group"
                     onClick={handleLike}
                     disabled={isLiking}
                   >
                     <div className="relative">
                       <Heart
-                        className={`w-5 h-5 transition-all group-hover:scale-110 ${post.isLiked ? "fill-rose-500 text-rose-500" : "text-gray-400 group-hover:text-rose-400"} ${isLiking ? "opacity-50 cursor-not-allowed" : ""}`}
+                        className={`w-4 h-4 sm:w-5 sm:h-5 transition-all group-hover:scale-110 ${post.isLiked ? "fill-rose-500 text-rose-500" : "text-gray-400 group-hover:text-rose-400"} ${isLiking ? "opacity-50 cursor-not-allowed" : ""}`}
                       />
                     </div>
                   </button>
@@ -1324,7 +1409,7 @@ function PostCard({
                         setShowLikesModal(true);
                       }
                     }}
-                    className={`text-sm font-medium ${post.isLiked ? "text-rose-600" : "text-gray-500 group-hover:text-rose-500"} ${post._count.likes === 0 ? "cursor-default" : "hover:underline"} rounded-md px-1 py-1.5`}
+                    className={`text-xs sm:text-sm font-medium ${post.isLiked ? "text-rose-600" : "text-gray-500 group-hover:text-rose-500"} ${post._count.likes === 0 ? "cursor-default" : "hover:underline"} rounded-md px-1 py-1 sm:py-1.5`}
                     disabled={post._count.likes === 0}
                   >
                     {post._count.likes}
@@ -1341,11 +1426,11 @@ function PostCard({
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
-                  className="flex items-center gap-1.5 hover:text-blue-500 transition-colors rounded-md px-2 py-1.5 hover:bg-blue-50/70 group"
+                  className="flex items-center gap-1 sm:gap-1.5 hover:text-blue-500 transition-colors rounded-md px-1.5 sm:px-2 py-1 sm:py-1.5 hover:bg-blue-50/70 group"
                   onClick={() => setShowComments(true)}
                 >
-                  <MessageCircle className="w-5 h-5 text-gray-400 group-hover:text-blue-400 group-hover:scale-110 transition-transform" />
-                  <span className="text-sm font-medium text-gray-500 group-hover:text-blue-500">
+                  <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-blue-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs sm:text-sm font-medium text-gray-500 group-hover:text-blue-500">
                     {post._count.comments}
                   </span>
                 </button>
@@ -1363,7 +1448,7 @@ function PostCard({
           itemType="post"
           variant="default"
           size="sm"
-          className="bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200/80 shadow-sm hover:shadow-md transition-all rounded-lg"
+          className="bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200/80 shadow-sm hover:shadow-md transition-all rounded-lg h-8 px-2 sm:h-auto sm:px-3 text-xs sm:text-sm"
           initialIsInMemory={post.isInMemory}
         />
       </div>

@@ -1,7 +1,7 @@
 "use client";
 import { motion, useInView } from "framer-motion";
 import { Calendar, Heart, Play } from "lucide-react";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import Container from "../Container";
 import Navbar from "../Navbar";
 import { Button } from "../ui/button";
@@ -55,7 +55,7 @@ function Hero2() {
 function HeroSection() {
   return (
     <Container>
-      <div className="w-full pt-24 pb-16 flex flex-col items-center gap-8 relative z-10">
+      <div className="w-full md:pt-24 pt-[70px] pb-16 flex flex-col items-center gap-8 relative z-10">
         {/* Main Heading */}
         <motion.div
           initial={{ y: 20, opacity: 0 }}
@@ -63,7 +63,7 @@ function HeroSection() {
           transition={{ delay: 0.2 }}
           className="text-center max-w-5xl mx-auto space-y-8 pt-[50px]"
         >
-          <h1 className="font-lora text-5xl md:text-6xl lg:text-7xl font-bold text-gray-800 leading-tight">
+          <h1 className="font-lora text-4xl md:text-6xl lg:text-7xl font-bold text-gray-800 leading-tight">
             Your Family's Digital
             <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-amber-500 inline-block">
@@ -71,7 +71,7 @@ function HeroSection() {
             </span>
           </h1>
 
-          <p className="font-poppins text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+          <p className="font-poppins text-lg md:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             Create a private, beautiful space where your family's memories,
             stories, and connections live forever. No ads, no strangers — just
             pure family magic. ✨
@@ -79,7 +79,7 @@ function HeroSection() {
 
           {/* CTA Buttons */}
           <motion.div
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8"
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 md:pt-8 pt-[14px]"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
@@ -103,12 +103,21 @@ function HeroSection() {
 }
 
 function DemoVideoSection() {
-  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true });
 
+  // Auto-play video when it comes into view
+  useEffect(() => {
+    if (isInView && videoRef.current) {
+      videoRef.current.play().catch(() => {
+        // Autoplay might be blocked, that's okay
+      });
+    }
+  }, [isInView]);
+
   return (
-    <section ref={ref} className="pb-[84px] relative pt-[14px]">
+    <section ref={ref} className="md:pb-[84px] pb-[70px] relative md:pt-[14px]">
       <Container>
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -141,105 +150,37 @@ function DemoVideoSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ delay: 0.3, duration: 0.6 }}
-            className="relative rounded-2xl overflow-hidden shadow-2xl border border-gray-800 p-2"
+            className="relative rounded-2xl overflow-hidden shadow-2xl border border-rose-500 p-2"
           >
-            {/* Simple Video Player Design */}
-            <div className="aspect-video bg-white flex items-center justify-center relative rounded-2xl overflow-hidden">
-              {!isVideoPlaying ? (
-                <>
-                  {/* Subtle Grid Background */}
-                  <div className="absolute inset-0 opacity-[0.02]">
-                    <div className="grid grid-cols-20 grid-rows-12 h-full w-full">
-                      {[...Array(240)].map((_, i) => (
-                        <div key={i} className="border border-gray-300"></div>
-                      ))}
-                    </div>
-                  </div>
+            {/* Auto-playing Video */}
+            <div className="aspect-video bg-black rounded-2xl overflow-hidden relative">
+              <video
+                ref={videoRef}
+                className="w-full h-full object-cover"
+                autoPlay
+                muted
+                loop
+                playsInline
+                controls
+              >
+                <source
+                  src="https://res.cloudinary.com/dmq5tx0bd/video/upload/f_auto:video,q_auto/gzuwet0vgeht9usgdsev"
+                  type="video/mp4"
+                />
+                Your browser does not support the video tag.
+              </video>
 
-                  {/* Content Preview */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center max-w-2xl">
-                      <div className="text-6xl md:text-8xl font-bold text-blue-500 mb-4">
-                        TRUST{" "}
-                        <span className="text-gray-800 font-normal text-4xl md:text-5xl">
-                          is key.
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Simple Play Button */}
-                  <motion.button
-                    onClick={() => setIsVideoPlaying(true)}
-                    className="absolute bottom-6 left-6 bg-rose-500 hover:bg-rose-600 rounded-full p-4 shadow-lg transition-all duration-300 z-10"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <Play className="w-6 h-6 text-white ml-0.5" />
-                  </motion.button>
-
-                  {/* Video Controls Bar */}
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
-                    <div className="flex items-center gap-4 text-white">
-                      <button className="hover:text-rose-300 transition-colors">
-                        <Play className="w-5 h-5" />
-                      </button>
-                      <div className="flex-1 bg-white/20 rounded-full h-1">
-                        <div className="bg-rose-500 h-1 rounded-full w-1/4"></div>
-                      </div>
-                      <span className="text-sm font-mono">0:15 / 1:05</span>
-                      <div className="flex gap-2">
-                        <button className="hover:text-rose-300 transition-colors">
-                          <svg
-                            className="w-5 h-5"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.824L4.5 13.5H2a1 1 0 01-1-1V7.5a1 1 0 011-1h2.5l3.883-3.324z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        </button>
-                        <button className="hover:text-rose-300 transition-colors">
-                          <svg
-                            className="w-5 h-5"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M3 4a1 1 0 011-1h4a1 1 0 010 2H6.414l2.293 2.293a1 1 0 01-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4zm9 1a1 1 0 010-2h4a1 1 0 011 1v4a1 1 0 01-2 0V6.414l-2.293 2.293a1 1 0 11-1.414-1.414L13.586 5H12z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="text-center p-12">
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="bg-rose-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"
-                  >
-                    <Play className="w-8 h-8 text-rose-500" />
-                  </motion.div>
-                  <p className="font-poppins text-gray-600 text-lg mb-4">
-                    Demo video playing...
+              {/* Video Info Overlay */}
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 pointer-events-none">
+                <div className="text-white">
+                  <h3 className="font-lora text-lg font-semibold mb-1">
+                    See Fambook in Action
+                  </h3>
+                  <p className="font-poppins text-sm text-gray-300">
+                    Watch how families connect and share memories
                   </p>
-                  <Button
-                    onClick={() => setIsVideoPlaying(false)}
-                    variant="outline"
-                    className="border-rose-300 text-rose-600 hover:bg-rose-50"
-                  >
-                    Close Demo
-                  </Button>
                 </div>
-              )}
+              </div>
             </div>
           </motion.div>
         </motion.div>
@@ -281,7 +222,7 @@ function SocialProofSection() {
             initial={{ opacity: 0, y: 30 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ delay: 0.7, duration: 0.8 }}
-            className="mt-[50px] mb-16"
+            className="mt-[50px] mb-7"
           >
             <div className="max-w-6xl mx-auto">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -498,69 +439,10 @@ function SocialProofSection() {
                     </div>
                   </div>
                   <p className="font-poppins text-sm text-gray-600 font-medium">
-                    Join 1,200+ families sharing their stories
+                    Join 1,200+ families
                   </p>
                 </div>
               </motion.div>
-            </div>
-          </motion.div>
-
-          {/* Trust Badges */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ delay: 0.6 }}
-            className="flex items-center justify-center gap-8 mt-12 flex-wrap"
-          >
-            <div className="flex items-center gap-2 text-gray-600">
-              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                <svg
-                  className="w-4 h-4 text-green-600"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <span className="font-poppins text-sm font-medium">
-                100% Private
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-gray-600">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <svg
-                  className="w-4 h-4 text-blue-600"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <span className="font-poppins text-sm font-medium">
-                End-to-End Encrypted
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-gray-600">
-              <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                <svg
-                  className="w-4 h-4 text-purple-600"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <span className="font-poppins text-sm font-medium">
-                No Ads Ever
-              </span>
             </div>
           </motion.div>
         </motion.div>

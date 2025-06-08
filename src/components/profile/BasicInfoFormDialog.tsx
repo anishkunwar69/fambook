@@ -111,116 +111,102 @@ export function BasicInfoFormDialog({
   
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Edit Basic Information</DialogTitle>
+      <DialogContent className="sm:max-w-lg bg-white dark:bg-gray-800 p-6">
+        <DialogHeader className="mb-4">
+          <DialogTitle className="text-xl font-semibold text-gray-800 dark:text-gray-100">Edit Basic Information</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
-            {/* Bio */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="bio" className="text-right align-top pt-2">
-                Bio
-              </Label>
-              <div className="col-span-3">
-                <Textarea
-                  id="bio"
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  placeholder="Tell us about yourself"
-                  className="resize-none h-20"
-                />
-              </div>
-            </div>
-            
-            {/* Birth Place */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="birthPlace" className="text-right">
-                Birth Place
-              </Label>
-              <div className="col-span-3">
-                <Input
-                  id="birthPlace"
-                  value={birthPlace}
-                  onChange={(e) => setBirthPlace(e.target.value)}
-                  placeholder="City, Country"
-                />
-              </div>
-            </div>
-            
-            {/* Current Place */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="currentPlace" className="text-right">
-                Current Location
-              </Label>
-              <div className="col-span-3">
-                <Input
-                  id="currentPlace"
-                  value={currentPlace}
-                  onChange={(e) => setCurrentPlace(e.target.value)}
-                  placeholder="City, Country"
-                />
-              </div>
-            </div>
-            
-            {/* Relationship Status */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="relationshipStatus" className="text-right">
-                Relationship Status
-              </Label>
-              <div className="col-span-3">
-                <Select
-                  value={relationshipStatus}
-                  onValueChange={setRelationshipStatus}
-                >
-                  <SelectTrigger id="relationshipStatus">
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">Not specified</SelectItem>
-                    <SelectItem value="Single">Single</SelectItem>
-                    <SelectItem value="In a relationship">In a relationship</SelectItem>
-                    <SelectItem value="Engaged">Engaged</SelectItem>
-                    <SelectItem value="Married">Married</SelectItem>
-                    <SelectItem value="Divorced">Divorced</SelectItem>
-                    <SelectItem value="Widowed">Widowed</SelectItem>
-                    <SelectItem value="It's complicated">It's complicated</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            
-            {/* Languages */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="languages" className="text-right">
-                Languages
-              </Label>
-              <div className="col-span-3">
-                <Input
-                  id="languages"
-                  value={languages}
-                  onChange={(e) => setLanguages(e.target.value)}
-                  placeholder="English, Spanish, French (comma separated)"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Separate multiple languages with commas
-                </p>
-              </div>
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <Label htmlFor="bio" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Bio
+            </Label>
+            <Textarea
+              id="bio"
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              placeholder="Tell us about yourself"
+              className="min-h-[80px] w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+            />
           </div>
           
-          <DialogFooter>
+          <div>
+            <Label htmlFor="birthPlace" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Birth Place
+            </Label>
+            <Input
+              id="birthPlace"
+              value={birthPlace}
+              onChange={(e) => setBirthPlace(e.target.value)}
+              placeholder="City, Country"
+              className="w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="currentPlace" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Current Location
+            </Label>
+            <Input
+              id="currentPlace"
+              value={currentPlace}
+              onChange={(e) => setCurrentPlace(e.target.value)}
+              placeholder="City, Country"
+              className="w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="relationshipStatus" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Relationship Status
+            </Label>
+            <Select
+              value={relationshipStatus}
+              onValueChange={setRelationshipStatus}
+            >
+              <SelectTrigger id="relationshipStatus" className="w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent className="dark:bg-gray-700 dark:text-gray-100">
+                <SelectItem value="Single" className="hover:dark:bg-gray-600">Single</SelectItem>
+                <SelectItem value="In a relationship" className="hover:dark:bg-gray-600">In a relationship</SelectItem>
+                <SelectItem value="Engaged" className="hover:dark:bg-gray-600">Engaged</SelectItem>
+                <SelectItem value="Married" className="hover:dark:bg-gray-600">Married</SelectItem>
+                <SelectItem value="Divorced" className="hover:dark:bg-gray-600">Divorced</SelectItem>
+                <SelectItem value="Widowed" className="hover:dark:bg-gray-600">Widowed</SelectItem>
+                <SelectItem value="It's complicated" className="hover:dark:bg-gray-600">It's complicated</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div>
+            <Label htmlFor="languages" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Languages
+            </Label>
+            <Input
+              id="languages"
+              value={languages}
+              onChange={(e) => setLanguages(e.target.value)}
+              placeholder="English, Spanish, French"
+              className="w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+            />
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1.5">
+              Separate multiple languages with commas.
+            </p>
+          </div>
+          
+          <DialogFooter className="pt-4">
             <Button
               type="button"
               variant="outline"
               onClick={onClose}
               disabled={isSubmitting}
+              className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              className="bg-rose-500 hover:bg-rose-600"
+              className="bg-rose-500 hover:bg-rose-600 text-white dark:bg-rose-600 dark:hover:bg-rose-700"
               disabled={isSubmitting}
             >
               {isSubmitting ? (

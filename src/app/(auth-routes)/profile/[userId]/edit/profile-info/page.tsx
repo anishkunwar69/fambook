@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Card,
   CardContent,
@@ -20,11 +19,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -32,12 +26,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
-  CalendarIcon,
   ChevronRight,
   Heart,
   Home,
@@ -45,7 +37,7 @@ import {
   MapPin,
   Save,
   User,
-  X
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -79,6 +71,108 @@ const relationshipOptions = [
   { value: "It's complicated", label: "It's complicated" },
   { value: "Prefer not to say", label: "Prefer not to say" },
 ];
+
+const SkeletonField = () => (
+  <div className="space-y-2">
+    <div className="h-4 bg-gray-200 rounded w-1/4" />
+    <div className="h-10 bg-gray-200 rounded-md" />
+  </div>
+);
+
+function ProfileInfoEditPageSkeleton() {
+  return (
+    <div className="container max-w-4xl mx-auto py-8 px-4 animate-pulse">
+      {/* Breadcrumb skeleton */}
+      <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
+        <div className="h-4 bg-gray-200 rounded w-16" />
+        <div className="h-3 w-3 bg-gray-200 rounded" />
+        <div className="h-4 bg-gray-200 rounded w-12" />
+        <div className="h-3 w-3 bg-gray-200 rounded" />
+        <div className="h-4 bg-gray-200 rounded w-20" />
+      </div>
+
+      {/* Header skeleton */}
+      <div className="mb-6">
+        <div className="h-8 md:h-9 bg-gray-200 rounded w-3/4" />
+        <div className="h-4 bg-gray-200 rounded w-1/2 mt-2" />
+      </div>
+
+      {/* Progress bar skeleton */}
+      <div className="mb-8">
+        <div className="flex justify-between items-center text-xs mb-1.5">
+          <div className="h-4 bg-gray-200 rounded w-24" />
+          <div className="h-4 bg-gray-200 rounded w-10" />
+        </div>
+        <div className="w-full bg-gray-100 rounded-full h-2">
+          <div
+            className="bg-gray-200 h-2 rounded-full"
+            style={{ width: "0%" }}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-6">
+        {/* Card 1: Basic Info Skeleton */}
+        <div className="bg-white rounded-xl shadow-sm">
+          <div className="p-6 pb-4">
+            <div className="flex items-center gap-2">
+              <div className="h-5 w-5 bg-gray-200 rounded" />
+              <div className="h-5 bg-gray-200 rounded w-40" />
+            </div>
+            <div className="h-4 bg-gray-200 rounded w-64 mt-2" />
+          </div>
+          <div className="p-6 pt-0 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <SkeletonField />
+              <SkeletonField />
+            </div>
+            <SkeletonField />
+            <div className="space-y-2">
+              <div className="h-4 bg-gray-200 rounded w-1/5" />
+              <div className="h-24 bg-gray-200 rounded-md" />
+            </div>
+          </div>
+        </div>
+
+        {/* Card 2: Location Details Skeleton */}
+        <div className="bg-white rounded-xl shadow-sm">
+          <div className="p-6 pb-4">
+            <div className="flex items-center gap-2">
+              <div className="h-5 w-5 bg-gray-200 rounded" />
+              <div className="h-5 bg-gray-200 rounded w-48" />
+            </div>
+            <div className="h-4 bg-gray-200 rounded w-72 mt-2" />
+          </div>
+          <div className="p-6 pt-0 space-y-4">
+            <SkeletonField />
+            <SkeletonField />
+          </div>
+        </div>
+
+        {/* Card 3: Personal Details Skeleton */}
+        <div className="bg-white rounded-xl shadow-sm">
+          <div className="p-6 pb-4">
+            <div className="flex items-center gap-2">
+              <div className="h-5 w-5 bg-gray-200 rounded" />
+              <div className="h-5 bg-gray-200 rounded w-44" />
+            </div>
+            <div className="h-4 bg-gray-200 rounded w-64 mt-2" />
+          </div>
+          <div className="p-6 pt-0 space-y-4">
+            <SkeletonField />
+            <SkeletonField />
+          </div>
+        </div>
+      </div>
+
+      {/* Buttons Skeleton */}
+      <div className="flex justify-end gap-3 mt-8">
+        <div className="h-10 bg-gray-200 rounded-md w-24" />
+        <div className="h-10 bg-gray-200 rounded-md w-32" />
+      </div>
+    </div>
+  );
+}
 
 export default function ProfileInfoEditPage() {
   const params = useParams();
@@ -149,7 +243,8 @@ export default function ProfileInfoEditPage() {
     if (values.bio) completedFields++;
     if (values.currentPlace) completedFields++;
     if (values.birthPlace) completedFields++;
-    if (values.relationshipStatus && values.relationshipStatus.trim()) completedFields++;
+    if (values.relationshipStatus && values.relationshipStatus.trim())
+      completedFields++;
     if (values.languages) completedFields++;
 
     setFormProgress(Math.round((completedFields / totalFields) * 100));
@@ -164,9 +259,10 @@ export default function ProfileInfoEditPage() {
           ? values.languages.split(",").map((lang) => lang.trim())
           : [],
         dateOfBirth: values.dateOfBirth?.toISOString(),
-        relationshipStatus: values.relationshipStatus && values.relationshipStatus.trim() 
-          ? values.relationshipStatus.trim() 
-          : null,
+        relationshipStatus:
+          values.relationshipStatus && values.relationshipStatus.trim()
+            ? values.relationshipStatus.trim()
+            : null,
       };
 
       const toastId = toast.loading("Updating profile...");
@@ -257,14 +353,7 @@ export default function ProfileInfoEditPage() {
   };
 
   if (isLoadingProfile) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <Loader2 className="h-10 w-10 animate-spin text-rose-500 mx-auto mb-4" />
-          <p className="text-gray-500">Loading your profile information...</p>
-        </div>
-      </div>
-    );
+    return <ProfileInfoEditPageSkeleton />;
   }
 
   return (
@@ -361,39 +450,29 @@ export default function ProfileInfoEditPage() {
                 control={form.control}
                 name="dateOfBirth"
                 render={({ field }) => (
-                  <FormItem className="flex flex-col">
+                  <FormItem>
                     <FormLabel>Date of Birth</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) =>
-                            date > new Date() || date < new Date("1900-01-01")
+                    <FormControl>
+                      <Input
+                        type="date"
+                        value={
+                          field.value ? format(field.value, "yyyy-MM-dd") : ""
+                        }
+                        onChange={(e) => {
+                          const dateString = e.target.value;
+                          if (dateString) {
+                            const date = new Date(dateString);
+                            const userTimezoneOffset =
+                              date.getTimezoneOffset() * 60000;
+                            field.onChange(
+                              new Date(date.getTime() + userTimezoneOffset)
+                            );
+                          } else {
+                            field.onChange(undefined);
                           }
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
+                        }}
+                      />
+                    </FormControl>
                     <FormDescription>
                       Your date of birth will be used to calculate your age and
                       remind family members of your birthday.
@@ -497,33 +576,33 @@ export default function ProfileInfoEditPage() {
                 name="relationshipStatus"
                 render={({ field }) => {
                   return (
-                  <FormItem>
-                    <FormLabel>Relationship Status</FormLabel>
-                    <Select
-                        key={`relationship-${field.value || 'empty'}`}
+                    <FormItem>
+                      <FormLabel>Relationship Status</FormLabel>
+                      <Select
+                        key={`relationship-${field.value || "empty"}`}
                         onValueChange={(value) => {
                           field.onChange(value === "clear" ? undefined : value);
                         }}
                         {...(field.value ? { value: field.value } : {})}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select your relationship status" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select your relationship status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
                           <SelectItem value="clear" className="text-gray-500">
                             <em>Clear selection</em>
                           </SelectItem>
-                        {relationshipOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
+                          {relationshipOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
                   );
                 }}
               />

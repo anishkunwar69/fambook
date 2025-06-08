@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Loader2, ZoomIn, ZoomOut } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
@@ -893,14 +893,7 @@ export default function RootEditorPage() {
         <Background />
         <Controls />
         <Panel position="top-right" className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => zoomIn()}>
-              <ZoomIn className="w-4 h-4" />
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => zoomOut()}>
-              <ZoomOut className="w-4 h-4" />
-            </Button>
-          </div>
+          <div className="flex items-center gap-2"></div>
 
           {hasPositionChanges && isAdmin && (
             <Button

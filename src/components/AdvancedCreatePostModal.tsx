@@ -26,9 +26,30 @@ import {
   ImagePlus,
   Loader2,
   UploadCloud,
+  X,
 } from "lucide-react";
 import React, { useCallback, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
+
+const variants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? "100%" : "-100%",
+    opacity: 0,
+  }),
+  center: {
+    zIndex: 1,
+    x: 0,
+    opacity: 1,
+  },
+  exit: (direction: number) => ({
+    zIndex: 0,
+    x: direction < 0 ? "100%" : "-100%",
+    opacity: 0,
+  }),
+};
+
+const MAX_FILE_SIZE_MB = 100;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 type Family = {
   id: string;
@@ -61,12 +82,14 @@ export function AdvancedCreatePostModal({
   const [currentStep, setCurrentStep] = useState<ModalStep>("selectFiles");
   const [selectedMedia, setSelectedMedia] = useState<SelectedMediaItem[]>([]);
   const [postDetailsMediaIndex, setPostDetailsMediaIndex] = useState(0);
+  const [direction, setDirection] = useState(0);
 
   const [caption, setCaption] = useState("");
   const [selectedFamilyId, setSelectedFamilyId] = useState<string | undefined>(
     undefined
   );
   const [isSharing, setIsSharing] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -77,37 +100,40 @@ export function AdvancedCreatePostModal({
     setCaption("");
     setSelectedFamilyId(undefined);
     setIsSharing(false);
+    setFileError(null);
     onClose();
   }, [onClose]);
 
   const processFiles = useCallback(
     async (files: File[]) => {
-      const newMediaItems: SelectedMediaItem[] = files.map((file) => ({
+      setFileError(null);
+
+      const validFiles: File[] = [];
+      for (const file of files) {
+        if (file.size > MAX_FILE_SIZE_BYTES) {
+          setFileError(`Each file can only be up to ${MAX_FILE_SIZE_MB}MB.`);
+          return; // Stop processing this batch
+        }
+        validFiles.push(file);
+      }
+
+      const newMediaItems: SelectedMediaItem[] = validFiles.map((file) => ({
         file,
         previewUrl: URL.createObjectURL(file),
         type: file.type.startsWith("image/") ? "image" : "video",
       }));
 
+      const startIndexForNewItems = selectedMedia.length;
       const updatedMedia = [...selectedMedia, ...newMediaItems];
       setSelectedMedia(updatedMedia);
 
       if (updatedMedia.length > 0) {
         setCurrentStep("postDetails");
-        if (selectedMedia.length === 0 && newMediaItems.length > 0) {
-          setPostDetailsMediaIndex(0);
-        } else {
-          if (
-            postDetailsMediaIndex >= updatedMedia.length &&
-            updatedMedia.length > 0
-          ) {
-            setPostDetailsMediaIndex(updatedMedia.length - 1);
-          } else if (updatedMedia.length > 0 && postDetailsMediaIndex === -1) {
-            setPostDetailsMediaIndex(0);
-          }
-        }
+        setPostDetailsMediaIndex(startIndexForNewItems);
+        setDirection(1);
       }
     },
-    [selectedMedia, postDetailsMediaIndex]
+    [selectedMedia, setDirection]
   );
 
   const handleFileSelect = useCallback(
@@ -121,6 +147,26 @@ export function AdvancedCreatePostModal({
     },
     [processFiles]
   );
+
+  const handleRemoveMedia = (indexToRemove: number) => {
+    setSelectedMedia((currentMedia) => {
+      const newMedia = currentMedia.filter(
+        (_, index) => index !== indexToRemove
+      );
+
+      // Adjust the current index if needed
+      if (postDetailsMediaIndex >= newMedia.length) {
+        setPostDetailsMediaIndex(Math.max(0, newMedia.length - 1));
+      }
+
+      // If no media is left, go back to the selection step
+      if (newMedia.length === 0) {
+        setCurrentStep("selectFiles");
+      }
+
+      return newMedia;
+    });
+  };
 
   const openFileDialog = () => {
     if (fileInputRef.current) {
@@ -144,12 +190,20 @@ export function AdvancedCreatePostModal({
   );
 
   const createPostMutation = useMutation({
-    mutationFn: async (formData: FormData) => {
+    mutationFn: async (postData: {
+      text: string;
+      media: { url: string; type: "PHOTO" | "VIDEO" }[];
+    }) => {
       if (!selectedFamilyId) throw new Error("Family not selected.");
+
       const response = await fetch(`/api/families/${selectedFamilyId}/posts`, {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(postData),
       });
+
       const result = await response.json();
       if (!result.success)
         throw new Error(result.message || "Failed to create post.");
@@ -159,9 +213,6 @@ export function AdvancedCreatePostModal({
       toast.success("Post shared successfully!");
       queryClient.invalidateQueries({ queryKey: ["feed"] });
       resetModal();
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || "Could not share post.");
     },
     onSettled: () => {
       setIsSharing(false);
@@ -179,13 +230,58 @@ export function AdvancedCreatePostModal({
     }
 
     setIsSharing(true);
-    const formData = new FormData();
-    formData.append("text", caption);
 
-    for (const item of selectedMedia) {
-      formData.append("media", item.file);
+    try {
+      // 1. Get signature from our new API route
+      const signResponse = await fetch("/api/upload/sign", { method: "POST" });
+      const signData = await signResponse.json();
+      if (!signData.success) {
+        throw new Error("Could not get upload signature.");
+      }
+
+      const { signature, timestamp, cloudName, apiKey } = signData;
+
+      // 2. Upload each file directly to Cloudinary
+      const uploadPromises = selectedMedia.map(async (mediaItem) => {
+        const formData = new FormData();
+        formData.append("file", mediaItem.file);
+        formData.append("api_key", apiKey);
+        formData.append("timestamp", timestamp);
+        formData.append("signature", signature);
+        formData.append("folder", "fambook");
+
+        const uploadResponse = await fetch(
+          `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        const uploadData = await uploadResponse.json();
+        if (uploadData.error) {
+          throw new Error(uploadData.error.message);
+        }
+
+        return {
+          url: uploadData.secure_url,
+          type: uploadData.resource_type === "image" ? "PHOTO" : "VIDEO",
+        };
+      });
+
+      const uploadedMedia = await Promise.all(uploadPromises);
+
+      // 3. Create the post in our database
+      await createPostMutation.mutateAsync({
+        text: caption,
+        media: uploadedMedia as { url: string; type: "PHOTO" | "VIDEO" }[],
+      });
+    } catch (error) {
+      toast.error(
+        `Upload failed: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+      setIsSharing(false);
     }
-    createPostMutation.mutate(formData);
   };
 
   const renderStepContent = () => {
@@ -202,9 +298,14 @@ export function AdvancedCreatePostModal({
             onDrop={handleDrop}
           >
             <UploadCloud className="w-20 h-20 md:w-28 md:h-28 text-gray-300 mb-6" />
-            <h2 className="text-xl md:text-2xl font-semibold text-gray-700 mb-3">
+            <h2 className="text-lg md:text-2xl font-semibold text-gray-700 mb-3">
               Drag photos and videos here
             </h2>
+            {fileError && (
+              <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md my-4 max-w-sm text-center">
+                {fileError}
+              </p>
+            )}
             <Button
               onClick={openFileDialog}
               variant="default"
@@ -255,32 +356,62 @@ export function AdvancedCreatePostModal({
               </Button>
             </div>
 
-            <div className="flex flex-col md:flex-row flex-grow overflow-hidden">
-              {/* Left: Media Preview Carousel */}
-              <div className="w-full md:w-[calc(100%-340px)] bg-gray-100 relative flex items-center justify-center aspect-square md:aspect-auto">
-                {currentMediaForDetails &&
-                  (currentMediaForDetails.type === "image" ? (
-                    <img
-                      src={currentMediaForDetails.previewUrl}
-                      alt={`Post media ${postDetailsMediaIndex + 1}`}
-                      className="max-w-full max-h-full object-contain"
-                      key={currentMediaForDetails.previewUrl}
-                    />
-                  ) : (
-                    <video
-                      src={currentMediaForDetails.previewUrl}
-                      controls
-                      className="max-w-full max-h-full object-contain"
-                    />
-                  ))}
+            <div className="flex-grow flex flex-col md:flex-row h-full overflow-hidden">
+              {/* Media Preview Section */}
+              <div className="relative w-full aspect-square md:aspect-auto md:flex-1 bg-black flex items-center justify-center overflow-hidden">
+                <AnimatePresence initial={false} custom={direction}>
+                  <motion.div
+                    key={postDetailsMediaIndex}
+                    custom={direction}
+                    variants={variants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{
+                      x: { type: "spring", stiffness: 300, damping: 30 },
+                      opacity: { duration: 0.2 },
+                    }}
+                    className="absolute inset-0 w-full h-full"
+                  >
+                    {currentMediaForDetails.type === "image" ? (
+                      <img
+                        src={currentMediaForDetails.previewUrl}
+                        alt={`Preview ${postDetailsMediaIndex + 1}`}
+                        className="object-contain w-full h-full"
+                      />
+                    ) : (
+                      <video
+                        src={currentMediaForDetails.previewUrl}
+                        controls
+                        className="object-contain w-full h-full"
+                      />
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+
+                {/* Close button for the current image */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-2 right-2 z-20 bg-black/50 text-white hover:bg-black/75 hover:text-white rounded-full h-8 w-8"
+                  onClick={() => handleRemoveMedia(postDetailsMediaIndex)}
+                  aria-label="Remove image"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+
+                {/* Navigation Arrows */}
                 {selectedMedia.length > 1 && (
                   <>
                     {postDetailsMediaIndex > 0 && (
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => setPostDetailsMediaIndex((p) => p - 1)}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full p-1.5 z-10"
+                        onClick={() => {
+                          setDirection(-1);
+                          setPostDetailsMediaIndex((p) => p - 1);
+                        }}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/75 text-white rounded-full p-1.5 z-10"
                       >
                         <ChevronLeft className="w-5 h-5" />
                       </Button>
@@ -289,7 +420,10 @@ export function AdvancedCreatePostModal({
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => setPostDetailsMediaIndex((p) => p + 1)}
+                        onClick={() => {
+                          setDirection(1);
+                          setPostDetailsMediaIndex((p) => p + 1);
+                        }}
                         className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full p-1.5 z-10"
                       >
                         <ChevronRight className="w-5 h-5" />
@@ -302,7 +436,13 @@ export function AdvancedCreatePostModal({
                     {selectedMedia.map((_, index) => (
                       <button
                         key={index}
-                        onClick={() => setPostDetailsMediaIndex(index)}
+                        onClick={() => {
+                          if (index === postDetailsMediaIndex) return;
+                          const newDirection =
+                            index > postDetailsMediaIndex ? 1 : -1;
+                          setDirection(newDirection);
+                          setPostDetailsMediaIndex(index);
+                        }}
                         className={`w-1.5 h-1.5 rounded-full ${postDetailsMediaIndex === index ? "bg-white scale-125" : "bg-white/50"}`}
                       ></button>
                     ))}
@@ -311,7 +451,7 @@ export function AdvancedCreatePostModal({
               </div>
 
               {/* Right: Details Form */}
-              <div className="w-full md:w-[340px] p-4 border-l border-gray-200 flex flex-col space-y-4 overflow-y-auto">
+              <div className="w-full md:w-[340px] md:flex-shrink-0 p-4 border-l border-gray-200 flex flex-col flex-1 md:flex-none space-y-4 overflow-y-auto">
                 {currentUser && (
                   <div className="flex items-center space-x-3">
                     <Avatar className="h-9 w-9">
@@ -341,6 +481,12 @@ export function AdvancedCreatePostModal({
                   {caption.length}/2200
                 </div>
 
+                {fileError && (
+                  <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md my-2">
+                    {fileError}
+                  </p>
+                )}
+
                 {families && families.length > 0 && (
                   <Select
                     value={selectedFamilyId}
@@ -363,9 +509,8 @@ export function AdvancedCreatePostModal({
                   </Select>
                 )}
                 <Button
-                  variant="outline"
                   onClick={openFileDialog}
-                  className="w-full text-sm bg-rose-500 hover:bg-rose-600 text-white"
+                  className="w-full text-sm bg-rose-500 hover:bg-rose-600 text-white mt-auto"
                 >
                   <ImagePlus className="w-4 h-4 mr-2" /> Add more media
                 </Button>
@@ -387,8 +532,8 @@ export function AdvancedCreatePostModal({
       }}
     >
       <DialogContent
-        className="sm:max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl h-[85vh] md:h-[calc(var(--vh,1vh)*85)] p-0 flex flex-col bg-gray-50 shadow-2xl rounded-lg overflow-hidden"
-        onInteractOutside={(e) => e.preventDefault()}
+        className="sm:max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl h-[85vh] md:h-[calc(var(--vh,1vh)*85)] p-0 flex flex-col bg-white border-0 shadow-2xl rounded-lg overflow-hidden"
+        hideCloseButton={true}
       >
         <DialogHeader className="sr-only">
           <DialogTitle>Create New Post</DialogTitle>

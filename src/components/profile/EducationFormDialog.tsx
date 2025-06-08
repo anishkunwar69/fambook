@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
@@ -73,16 +74,18 @@ export function EducationFormDialog({
   
   // Initialize form when editing an existing education entry
   useEffect(() => {
-    if (education) {
-      setInstitution(education.institution || "");
-      setDegree(education.degree || "");
-      setFieldOfStudy(education.fieldOfStudy || "");
-      setStartYear(education.startYear);
-      setEndYear(education.endYear);
-      setDescription(education.description || "");
-      setCurrentlyStudying(!education.endYear);
-    } else {
-      resetForm();
+    if (isOpen) {
+      if (education) {
+        setInstitution(education.institution || "");
+        setDegree(education.degree || "");
+        setFieldOfStudy(education.fieldOfStudy || "");
+        setStartYear(education.startYear);
+        setEndYear(education.endYear);
+        setDescription(education.description || "");
+        setCurrentlyStudying(!education.endYear && education.endYear !== 0);
+      } else {
+        resetForm();
+      }
     }
   }, [education, isOpen]);
   
@@ -119,6 +122,24 @@ export function EducationFormDialog({
       toast({
         title: "Missing field",
         description: "Start year is required",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    if (!currentlyStudying && !endYear) {
+      toast({
+        title: "Missing field",
+        description: "End year is required or select 'Currently studying here'",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    if (endYear && startYear && endYear < startYear) {
+      toast({
+        title: "Invalid dates",
+        description: "End year cannot be before start year",
         variant: "destructive",
       });
       return false;
@@ -184,172 +205,122 @@ export function EducationFormDialog({
   };
   
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      if (!open) onClose();
+    }}>
+      <DialogContent className="sm:max-w-lg bg-white dark:bg-gray-800 p-6">
+        <DialogHeader className="mb-4">
+          <DialogTitle className="text-xl font-semibold text-gray-800 dark:text-gray-100">
             {education?.id ? "Edit Education" : "Add Education"}
           </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
-            {/* Institution */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="institution" className="text-right">
-                Institution*
-              </Label>
-              <div className="col-span-3">
-                <Input
-                  id="institution"
-                  value={institution}
-                  onChange={(e) => setInstitution(e.target.value)}
-                  placeholder="University or school name"
-                  required
-                />
-              </div>
-            </div>
-            
-            {/* Degree */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="degree" className="text-right">
-                Degree*
-              </Label>
-              <div className="col-span-3">
-                <Input
-                  id="degree"
-                  value={degree}
-                  onChange={(e) => setDegree(e.target.value)}
-                  placeholder="e.g., Bachelor of Science"
-                  required
-                />
-              </div>
-            </div>
-            
-            {/* Field of Study */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="fieldOfStudy" className="text-right">
-                Field of Study
-              </Label>
-              <div className="col-span-3">
-                <Input
-                  id="fieldOfStudy"
-                  value={fieldOfStudy}
-                  onChange={(e) => setFieldOfStudy(e.target.value)}
-                  placeholder="e.g., Computer Science"
-                />
-              </div>
-            </div>
-            
-            {/* Start Year */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="startYear" className="text-right">
-                Start Year*
-              </Label>
-              <div className="col-span-3">
-                <Select
-                  value={startYear?.toString()}
-                  onValueChange={(value) => setStartYear(parseInt(value))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select year" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {yearOptions.map((year) => (
-                      <SelectItem key={year} value={year.toString()}>
-                        {year}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            
-            {/* Currently Studying */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">Current Status</Label>
-              <div className="col-span-3">
-                <Select
-                  value={currentlyStudying ? "current" : "completed"}
-                  onValueChange={(value) => setCurrentlyStudying(value === "current")}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="current">Currently Studying</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            
-            {/* End Year (only if not currently studying) */}
-            {!currentlyStudying && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="endYear" className="text-right">
-                  End Year
-                </Label>
-                <div className="col-span-3">
-                  <Select
-                    value={endYear?.toString() || ""}
-                    onValueChange={(value) => setEndYear(parseInt(value))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select year" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {yearOptions
-                        .filter((year) => !startYear || year >= startYear)
-                        .map((year) => (
-                          <SelectItem key={year} value={year.toString()}>
-                            {year}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            )}
-            
-            {/* Description */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="description" className="text-right align-top pt-2">
-                Description
-              </Label>
-              <div className="col-span-3">
-                <Textarea
-                  id="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Additional details about your education"
-                  className="resize-none h-20"
-                />
-              </div>
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <Label htmlFor="institution" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Institution*</Label>
+            <Input
+              id="institution"
+              value={institution}
+              onChange={(e) => setInstitution(e.target.value)}
+              placeholder="e.g., Harvard University"
+              className="w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+            />
           </div>
           
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={isSubmitting}
-            >
+          <div>
+            <Label htmlFor="degree" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Degree*</Label>
+            <Input
+              id="degree"
+              value={degree}
+              onChange={(e) => setDegree(e.target.value)}
+              placeholder="e.g., Bachelor of Science"
+              className="w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="fieldOfStudy" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Field of Study</Label>
+            <Input
+              id="fieldOfStudy"
+              value={fieldOfStudy}
+              onChange={(e) => setFieldOfStudy(e.target.value)}
+              placeholder="e.g., Computer Science"
+              className="w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="startYear" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Year*</Label>
+              <Select
+                value={startYear?.toString()}
+                onValueChange={(value) => setStartYear(parseInt(value))}
+              >
+                <SelectTrigger id="startYear" className="w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                  <SelectValue placeholder="Select year" />
+                </SelectTrigger>
+                <SelectContent className="dark:bg-gray-700 dark:text-gray-100">
+                  {yearOptions.map((year) => (
+                    <SelectItem key={year} value={year.toString()} className="hover:dark:bg-gray-600">{year}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Label htmlFor="endYear" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                End Year {currentlyStudying ? "" : "*"}
+              </Label>
+              <Select
+                value={currentlyStudying ? "" : endYear?.toString() || ""} 
+                onValueChange={(value) => setEndYear(value ? parseInt(value) : null)}
+                disabled={currentlyStudying}
+              >
+                <SelectTrigger id="endYear" className="w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                  <SelectValue placeholder="Select year" />
+                </SelectTrigger>
+                <SelectContent className="dark:bg-gray-700 dark:text-gray-100">
+                  {yearOptions.map((year) => (
+                    <SelectItem key={year} value={year.toString()} className="hover:dark:bg-gray-600">{year}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2 mt-2">
+            <Checkbox 
+              id="currentlyStudying"
+              checked={currentlyStudying}
+              onCheckedChange={(checked) => {
+                setCurrentlyStudying(Boolean(checked));
+                if (Boolean(checked)) {
+                  setEndYear(null); 
+                }
+              }}
+              className="dark:border-gray-600 data-[state=checked]:dark:bg-rose-500 data-[state=checked]:dark:text-gray-100"
+            />
+            <Label htmlFor="currentlyStudying" className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
+              Currently studying here
+            </Label>
+          </div>
+          
+          <div>
+            <Label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</Label>
+            <Textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Optional: Add activities, societies, or a brief description"
+              className="min-h-[80px] w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+            />
+          </div>
+          
+          <DialogFooter className="pt-6">
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting} className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
               Cancel
             </Button>
-            <Button
-              type="submit"
-              className="bg-rose-500 hover:bg-rose-600"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                education?.id ? "Update" : "Add"
-              )}
+            <Button type="submit" className="bg-rose-500 hover:bg-rose-600 text-white dark:bg-rose-600 dark:hover:bg-rose-700" disabled={isSubmitting}>
+              {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : (education?.id ? "Save Changes" : "Add Education")}
             </Button>
           </DialogFooter>
         </form>

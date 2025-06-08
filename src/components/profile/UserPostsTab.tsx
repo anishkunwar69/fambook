@@ -2,10 +2,10 @@
 
 import { AdvancedCreatePostModal } from "@/components/AdvancedCreatePostModal";
 import CommentModal from "@/components/CommentModal";
-import { DeletePostConfirmationModal } from "@/components/DeletePostConfirmationModal";
 import { DeleteCommentConfirmationModal } from "@/components/DeleteCommentConfirmationModal";
-import { EditPostModal } from "@/components/EditPostModal";
+import { DeletePostConfirmationModal } from "@/components/DeletePostConfirmationModal";
 import { EditCommentModal } from "@/components/EditCommentModal";
+import { EditPostModal } from "@/components/EditPostModal";
 import LikesModal from "@/components/LikesModal";
 import { PhotoViewerModal } from "@/components/PhotoViewerModal";
 import { AddToMemoryButton } from "@/components/shared/AddToMemoryButton";
@@ -210,7 +210,9 @@ export function UserPostsTab({ userId, isCurrentUser }: UserPostsTabProps) {
         searchParams.append("familyId", selectedFamilyId);
       }
 
-      const response = await fetch(`/api/users/${userId}/posts?${searchParams}`);
+      const response = await fetch(
+        `/api/users/${userId}/posts?${searchParams}`
+      );
       const result = await response.json();
       if (!result.success) {
         throw new Error(result.message);
@@ -263,7 +265,7 @@ export function UserPostsTab({ userId, isCurrentUser }: UserPostsTabProps) {
       // Optimistically update posts
       queryClient.setQueryData(["userPosts", userId], (old: any) => {
         if (!old) return old;
-        
+
         return {
           ...old,
           pages: old.pages.map((page: Post[]) =>
@@ -274,8 +276,8 @@ export function UserPostsTab({ userId, isCurrentUser }: UserPostsTabProps) {
                     isLiked: !post.isLiked,
                     _count: {
                       ...post._count,
-                      likes: post.isLiked 
-                        ? post._count.likes - 1 
+                      likes: post.isLiked
+                        ? post._count.likes - 1
                         : post._count.likes + 1,
                     },
                   }
@@ -287,18 +289,20 @@ export function UserPostsTab({ userId, isCurrentUser }: UserPostsTabProps) {
 
       // Update photo viewer state if it's open and shows this post
       if (photoViewerState.isOpen && photoViewerState.post?.id === postId) {
-        setPhotoViewerState(prev => ({
+        setPhotoViewerState((prev) => ({
           ...prev,
-          post: prev.post ? {
-            ...prev.post,
-            isLiked: !prev.post.isLiked,
-            _count: {
-              ...prev.post._count,
-              likes: prev.post.isLiked 
-                ? prev.post._count.likes - 1 
-                : prev.post._count.likes + 1,
-            },
-          } : null,
+          post: prev.post
+            ? {
+                ...prev.post,
+                isLiked: !prev.post.isLiked,
+                _count: {
+                  ...prev.post._count,
+                  likes: prev.post.isLiked
+                    ? prev.post._count.likes - 1
+                    : prev.post._count.likes + 1,
+                },
+              }
+            : null,
         }));
       }
 
@@ -309,24 +313,26 @@ export function UserPostsTab({ userId, isCurrentUser }: UserPostsTabProps) {
       if (context?.previousPosts) {
         queryClient.setQueryData(["userPosts", userId], context.previousPosts);
       }
-      
+
       // Revert photo viewer state if needed
       if (photoViewerState.isOpen && photoViewerState.post?.id === postId) {
-        setPhotoViewerState(prev => ({
+        setPhotoViewerState((prev) => ({
           ...prev,
-          post: prev.post ? {
-            ...prev.post,
-            isLiked: !prev.post.isLiked,
-            _count: {
-              ...prev.post._count,
-              likes: prev.post.isLiked 
-                ? prev.post._count.likes - 1 
-                : prev.post._count.likes + 1,
-            },
-          } : null,
+          post: prev.post
+            ? {
+                ...prev.post,
+                isLiked: !prev.post.isLiked,
+                _count: {
+                  ...prev.post._count,
+                  likes: prev.post.isLiked
+                    ? prev.post._count.likes - 1
+                    : prev.post._count.likes + 1,
+                },
+              }
+            : null,
         }));
       }
-      
+
       toast.error("Failed to like post. Please try again.");
     },
     onSuccess: () => {
@@ -347,11 +353,9 @@ export function UserPostsTab({ userId, isCurrentUser }: UserPostsTabProps) {
         return { success: true };
       }
       if (!response.ok) {
-        const errorData = await response
-          .json()
-          .catch(() => ({
-            message: "Failed to delete post. Please try again.",
-          }));
+        const errorData = await response.json().catch(() => ({
+          message: "Failed to delete post. Please try again.",
+        }));
         throw new Error(
           errorData.message || "Failed to delete post. Please try again."
         );
@@ -432,7 +436,11 @@ export function UserPostsTab({ userId, isCurrentUser }: UserPostsTabProps) {
   };
 
   const handleCloseDeleteCommentModal = () => {
-    setDeleteCommentModalState({ isOpen: false, commentId: null, postId: null });
+    setDeleteCommentModalState({
+      isOpen: false,
+      commentId: null,
+      postId: null,
+    });
   };
 
   const handleConfirmDeleteComment = () => {
@@ -448,7 +456,9 @@ export function UserPostsTab({ userId, isCurrentUser }: UserPostsTabProps) {
         method: "DELETE",
       });
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: "Failed to delete comment" }));
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Failed to delete comment" }));
         throw new Error(errorData.message);
       }
       if (response.status === 204) return null;
@@ -456,7 +466,9 @@ export function UserPostsTab({ userId, isCurrentUser }: UserPostsTabProps) {
     },
     onSuccess: () => {
       if (deleteCommentModalState.postId) {
-        queryClient.invalidateQueries({ queryKey: ["comments", deleteCommentModalState.postId] });
+        queryClient.invalidateQueries({
+          queryKey: ["comments", deleteCommentModalState.postId],
+        });
       }
       queryClient.invalidateQueries({ queryKey: ["userPosts", userId] });
       queryClient.invalidateQueries({ queryKey: ["feed"] });
@@ -471,104 +483,108 @@ export function UserPostsTab({ userId, isCurrentUser }: UserPostsTabProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-semibold font-lora">
-            {isCurrentUser ? "My Posts" : "Posts"}
-          </h2>
+      {isLoading ? (
+        <div className="flex justify-between items-center mb-6">
+          <div className="h-8 bg-gray-200 rounded w-48 animate-pulse"></div>
         </div>
-        <div className="flex items-center gap-3">
-          {/* Family Filter */}
-          <Select
-            value={selectedFamilyId}
-            onValueChange={setSelectedFamilyId}
-          >
-            <SelectTrigger className="w-[200px]">
-              <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4" />
-                <SelectValue placeholder="All families" />
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4" />
-                  All families
-                </div>
-              </SelectItem>
-              {families?.map((family) => (
-                <SelectItem key={family.id} value={family.id}>
-                  {family.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-            {isCurrentUser && (
-              <Button
-                className="bg-rose-500 hover:bg-rose-600 flex items-center gap-2"
-                onClick={() => setIsCreatePostOpen(true)}
+      ) : (
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-lora font-bold text-gray-800">
+            {isCurrentUser ? "Your Posts" : "Posts"}
+          </h2>
+          {isCurrentUser && (
+            <div className="flex items-center gap-4">
+              <Select
+                value={selectedFamilyId}
+                onValueChange={setSelectedFamilyId}
               >
-                <Plus className="w-4 h-4" />
+                <SelectTrigger className="w-[180px] bg-white">
+                  <div className="flex items-center gap-2">
+                    <Filter className="w-4 h-4" />
+                    <SelectValue placeholder="Filter by family" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">
+                    <div className="flex items-center gap-2">
+                      <Users className="w-4 h-4" />
+                      <span>All families</span>
+                    </div>
+                  </SelectItem>
+                  {families
+                    ?.filter((f) => f.userMembershipStatus === "APPROVED")
+                    .map((family) => (
+                      <SelectItem key={family.id} value={family.id}>
+                        {family.name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+
+              <Button onClick={() => setIsCreatePostOpen(true)}>
+                <Plus className="w-4 h-4 mr-2" />
                 Create Post
               </Button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
+      )}
 
-        {/* Posts Section */}
-        {isLoading ? (
-          <div className="max-w-4xl mx-auto space-y-6">
-            {[...Array(3)].map((_, index) => (
-              <PostSkeletonCard key={index} />
-            ))}
+      {/* Posts Section */}
+      {isLoading ? (
+        <div className="max-w-4xl mx-auto space-y-6">
+          {[...Array(3)].map((_, index) => (
+            <PostSkeletonCard key={index} />
+          ))}
+        </div>
+      ) : isError ? (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-red-50/50 backdrop-blur-md rounded-2xl p-12 text-center border border-red-100/50 text-red-700"
+        >
+          <div className="bg-red-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <AlertTriangle className="w-8 h-8 text-red-500" />
           </div>
-        ) : isError ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-red-50/50 backdrop-blur-md rounded-2xl p-12 text-center border border-red-100/50 text-red-700"
+          <h3 className="text-xl font-lora font-bold text-red-800 mb-2">
+            Failed to Load Posts
+          </h3>
+          <p className="text-red-600 max-w-md mx-auto mb-6">
+            {error instanceof Error
+              ? error.message
+              : "An unknown error occurred while fetching posts."}
+          </p>
+          <Button
+            onClick={() => refetch()}
+            variant="destructive"
+            className="bg-red-500 hover:bg-red-600 text-white"
           >
-            <div className="bg-red-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <AlertTriangle className="w-8 h-8 text-red-500" />
-            </div>
-            <h3 className="text-xl font-lora font-bold text-red-800 mb-2">
-              Failed to Load Posts
-            </h3>
-            <p className="text-red-600 max-w-md mx-auto mb-6">
-              {error instanceof Error
-                ? error.message
-                : "An unknown error occurred while fetching posts."}
-            </p>
-            <Button
-              onClick={() => refetch()}
-              variant="destructive"
-              className="bg-red-500 hover:bg-red-600 text-white"
-            >
-              Retry
-            </Button>
-          </motion.div>
-        ) : !allPosts.length ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white/80 backdrop-blur-md rounded-2xl p-12 text-center border border-rose-100/50"
-          >
-            <div className="bg-rose-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Send className="w-8 h-8 text-rose-500" />
-            </div>
-            <h3 className="text-xl font-lora font-bold text-gray-800 mb-2">
-              {selectedFamilyId && selectedFamilyId !== "all" ? "No Posts in This Family" : "No Posts Yet"}
-            </h3>
-            <p className="text-gray-600 max-w-md mx-auto mb-6">
-              {selectedFamilyId && selectedFamilyId !== "all"
-                ? "No posts found in the selected family. Try selecting a different family or clear the filter."
-                : isCurrentUser 
-                  ? "Start sharing moments with your family by creating your first post!"
-                  : "This user hasn't shared any posts yet."}
-            </p>
-            {isCurrentUser && (!selectedFamilyId || selectedFamilyId === "all") && (
+            Retry
+          </Button>
+        </motion.div>
+      ) : !allPosts.length ? (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white/80 backdrop-blur-md rounded-2xl p-12 text-center border border-rose-100/50"
+        >
+          <div className="bg-rose-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <Send className="w-8 h-8 text-rose-500" />
+          </div>
+          <h3 className="text-xl font-lora font-bold text-gray-800 mb-2">
+            {selectedFamilyId && selectedFamilyId !== "all"
+              ? "No Posts in This Family"
+              : "No Posts Yet"}
+          </h3>
+          <p className="text-gray-600 max-w-md mx-auto mb-6">
+            {selectedFamilyId && selectedFamilyId !== "all"
+              ? "No posts found in the selected family. Try selecting a different family or clear the filter."
+              : isCurrentUser
+                ? "Start sharing moments with your family by creating your first post!"
+                : "This user hasn't shared any posts yet."}
+          </p>
+          {isCurrentUser &&
+            (!selectedFamilyId || selectedFamilyId === "all") && (
               <Button
                 className="bg-rose-500 hover:bg-rose-600 flex items-center gap-2"
                 onClick={() => setIsCreatePostOpen(true)}
@@ -577,44 +593,43 @@ export function UserPostsTab({ userId, isCurrentUser }: UserPostsTabProps) {
                 Create First Post
               </Button>
             )}
-          </motion.div>
-        ) : (
-          <div className="max-w-4xl mx-auto space-y-6">
-            <AnimatePresence mode="popLayout">
-              {allPosts.map((post) => (
-                <PostCard
-                  key={post.id}
-                  post={post}
-                  onLike={() => likePost(post.id)}
-                  isLiking={likingPosts.has(post.id)}
-                  onOpenCommentModal={handleOpenCommentModal}
-                  onOpenLikesModal={handleOpenLikesModal}
-                  onOpenDeleteModal={handleOpenDeleteModal}
-                  onOpenEditModal={handleOpenEditModal}
-                  onOpenPhotoViewer={openPhotoViewer}
-                  isCurrentUser={isCurrentUser}
-                  onEditComment={handleOpenEditCommentModal}
-                  onDeleteComment={handleOpenDeleteCommentModal}
-                />
-              ))}
-            </AnimatePresence>
+        </motion.div>
+      ) : (
+        <div className="max-w-4xl mx-auto space-y-6">
+          <AnimatePresence mode="popLayout">
+            {allPosts.map((post) => (
+              <PostCard
+                key={post.id}
+                post={post}
+                onLike={() => likePost(post.id)}
+                isLiking={likingPosts.has(post.id)}
+                onOpenCommentModal={handleOpenCommentModal}
+                onOpenLikesModal={handleOpenLikesModal}
+                onOpenDeleteModal={handleOpenDeleteModal}
+                onOpenEditModal={handleOpenEditModal}
+                onOpenPhotoViewer={openPhotoViewer}
+                isCurrentUser={isCurrentUser}
+                onEditComment={handleOpenEditCommentModal}
+                onDeleteComment={handleOpenDeleteCommentModal}
+              />
+            ))}
+          </AnimatePresence>
 
-            {/* Load More Trigger */}
-            <div ref={loadMoreRef} className="pt-8 flex justify-center">
-              {isFetchingNextPage ? (
-                <Loader2 className="w-6 h-6 text-rose-500 animate-spin" />
-              ) : hasNextPage ? (
-                <span className="text-gray-500">Loading more posts...</span>
-              ) : allPosts.length > 0 ? (
-                <span className="flex items-center gap-2 text-sm text-rose-600 px-4 py-2 bg-rose-50 rounded-full border border-rose-200 shadow-sm">
-                  <span className="text-2xl">🫶🏻</span>
-                  No more posts to load
-                </span>
-              ) : null}
-            </div>
+          {/* Load More Trigger */}
+          <div ref={loadMoreRef} className="pt-8 flex justify-center">
+            {isFetchingNextPage ? (
+              <Loader2 className="w-6 h-6 text-rose-500 animate-spin" />
+            ) : hasNextPage ? (
+              <span className="text-gray-500">Loading more posts...</span>
+            ) : allPosts.length > 0 ? (
+              <span className="flex items-center gap-2 text-sm text-rose-600 px-4 py-2 bg-rose-50 rounded-full border border-rose-200 shadow-sm">
+                <span className="text-2xl">🫶🏻</span>
+                No more posts to load
+              </span>
+            ) : null}
           </div>
-        )}
-      
+        </div>
+      )}
 
       {/* Modals */}
       {isCurrentUser && (
@@ -634,7 +649,7 @@ export function UserPostsTab({ userId, isCurrentUser }: UserPostsTabProps) {
           onDeleteComment={handleOpenDeleteCommentModal}
         />
       )}
-      
+
       {likesModalState.isOpen && likesModalState.postId && (
         <LikesModal
           postId={likesModalState.postId}
@@ -642,20 +657,20 @@ export function UserPostsTab({ userId, isCurrentUser }: UserPostsTabProps) {
           onClose={() => setLikesModalState({ isOpen: false, postId: null })}
         />
       )}
-      
+
       <DeletePostConfirmationModal
         isOpen={isDeletePostModalOpen}
         onClose={handleCloseDeleteModal}
         onConfirmDelete={handleConfirmDeletePost}
         isDeleting={deletePostMutation.isPending}
       />
-      
+
       <EditPostModal
         isOpen={isEditPostModalOpen}
         onClose={handleCloseEditModal}
         postToEdit={selectedPostForEditing}
       />
-      
+
       <PhotoViewerModal
         isOpen={photoViewerState.isOpen}
         post={photoViewerState.post}
@@ -817,10 +832,7 @@ function PostCard({
               onClick={() => onOpenPhotoViewer(post, index)}
             >
               {media.type === "VIDEO" ? (
-                <video
-                  src={media.url}
-                  className="w-full h-full object-cover"
-                />
+                <video src={media.url} className="w-full h-full object-cover" />
               ) : (
                 <Image
                   src={media.url}
@@ -959,4 +971,4 @@ function PostCard({
       />
     </motion.div>
   );
-} 
+}

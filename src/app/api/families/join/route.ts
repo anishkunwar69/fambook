@@ -132,6 +132,9 @@ export async function POST(request: NextRequest) {
       },
     }, { status: 200 });
 
+    //close transaction
+    await prisma.$disconnect();
+
   } catch (error) {
     console.error("Family join error:", error);
     return NextResponse.json({ 

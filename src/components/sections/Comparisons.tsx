@@ -65,10 +65,11 @@ export default function Comparisons() {
           {/* Header */}
           <div className="text-center mb-16">
             <h2 className="font-lora text-4xl md:text-5xl font-bold text-gray-800 mb-6">
-            One App for Everything Your 
+              One App for Everything Your
               <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-amber-500">
-              Family Actually Cares About              </span>
+                Family Actually Cares About{" "}
+              </span>
             </h2>
             <p className="font-poppins text-xl text-gray-600 max-w-3xl mx-auto">
               See how our family-first approach solves the real problems you
@@ -79,17 +80,17 @@ export default function Comparisons() {
 
           {/* Comparison Table */}
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-            {/* Table Headers */}
-            <div className="grid md:grid-cols-2 bg-gray-50 border-b border-gray-200">
+            {/* Table Headers - Only visible on md+ screens */}
+            <div className="hidden md:grid md:grid-cols-2 bg-gray-50 border-b border-gray-200">
               <div className="p-6 border-r border-gray-200">
-                <h3 className="font-lora text-2xl font-bold text-red-600 flex items-center gap-3">
-                  <HeartCrack className="w-8 h-8" />
+                <h3 className="font-lora text-xl lg:text-2xl font-bold text-red-600 flex items-center gap-3">
+                  <HeartCrack className="w-6 h-6 lg:w-8 lg:h-8" />
                   Common Problems
                 </h3>
               </div>
               <div className="p-6">
-                <h3 className="font-lora text-2xl font-bold text-rose-600 flex items-center gap-3">
-                  <Heart className="w-8 h-8" />
+                <h3 className="font-lora text-xl lg:text-2xl font-bold text-rose-600 flex items-center gap-3">
+                  <Heart className="w-6 h-6 lg:w-8 lg:h-8" />
                   How Our App Solves It
                 </h3>
               </div>
@@ -105,7 +106,14 @@ export default function Comparisons() {
                 className="grid md:grid-cols-2 border-b border-gray-100 last:border-b-0 hover:bg-gray-50/50 transition-colors duration-300"
               >
                 {/* Problem */}
-                <div className="p-6 border-r border-gray-200">
+                <div className="p-6 md:border-r border-gray-200">
+                  {/* Mobile heading - only visible on small screens */}
+                  <div className="md:hidden mb-4">
+                    <h3 className="font-lora text-lg font-bold text-red-600 flex items-center gap-2">
+                      <HeartCrack className="w-5 h-5" />
+                      Problem
+                    </h3>
+                  </div>
                   <div className="flex items-start gap-4">
                     <div className="bg-red-50 p-2 rounded-lg flex-shrink-0 mt-1">
                       {item.problemIcon}
@@ -118,6 +126,13 @@ export default function Comparisons() {
 
                 {/* Solution */}
                 <div className="p-6">
+                  {/* Mobile heading - only visible on small screens */}
+                  <div className="md:hidden mb-4">
+                    <h3 className="font-lora text-lg font-bold text-rose-600 flex items-center gap-2">
+                      <Heart className="w-5 h-5" />
+                      Our Solution
+                    </h3>
+                  </div>
                   <div className="flex items-start gap-4">
                     <div className="bg-rose-50 p-2 rounded-lg flex-shrink-0 mt-1">
                       {item.solutionIcon}

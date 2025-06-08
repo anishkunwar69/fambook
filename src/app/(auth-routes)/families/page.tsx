@@ -29,14 +29,14 @@ import {
   Loader2,
   Pencil,
   PlusCircle,
+  Search,
   Share2,
   Trash2,
   Users,
-  Search,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { z } from "zod";
 
@@ -79,37 +79,37 @@ type FamilyFormData = z.infer<typeof familyFormSchema>;
 // Skeleton Card Component
 function FamilySkeletonCard() {
   return (
-    <div className="bg-white/80 backdrop-blur-md rounded-2xl p-6 border border-gray-200 animate-pulse">
+    <div className="bg-white/80 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-gray-200 animate-pulse">
       {/* Skeleton Header */}
-      <div className="mb-4">
-        <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
-        <div className="h-4 bg-gray-200 rounded w-full mb-1"></div>
-        <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+      <div className="mb-3 sm:mb-4">
+        <div className="h-5 sm:h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+        <div className="h-3 sm:h-4 bg-gray-200 rounded w-full mb-1"></div>
+        <div className="h-3 sm:h-4 bg-gray-200 rounded w-5/6"></div>
       </div>
 
       {/* Skeleton Invite Code (approximating space) */}
-      <div className="bg-gray-100 rounded-lg p-3 mb-6 border border-gray-200">
+      <div className="bg-gray-100 rounded-lg p-2 sm:p-3 mb-4 sm:mb-6 border border-gray-200">
         <div className="flex items-center justify-between gap-2">
-          <div>
-            <div className="h-3 bg-gray-200 rounded w-24 mb-1.5"></div>
-            <div className="h-5 bg-gray-200 rounded w-32"></div>
+          <div className="flex-1">
+            <div className="h-3 bg-gray-200 rounded w-20 sm:w-24 mb-1.5"></div>
+            <div className="h-4 sm:h-5 bg-gray-200 rounded w-24 sm:w-32"></div>
           </div>
-          <div className="h-8 bg-gray-200 rounded w-16"></div>
+          <div className="h-6 sm:h-8 bg-gray-200 rounded w-12 sm:w-16"></div>
         </div>
       </div>
 
       {/* Skeleton Family Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-4 sm:mb-6">
         {[...Array(3)].map((_, i) => (
           <div key={i} className="text-center">
-            <div className="bg-gray-200 w-10 h-10 rounded-lg mx-auto mb-2"></div>
-            <div className="h-3 bg-gray-200 rounded w-12 mx-auto"></div>
+            <div className="bg-gray-200 w-8 h-8 sm:w-10 sm:h-10 rounded-lg mx-auto mb-1 sm:mb-2"></div>
+            <div className="h-3 bg-gray-200 rounded w-8 sm:w-12 mx-auto"></div>
           </div>
         ))}
       </div>
 
       {/* Skeleton Action Button */}
-      <div className="h-10 bg-gray-200 rounded w-full"></div>
+      <div className="h-9 sm:h-10 bg-gray-200 rounded w-full"></div>
     </div>
   );
 }
@@ -380,7 +380,7 @@ export default function FamiliesPage() {
       const response = await fetch("/api/families");
       const result = await response.json();
       if (!result.success) {
-        throw new Error(result.message);      
+        throw new Error(result.message);
       }
 
       const currentInternalUserId = result.currentInternalUserId;
@@ -424,7 +424,7 @@ export default function FamiliesPage() {
       setFamilyToEdit(null); // Close the modal
     },
     onError: (err: Error) => {
-      toast.error(err.message || "Could not update family details.");
+      toast.error("Could not update family details.");
     },
   });
 
@@ -473,12 +473,12 @@ export default function FamiliesPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.1 }}
         className={cn(
-          "bg-white/80 backdrop-blur-md rounded-2xl p-6 border transition-all group relative",
-          isPending 
-            ? "border-amber-200 hover:border-amber-300" 
+          "bg-white/80 backdrop-blur-md rounded-2xl p-4 sm:p-6 border transition-all group relative",
+          isPending
+            ? "border-amber-200 hover:border-amber-300"
             : hasJoinRequests
-            ? "border-rose-200 hover:border-rose-300 shadow-md"
-            : "border-rose-100/50 hover:border-rose-200"
+              ? "border-rose-200 hover:border-rose-300 shadow-md"
+              : "border-rose-100/50 hover:border-rose-200"
         )}
       >
         {/* Pending Requests Badge - Positioned at top of card */}
@@ -486,16 +486,20 @@ export default function FamiliesPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="absolute -top-3 left-4 z-10 cursor-pointer"
+            className="absolute -top-2 sm:-top-3 left-3 sm:left-4 z-10 cursor-pointer"
             onClick={() => {
               router.push(`/families/${family.id}/requests`);
             }}
           >
-            <div className="bg-gradient-to-r from-rose-500 to-rose-600 text-white px-3 py-1 rounded-full shadow-lg border-2 border-white hover:bg-rose-600 hover:border-rose-700">
-              <div className="flex items-center gap-2">
+            <div className="bg-gradient-to-r from-rose-500 to-rose-600 text-white px-2 sm:px-3 py-1 rounded-full shadow-lg border-2 border-white hover:bg-rose-600 hover:border-rose-700">
+              <div className="flex items-center gap-1 sm:gap-2">
                 <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
                 <span className="text-xs font-medium">
-                  {family.pendingRequestsCount} pending request{family.pendingRequestsCount !== 1 ? 's' : ''}
+                  {family.pendingRequestsCount} pending
+                  <span className="hidden sm:inline">
+                    {" "}
+                    request{family.pendingRequestsCount !== 1 ? "s" : ""}
+                  </span>
                 </span>
               </div>
             </div>
@@ -503,80 +507,84 @@ export default function FamiliesPage() {
         )}
 
         {family.isAdmin && !isPending && (
-          <div className="absolute top-4 right-4 flex items-center space-x-1">
+          <div className="absolute top-3 sm:top-4 right-3 sm:right-4 flex items-center space-x-1">
             <Button
               variant="ghost"
               size="icon"
-              className="text-gray-400 hover:text-blue-500 hover:bg-blue-50/50"
+              className="text-gray-400 hover:text-blue-500 hover:bg-blue-50/50 h-8 w-8 sm:h-auto sm:w-auto"
               onClick={(e) => {
                 e.stopPropagation();
                 setFamilyToEdit(family); // Open edit modal
               }}
               title="Edit Family"
             >
-              <Pencil className="w-4 h-4" />
+              <Pencil className="w-3 h-3 sm:w-4 sm:h-4" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              className="text-gray-400 hover:text-red-500 hover:bg-red-50/50"
+              className="text-gray-400 hover:text-red-500 hover:bg-red-50/50 h-8 w-8 sm:h-auto sm:w-auto"
               onClick={(e) => {
                 e.stopPropagation();
                 setFamilyToDelete({ id: family.id, name: family.name });
               }}
               title="Delete Family"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
             </Button>
           </div>
         )}
 
         {/* Status Badge */}
         {isPending && (
-          <div className="mb-4 inline-flex items-center gap-2 bg-amber-50 text-amber-700 px-3 py-1 rounded-full text-sm">
-            <Clock className="w-4 h-4" />
-            Pending Approval
+          <div className="mb-3 sm:mb-4 inline-flex items-center gap-2 bg-amber-50 text-amber-700 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm">
+            <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Pending Approval</span>
+            <span className="sm:hidden">Pending</span>
           </div>
         )}
 
         {/* Family Card Header */}
-        <div className="mb-4">
-          <h3 className="font-lora text-xl font-bold text-gray-800 mb-1 group-hover:text-rose-600 transition-colors">
+        <div className="mb-3 sm:mb-4">
+          <h3 className="font-lora text-lg sm:text-xl font-bold text-gray-800 mb-1 group-hover:text-rose-600 transition-colors line-clamp-1">
             {family.name}
           </h3>
-          <p className="text-gray-600 text-sm line-clamp-2">
+          <p className="text-gray-600 text-xs sm:text-sm line-clamp-2">
             {family.description || "No description provided"}
           </p>
         </div>
 
         {/* Invite Code Section */}
         {!isPending && (
-          <div className="bg-rose-50/50 rounded-lg p-3 mb-6 border border-rose-100">
+          <div className="bg-rose-50/50 rounded-lg p-2 sm:p-3 mb-4 sm:mb-6 border border-rose-100">
             <div className="flex items-center justify-between gap-2">
-              <div>
+              <div className="min-w-0 flex-1">
                 <p className="text-xs font-medium text-rose-600 mb-1 flex items-center gap-1">
-                  <Share2 className="w-3 h-3" />  
-                  Family Invite Code
+                  <Share2 className="w-3 h-3" />
+                  <span className="hidden sm:inline">Family Invite Code</span>
+                  <span className="sm:hidden">Code</span>
                 </p>
-                <code className="text-sm font-mono text-gray-800">
+                <code className="text-xs sm:text-sm font-mono text-gray-800 break-all">
                   {family.joinToken}
                 </code>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
-                className="shrink-0 hover:bg-rose-100"
+                className="shrink-0 hover:bg-rose-100 h-8 px-2 sm:h-auto sm:px-3"
                 onClick={() => copyToClipboard(family.joinToken)}
               >
                 {copiedToken === family.joinToken ? (
                   <>
-                    <Check className="w-4 h-4 text-green-500 mr-1.5" />
-                    <span className="text-green-600 text-xs">Copied!</span>
+                    <Check className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 sm:mr-1.5" />
+                    <span className="text-green-600 text-xs hidden sm:inline">
+                      Copied!
+                    </span>
                   </>
                 ) : (
                   <>
-                    <Copy className="w-4 h-4 mr-1.5" />
-                    <span className="text-xs">Copy</span>
+                    <Copy className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1.5" />
+                    <span className="text-xs hidden sm:inline">Copy</span>
                   </>
                 )}
               </Button>
@@ -586,24 +594,27 @@ export default function FamiliesPage() {
 
         {/* Family Stats */}
         {!isPending && (
-          <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-4 sm:mb-6">
             <div className="text-center">
-              <div className="bg-rose-50 w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
-                <Users className="w-5 h-5 text-rose-500" />
+              <div className="bg-rose-50 w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center mx-auto mb-1 sm:mb-2 group-hover:scale-110 transition-transform">
+                <Users className="w-4 h-4 sm:w-5 sm:h-5 text-rose-500" />
               </div>
               <p className="text-xs text-gray-600">
-                {family.members.length} Members
+                <span className="sm:hidden">{family.members.length}</span>
+                <span className="hidden sm:inline">
+                  {family.members.length} Members
+                </span>
               </p>
             </div>
             <div className="text-center">
-              <div className="bg-amber-50 w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
-                <ImageIcon className="w-5 h-5 text-amber-500" />
+              <div className="bg-amber-50 w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center mx-auto mb-1 sm:mb-2 group-hover:scale-110 transition-transform">
+                <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" />
               </div>
               <p className="text-xs text-gray-600">Albums</p>
             </div>
             <div className="text-center">
-              <div className="bg-rose-50 w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
-                <Calendar className="w-5 h-5 text-rose-500" />
+              <div className="bg-rose-50 w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center mx-auto mb-1 sm:mb-2 group-hover:scale-110 transition-transform">
+                <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-rose-500" />
               </div>
               <p className="text-xs text-gray-600">Events</p>
             </div>
@@ -615,14 +626,15 @@ export default function FamiliesPage() {
           {isPending ? (
             <Button
               disabled
-              className="w-full bg-amber-100 text-amber-700 cursor-not-allowed"
+              className="w-full bg-amber-100 text-amber-700 cursor-not-allowed h-9 sm:h-10 text-sm"
             >
               <Clock className="w-4 h-4 mr-2" />
-              Awaiting Approval
+              <span className="hidden sm:inline">Awaiting Approval</span>
+              <span className="sm:hidden">Pending</span>
             </Button>
           ) : (
             <Link href={`/families/${family.id}`} className="block">
-              <Button className="w-full bg-rose-500 hover:bg-rose-600">
+              <Button className="w-full bg-rose-500 hover:bg-rose-600 h-9 sm:h-10 text-sm">
                 View Family
               </Button>
             </Link>
@@ -640,20 +652,26 @@ export default function FamiliesPage() {
       families?.filter((f) => f.userMembershipStatus === "PENDING").length ?? 0;
 
     return (
-      <div className="flex items-center gap-2 mb-6 border-b border-gray-200">
+      <div className="flex items-center gap-1 sm:gap-2 mb-4 sm:mb-6 border-b border-gray-200 overflow-x-auto">
         <button
           onClick={() => {
             setActiveTab("approved");
             setCurrentPage(1); // Reset page on tab change
           }}
           className={cn(
-            "px-4 py-2 text-sm font-medium transition-colors relative",
+            "px-3 sm:px-4 py-2 text-sm font-medium transition-colors relative whitespace-nowrap",
             activeTab === "approved"
               ? "text-rose-600 border-b-2 border-rose-500"
               : "text-gray-600 hover:text-rose-600"
           )}
         >
-          My Families
+          <span className="hidden sm:inline">My Families</span>
+          <span className="sm:hidden">Families</span>
+          {approvedCount > 0 && (
+            <span className="ml-1 sm:ml-2 bg-rose-100 text-rose-600 px-1.5 sm:px-2 py-0.5 rounded-full text-xs">
+              {approvedCount}
+            </span>
+          )}
         </button>
         <button
           onClick={() => {
@@ -661,15 +679,15 @@ export default function FamiliesPage() {
             setCurrentPage(1); // Reset page on tab change
           }}
           className={cn(
-            "px-4 py-2 text-sm font-medium transition-colors relative",
+            "px-3 sm:px-4 py-2 text-sm font-medium transition-colors relative whitespace-nowrap",
             activeTab === "pending"
               ? "text-amber-600 border-b-2 border-amber-500"
               : "text-gray-600 hover:text-amber-600"
           )}
         >
-          Pending Requests
+          Pending
           {pendingCount > 0 && (
-            <span className="ml-2 bg-amber-100 text-amber-600 px-2 py-0.5 rounded-full text-xs">
+            <span className="ml-1 sm:ml-2 bg-amber-100 text-amber-600 px-1.5 sm:px-2 py-0.5 rounded-full text-xs">
               {pendingCount}
             </span>
           )}
@@ -682,7 +700,9 @@ export default function FamiliesPage() {
     const matchesSearch = debouncedSearch
       ? family.name.toLowerCase().includes(debouncedSearch.toLowerCase())
       : true;
-    const matchesTab = family.userMembershipStatus === (activeTab === "approved" ? "APPROVED" : "PENDING");
+    const matchesTab =
+      family.userMembershipStatus ===
+      (activeTab === "approved" ? "APPROVED" : "PENDING");
     return matchesSearch && matchesTab;
   });
 
@@ -694,63 +714,63 @@ export default function FamiliesPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-8">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8">
       {/* Breadcrumb */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-2 text-sm text-gray-600 mb-8"
+        className="flex items-center gap-2 text-sm text-gray-600 mb-6 sm:mb-8 overflow-x-auto whitespace-nowrap"
       >
         <Link
           href="/"
-          className="hover:text-rose-500 transition-colors flex items-center gap-1"
+          className="hover:text-rose-500 transition-colors flex items-center gap-1 shrink-0"
         >
           <Home className="w-4 h-4" />
           <span>Home</span>
         </Link>
-        <ChevronRight className="w-4 h-4" />
+        <ChevronRight className="w-4 h-4 shrink-0" />
         <Link
           href="/dashboard"
-          className="hover:text-rose-500 transition-colors"
+          className="hover:text-rose-500 transition-colors shrink-0"
         >
-          Dashboard
+          <span>Dashboard</span>
         </Link>
-        <ChevronRight className="w-4 h-4" />
-        <span className="text-rose-500 font-medium">My Families</span>
+        <ChevronRight className="w-4 h-4 shrink-0" />
+        <span className="text-rose-500 font-medium shrink-0">My Families</span>
       </motion.div>
 
       {/* Header Section - Updated to match feed page style */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white/80 backdrop-blur-md rounded-2xl p-6 border border-rose-100/50 mb-8"
+        className="bg-white/80 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-rose-100/50 mb-6 sm:mb-8"
       >
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-lora font-bold text-gray-800 mb-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 mb-4 sm:mb-6">
+          <div className="text-center sm:text-left">
+            <h1 className="text-2xl sm:text-3xl font-lora font-bold text-gray-800 mb-2">
               My Families ❤️
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-600 text-sm sm:text-base">
               Manage your family spaces and connections
             </p>
           </div>
-          <Link href="/families/create">
-            <Button className="bg-rose-500 hover:bg-rose-600 flex items-center gap-2">
+          <Link href="/families/create" className="w-full sm:w-auto">
+            <Button className="bg-rose-500 hover:bg-rose-600 flex items-center justify-center gap-2 w-full sm:w-auto">
               <PlusCircle className="w-4 h-4" />
-              Create Family
+              <span className="sm:inline">Create Family</span>
             </Button>
           </Link>
         </div>
 
         {/* Search Section */}
-        <div className="flex flex-col sm:flex-row gap-4 items-center">
-          <div className="relative flex-1">
+        <div className="flex flex-col gap-4">
+          <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               placeholder="Search families by name..."
               value={search}
               onChange={handleSearchChange}
-              className="pl-10 bg-white"
+              className="pl-10 bg-white w-full h-10 sm:h-auto"
             />
           </div>
         </div>
@@ -761,7 +781,7 @@ export default function FamiliesPage() {
 
       {/* Families Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 sm:gap-6">
           {[...Array(6)].map((_, index) => (
             <FamilySkeletonCard key={index} />
           ))}
@@ -770,15 +790,15 @@ export default function FamiliesPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-red-50/50 backdrop-blur-md rounded-2xl p-12 text-center border border-red-100/50 text-red-700"
+          className="bg-red-50/50 backdrop-blur-md rounded-2xl p-6 sm:p-12 text-center border border-red-100/50 text-red-700"
         >
-          <div className="bg-red-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <AlertTriangle className="w-8 h-8 text-red-500" />
+          <div className="bg-red-100 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
+            <AlertTriangle className="w-6 h-6 sm:w-8 sm:h-8 text-red-500" />
           </div>
-          <h3 className="text-xl font-lora font-bold text-red-800 mb-2">
+          <h3 className="text-lg sm:text-xl font-lora font-bold text-red-800 mb-2">
             Failed to Load Families
           </h3>
-          <p className="text-red-600 max-w-md mx-auto mb-6">
+          <p className="text-red-600 max-w-md mx-auto mb-4 sm:mb-6 text-sm sm:text-base">
             {error instanceof Error
               ? error.message
               : "An unknown error occurred."}
@@ -786,7 +806,7 @@ export default function FamiliesPage() {
           <Button
             onClick={() => refetch()}
             variant="destructive"
-            className="bg-red-500 hover:bg-red-600 text-white"
+            className="bg-red-500 hover:bg-red-600 text-white w-full sm:w-auto"
           >
             Retry
           </Button>
@@ -795,19 +815,19 @@ export default function FamiliesPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white/80 backdrop-blur-md rounded-2xl p-12 text-center border border-rose-100/50"
+          className="bg-white/80 backdrop-blur-md rounded-2xl p-6 sm:p-12 text-center border border-rose-100/50"
         >
-          <div className="bg-rose-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <Users className="w-8 h-8 text-rose-500" />
+          <div className="bg-rose-50 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
+            <Users className="w-6 h-6 sm:w-8 sm:h-8 text-rose-500" />
           </div>
-          <h3 className="text-xl font-lora font-bold text-gray-800 mb-2">
-            {search 
-              ? "No Families Found" 
-              : activeTab === "approved" 
-                ? "No Families Yet" 
+          <h3 className="text-lg sm:text-xl font-lora font-bold text-gray-800 mb-2">
+            {search
+              ? "No Families Found"
+              : activeTab === "approved"
+                ? "No Families Yet"
                 : "No Pending Requests"}
           </h3>
-          <p className="text-gray-600 max-w-md mx-auto mb-6">
+          <p className="text-gray-600 max-w-md mx-auto mb-4 sm:mb-6 text-sm sm:text-base">
             {search
               ? `No families found matching "${search}". Try a different search term.`
               : activeTab === "approved"
@@ -815,15 +835,15 @@ export default function FamiliesPage() {
                 : "You don't have any pending join requests at the moment."}
           </p>
           {!search && activeTab === "approved" && (
-            <div className="flex items-center justify-center gap-4">
-              <Link href="/families/create">
-                <Button className="bg-rose-500 hover:bg-rose-600">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+              <Link href="/families/create" className="w-full sm:w-auto">
+                <Button className="bg-rose-500 hover:bg-rose-600 w-full sm:w-auto">
                   <PlusCircle className="w-4 h-4 mr-2" />
                   Create Family
                 </Button>
               </Link>
-              <Link href="/families/join">
-                <Button variant="outline">
+              <Link href="/families/join" className="w-full sm:w-auto">
+                <Button variant="outline" className="w-full sm:w-auto">
                   <Users className="w-4 h-4 mr-2" />
                   Join Family
                 </Button>
@@ -832,7 +852,7 @@ export default function FamiliesPage() {
           )}
         </motion.div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 sm:gap-6">
           {paginatedFamilies.map((family, index) =>
             renderFamilyCard(family, index)
           )}
@@ -845,24 +865,24 @@ export default function FamiliesPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="flex justify-center items-center gap-2 mt-8"
+          className="flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-4 mt-6 sm:mt-8"
         >
           <Button
             variant="outline"
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 w-full sm:w-auto"
           >
             Previous
           </Button>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
             {Array.from({ length: totalPages }, (_, i) => i + 1).map(
               (pageNum) => (
                 <Button
                   key={pageNum}
                   variant={pageNum === currentPage ? "default" : "outline"}
                   onClick={() => setCurrentPage(pageNum)}
-                  className={`w-10 h-10 ${
+                  className={`w-8 h-8 sm:w-10 sm:h-10 text-sm ${
                     pageNum === currentPage
                       ? "bg-rose-500 hover:bg-rose-600"
                       : ""
@@ -879,7 +899,7 @@ export default function FamiliesPage() {
               setCurrentPage((prev) => Math.min(prev + 1, totalPages))
             }
             disabled={currentPage === totalPages}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 w-full sm:w-auto"
           >
             Next
           </Button>
@@ -907,4 +927,4 @@ export default function FamiliesPage() {
       />
     </div>
   );
-} 
+}

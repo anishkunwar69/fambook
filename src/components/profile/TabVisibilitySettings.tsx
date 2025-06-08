@@ -1,14 +1,26 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Shield, Eye, Users } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { Eye, Loader2, Shield, Users } from "lucide-react";
+import { useEffect, useState } from "react";
 
-export type TabName = "overview" | "memories" | "timeline" | "details" | "posts";
+export type TabName = "memories" | "timeline" | "details" | "posts";
 
 export interface FamilyOption {
   id: string;
@@ -87,8 +99,6 @@ export function TabVisibilitySettings({
   // Get the tab label for display
   const getTabLabel = (tab: TabName): string => {
     switch (tab) {
-      case "overview":
-        return "Overview";
       case "memories":
         return "Memories";
       case "timeline":
@@ -102,124 +112,102 @@ export function TabVisibilitySettings({
     }
   };
 
-  // Get the visibility icon based on setting
-  const getVisibilityIcon = (visibility: string) => {
-    if (visibility === "everyone") {
-      return <Eye className="h-4 w-4 text-gray-500" />;
-    }
-    return <Users className="h-4 w-4 text-rose-500" />;
-  };
+  const renderSelectTriggerContent = (visibilityValue: string) => (
+    <div className="flex items-center gap-2">
+      {visibilityValue === "everyone" ? (
+        <Eye className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+      ) : (
+        <Users className="h-4 w-4 text-rose-500 dark:text-rose-400" />
+      )}
+      <SelectValue placeholder="Select visibility" />
+    </div>
+  );
 
-  // Get visibility label
-  const getVisibilityLabel = (visibility: string) => {
-    if (visibility === "everyone") {
-      return "Everyone";
-    }
-    
-    const family = families.find(f => f.id === visibility);
-    return family ? family.name : "Unknown Family";
-  };
+  const renderFormItem = (tabKey: TabName) => (
+    <div key={tabKey} className="space-y-2">
+      <Label
+        htmlFor={`select-${tabKey}`}
+        className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+      >
+        {getTabLabel(tabKey)}
+      </Label>
+      <p className="text-xs text-gray-500 dark:text-gray-400 -mt-1 mb-1.5">
+        Control who can see your {getTabLabel(tabKey).toLowerCase()} tab.
+      </p>
+      <Select
+        value={settings[tabKey]}
+        onValueChange={(value) => handleTabVisibilityChange(tabKey, value)}
+      >
+        <SelectTrigger
+          id={`select-${tabKey}`}
+          className="w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+        >
+          {renderSelectTriggerContent(settings[tabKey])}
+        </SelectTrigger>
+        <SelectContent className="dark:bg-gray-700 dark:text-gray-100">
+          <SelectItem value="everyone" className="hover:dark:bg-gray-600">
+            Everyone
+          </SelectItem>
+          {families.map((family) => (
+            <SelectItem
+              key={family.id}
+              value={family.id}
+              className="hover:dark:bg-gray-600"
+            >
+              {family.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-rose-500" />
-            {activeTab 
-              ? `Who can see your ${getTabLabel(activeTab).toLowerCase()}?` 
+      <DialogContent className="sm:max-w-lg bg-white dark:bg-gray-800 p-6">
+        <DialogHeader className="mb-6">
+          <DialogTitle className="text-xl font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+            <Shield className="h-5 w-5 text-rose-500 dark:text-rose-400" />
+            {activeTab
+              ? `Privacy: ${getTabLabel(activeTab)} Tab`
               : "Tab Visibility Settings"}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          {activeTab ? (
-            // Show only active tab settings if specified
-            <div className="space-y-3">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <Label className="text-base font-medium">{getTabLabel(activeTab)}</Label>
-                  <p className="text-sm text-gray-500">
-                    Control who can see your {getTabLabel(activeTab).toLowerCase()} tab
-                  </p>
-                </div>
-                <Select 
-                  value={settings[activeTab]}
-                  onValueChange={(value) => handleTabVisibilityChange(activeTab, value)}
-                >
-                  <SelectTrigger className="w-[180px]">
-                    <div className="flex items-center gap-2">
-                      {getVisibilityIcon(settings[activeTab])}
-                      <SelectValue />
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="everyone">Everyone</SelectItem>
-                    {families.map((family) => (
-                      <SelectItem key={family.id} value={family.id}>
-                        {family.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          ) : (
-            // Show all tab settings
-            <div className="space-y-3">
-              {Object.keys(settings).map((tab) => (
-                <div 
-                  key={tab} 
-                  className="flex items-center justify-between gap-4 pb-3 border-b last:border-b-0"
-                >
-                  <div>
-                    <Label className="text-base font-medium">{getTabLabel(tab as TabName)}</Label>
-                    <p className="text-sm text-gray-500">
-                      Control who can see your {getTabLabel(tab as TabName).toLowerCase()} tab
-                    </p>
-                  </div>
-                  <Select 
-                    value={settings[tab as TabName]}
-                    onValueChange={(value) => handleTabVisibilityChange(tab as TabName, value)}
-                  >
-                    <SelectTrigger className="w-[180px]">
-                      <div className="flex items-center gap-2">
-                        {getVisibilityIcon(settings[tab as TabName])}
-                        <SelectValue />
-                      </div>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="everyone">Everyone</SelectItem>
-                      {families.map((family) => (
-                        <SelectItem key={family.id} value={family.id}>
-                          {family.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              ))}
-            </div>
-          )}
+        <div className="space-y-6">
+          {activeTab
+            ? renderFormItem(activeTab)
+            : Object.keys(settings).map((tab) =>
+                renderFormItem(tab as TabName)
+              )}
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="pt-8">
           <Button
+            type="button"
             variant="outline"
             onClick={onClose}
             disabled={isSubmitting}
+            className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
           >
             Cancel
           </Button>
           <Button
             onClick={handleSave}
             disabled={isSubmitting}
-            className="bg-rose-500 hover:bg-rose-600"
+            className="bg-rose-500 hover:bg-rose-600 text-white dark:bg-rose-600 dark:hover:bg-rose-700 min-w-[120px]"
           >
-            {isSubmitting ? "Saving..." : "Save Settings"}
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Save Settings"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
-} 
+}

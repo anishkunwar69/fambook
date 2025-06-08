@@ -1,10 +1,10 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Heart } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 const Page = () => {
   const router = useRouter();
@@ -48,10 +48,11 @@ const Page = () => {
         </div>
 
         <h1 className="font-lora text-3xl font-bold text-gray-800">
-          Creating your account...
+          Setting things up for you...
         </h1>
         <p className="text-base/7 text-gray-600 max-w-prose">
-          Just a moment while we set things up for you.
+          Just a moment while we set things up for you. This will take a few
+          seconds.
         </p>
       </div>
     </div>

@@ -9,6 +9,7 @@ export async function POST(
 ) {
   try {
     const auth = await currentUser();
+    const { id } = await params;
     if (!auth) {
       return NextResponse.json(
         { success: false, message: "Unauthorized" },
@@ -30,7 +31,7 @@ export async function POST(
     // Update notification
     const notification = await prisma.notification.update({
       where: {
-        id: params.id,
+        id,
         userId: user.id, // Ensure the notification belongs to the user
       },
       data: {

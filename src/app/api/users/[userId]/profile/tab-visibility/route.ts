@@ -1,11 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
-import { currentUser } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
+import { currentUser } from "@clerk/nextjs/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 // Define validation schema for tab visibility settings
 const TabVisibilitySchema = z.object({
-  overview: z.string(),
   memories: z.string(),
   timeline: z.string(),
   details: z.string(),
@@ -37,10 +36,10 @@ export async function GET(
         privacySettings: true,
         families: {
           include: {
-            family: true
-          }
-        }
-      }
+            family: true,
+          },
+        },
+      },
     });
 
     if (!profileOwner) {
@@ -57,27 +56,34 @@ export async function GET(
         id: true,
         externalId: true,
         families: {
+          where: {
+            status: "APPROVED",
+          },
           select: {
             familyId: true,
             family: {
               select: {
-                name: true
-              }
-            }
-          }
-        }
-      }
+                name: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     // Extract tab visibility settings or set defaults
     const privacySettings = profileOwner.privacySettings as any || {};
     const tabVisibility = privacySettings.tabVisibility || {
-      overview: "everyone",
       memories: "everyone",
       timeline: "everyone",
       details: "everyone",
       posts: "everyone",
     };
+
+    // Ensure overview is not sent to the client, handling legacy data
+    if ("overview" in tabVisibility) {
+      delete (tabVisibility as { overview?: any }).overview;
+    }
 
     // Get profile owner's families for the response (for selection in settings)
     const ownerFamilies = profileOwner.families.map((membership) => ({
@@ -86,7 +92,8 @@ export async function GET(
     }));
 
     // Get viewer's family ids for visibility checks
-    const viewerFamilyIds = currentViewer?.families.map(membership => membership.familyId) || [];
+    const viewerFamilyIds =
+      currentViewer?.families.map((membership) => membership.familyId) || [];
 
     // Determine if this is the user's own profile
     const isCurrentUserProfile = currentViewer?.id === profileOwner.id;
@@ -104,8 +111,8 @@ export async function GET(
         tabVisibility,
         families: ownerFamilies,
         viewerFamilyIds,
-        isCurrentUser: isCurrentUserProfile
-      }
+        isCurrentUser: isCurrentUserProfile,
+      },
     });
   } catch (error) {
     console.error("Error fetching tab visibility settings:", error);
@@ -138,8 +145,8 @@ export async function PATCH(
       select: {
         id: true,
         externalId: true,
-        privacySettings: true
-      }
+        privacySettings: true,
+      },
     });
 
     if (!dbUser) {
@@ -152,7 +159,10 @@ export async function PATCH(
     // Check if user is updating their own settings
     if (dbUser.id !== userId) {
       return NextResponse.json(
-        { success: false, message: "You can only update your own privacy settings" },
+        {
+          success: false,
+          message: "You can only update your own privacy settings",
+        },
         { status: 403 }
       );
     }
@@ -166,7 +176,7 @@ export async function PATCH(
         {
           success: false,
           message: "Invalid data format",
-          errors: validationResult.error.errors
+          errors: validationResult.error.errors,
         },
         { status: 400 }
       );
@@ -180,15 +190,15 @@ export async function PATCH(
     // Update tab visibility settings
     const updatedSettings = {
       ...currentSettings,
-      tabVisibility: settings
+      tabVisibility: settings,
     };
 
     // Save to database
     await prisma.user.update({
       where: { id: userId },
       data: {
-        privacySettings: updatedSettings
-      }
+        privacySettings: updatedSettings,
+      },
     });
 
     console.log("[Tab Visibility] Updated settings:", settings);
@@ -196,7 +206,7 @@ export async function PATCH(
     return NextResponse.json({
       success: true,
       message: "Tab visibility settings updated successfully",
-      data: { tabVisibility: settings }
+      data: { tabVisibility: settings },
     });
   } catch (error) {
     console.error("Error updating tab visibility settings:", error);
@@ -205,4 +215,4 @@ export async function PATCH(
       { status: 500 }
     );
   }
-} 
+}

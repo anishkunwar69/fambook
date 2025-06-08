@@ -1,29 +1,23 @@
 "use client";
 
-import { motion } from "framer-motion";
-import {
-  ChevronRight,
-  Home,
-  PlusCircle,
-  Users,
-  Loader2,
-} from "lucide-react";
-import Link from "next/link";
-import { useUser } from "@clerk/nextjs";
-import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
 import { ProfileCompletionPrompt } from "@/components/onboarding/ProfileCompletionPrompt";
+import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useUser } from "@clerk/nextjs";
+import { motion } from "framer-motion";
+import { ChevronRight, Home, PlusCircle, Users } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function DashboardPage() {
   const { user } = useUser();
   const { user: currentUser, isLoading: isUserLoading } = useCurrentUser();
   const [isFirstLogin, setIsFirstLogin] = useState(false);
-  
+
   // Check if this is the first login
   useEffect(() => {
     const hasVisitedDashboard = localStorage.getItem("has_visited_dashboard");
-    
+
     if (!hasVisitedDashboard) {
       setIsFirstLogin(true);
       localStorage.setItem("has_visited_dashboard", "true");
@@ -47,16 +41,21 @@ export default function DashboardPage() {
   return (
     <div className="p-8">
       {/* Profile Completion Prompt - only show when user data is loaded */}
-      {user && !isUserLoading && <ProfileCompletionPrompt profileData={profileData} isFirstLogin={isFirstLogin} />}
-      
+      {user && !isUserLoading && (
+        <ProfileCompletionPrompt
+          profileData={profileData}
+          isFirstLogin={isFirstLogin}
+        />
+      )}
+
       {/* Breadcrumb Navigation */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center gap-2 text-sm text-gray-600 mb-6"
       >
-        <Link 
-          href="/" 
+        <Link
+          href="/"
           className="hover:text-rose-500 transition-colors flex items-center gap-1"
         >
           <Home className="w-4 h-4" />
@@ -73,14 +72,15 @@ export default function DashboardPage() {
         className="mb-8"
       >
         <h1 className="text-3xl font-lora font-bold text-gray-800">
-          Welcome, {isUserLoading ? (
+          Welcome,{" "}
+          {isUserLoading ? (
             <span className="inline-flex items-center gap-2">
-
               <span>User</span>
             </span>
           ) : (
             user?.firstName || "there"
-          )}! 👋
+          )}
+          ! 👋
         </h1>
         <p className="text-gray-600 mt-2">
           Start your family journey by creating or joining a family

@@ -175,7 +175,19 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ success: true, data: roots }, { status: 200 });
+    const rootsWithAdminStatus = roots.map((root) => ({
+      ...root,
+      isAdmin: root.createdById === dbUser.id,
+    }));
+
+    return NextResponse.json(
+      {
+        success: true,
+        data: rootsWithAdminStatus,
+        currentInternalUserId: dbUser.id,
+      },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Failed to fetch roots:", error);
     return NextResponse.json(

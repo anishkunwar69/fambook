@@ -6,10 +6,17 @@ import { AlertTriangle, ArrowRight, X } from 'lucide-react';
 interface NoFamilyForRootModalProps {
   isOpen: boolean;
   onClose: () => void;
+  allFamiliesHaveRoots?: boolean;
 }
 
-const NoFamilyForRootModal: React.FC<NoFamilyForRootModalProps> = ({ isOpen, onClose }) => {
+const NoFamilyForRootModal: React.FC<NoFamilyForRootModalProps> = ({ isOpen, onClose, allFamiliesHaveRoots }) => {
   if (!isOpen) return null;
+
+  const title = allFamiliesHaveRoots ? "All Families Have Trees" : "No Eligible Families Found";
+  const description =
+    allFamiliesHaveRoots
+      ? "All of your current families already have a Family Tree. You can manage existing trees or create a new family to start another tree."
+      : "To create a family tree, you need to be a member of a family that doesn't have a tree yet, or create a new family.";
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 z-[100] flex justify-center items-center p-4 transition-opacity duration-300 ease-in-out">
@@ -29,26 +36,28 @@ const NoFamilyForRootModal: React.FC<NoFamilyForRootModalProps> = ({ isOpen, onC
             <AlertTriangle className="w-12 h-12 text-amber-500" />
           </div>
           <h2 className="text-2xl font-bold text-gray-800 mb-3">
-            No Families Found
+            {title}
           </h2>
           <p className="text-gray-600 mb-8 max-w-sm">
-            To create a family tree, you first need to be a member of a family or create a new one.
+            {description}
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 w-full justify-center">
-            <Button
-              onClick={onClose} // Keep this to close the modal
-              variant="outline"
-              className="w-full sm:w-auto"
-            >
-              Maybe Later
-            </Button>
-            <Button asChild className="w-full sm:w-auto bg-rose-500 hover:bg-rose-600">
-              <Link href="/families/create">
-                Create a Family
-                <ArrowRight className="ml-2 w-4 h-4" />
-              </Link>
-            </Button>
-          </div>
+          {!allFamiliesHaveRoots && (
+            <div className="flex flex-col sm:flex-row gap-3 w-full justify-center">
+              <Button
+                onClick={onClose} // Keep this to close the modal
+                variant="outline"
+                className="w-full sm:w-auto"
+              >
+                Maybe Later
+              </Button>
+              <Button asChild className="w-full sm:w-auto bg-rose-500 hover:bg-rose-600">
+                <Link href="/families/create">
+                  Create a Family
+                  <ArrowRight className="ml-2 w-4 h-4" />
+                </Link>
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>

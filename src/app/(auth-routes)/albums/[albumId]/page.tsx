@@ -47,6 +47,7 @@ type Album = {
   mediaLimit: number;
   familyId: string;
   familyName: string;
+  isInMemory: boolean;
   family: {
     id: string;
     name: string;
@@ -200,19 +201,57 @@ function AddMediaDialog({
         toast.error("Please select files to upload.");
         return;
       }
-      const formData = new FormData();
-      selectedFiles.forEach((file) => {
-        formData.append("media", file);
+
+      // 1. Get signature from our API route
+      const signResponse = await fetch("/api/upload/sign", { method: "POST" });
+      const signData = await signResponse.json();
+      if (!signData.success) {
+        throw new Error("Could not get upload signature.");
+      }
+      const { signature, timestamp, cloudName, apiKey } = signData;
+
+      // 2. Upload each file directly to Cloudinary
+      const uploadPromises = selectedFiles.map(async (file) => {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("api_key", apiKey);
+        formData.append("timestamp", timestamp);
+        formData.append("signature", signature);
+        formData.append("folder", "fambook");
+
+        const uploadResponse = await fetch(
+          `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        const uploadData = await uploadResponse.json();
+        if (uploadData.error) {
+          throw new Error(
+            `Upload failed for ${file.name}: ${uploadData.error.message}`
+          );
+        }
+
+        return {
+          url: uploadData.secure_url,
+          type: uploadData.resource_type === "image" ? "PHOTO" : "VIDEO",
+        };
       });
 
+      const uploadedMedia = await Promise.all(uploadPromises);
+
+      // 3. Create media records in our database
       const response = await fetch(`/api/albums/${albumId}/media`, {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ media: uploadedMedia }),
       });
 
       const result = await response.json();
       if (!result.success) {
-        throw new Error(result.message || "Failed to upload media.");
+        throw new Error(result.message || "Failed to save uploaded media.");
       }
       return result.data;
     },
@@ -567,7 +606,11 @@ export default function AlbumPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <AddToMemoryButton itemId={album.id} itemType="album" />
+            <AddToMemoryButton
+              itemId={album.id}
+              itemType="album"
+              initialIsInMemory={album.isInMemory}
+            />
             <Button
               onClick={() => setIsAddMediaDialogOpen(true)}
               className="bg-rose-500 hover:bg-rose-600 flex items-center gap-2"

@@ -72,49 +72,50 @@ export default function CreateFamilyPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-8">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8">
       {/* Breadcrumb */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-2 text-sm text-gray-600 mb-8"
+        className="flex items-center gap-2 text-sm text-gray-600 mb-6 sm:mb-8 overflow-x-auto whitespace-nowrap"
       >
-        <Link href="/" className="hover:text-rose-500 transition-colors flex items-center gap-1">
+        <Link href="/" className="hover:text-rose-500 transition-colors flex items-center gap-1 shrink-0">
           <Home className="w-4 h-4" />
-          <span>Home</span>
+          <span className="hidden sm:inline">Home</span>
         </Link>
-        <ChevronRight className="w-4 h-4" />
-        <Link href="/dashboard" className="hover:text-rose-500 transition-colors">
-          Dashboard
+        <ChevronRight className="w-4 h-4 shrink-0" />
+        <Link href="/dashboard" className="hover:text-rose-500 transition-colors shrink-0">
+          <span className="hidden sm:inline">Dashboard</span>
+          <span className="sm:hidden">Dash</span>
         </Link>
-        <ChevronRight className="w-4 h-4" />
-        <span className="text-rose-500 font-medium">Create Family</span>
+        <ChevronRight className="w-4 h-4 shrink-0" />
+        <span className="text-rose-500 font-medium shrink-0">Create Family</span>
       </motion.div>
 
-      <div className="max-w-3xl mx-auto flex items-center min-h-[calc(100vh-10rem)]">
+      <div className="max-w-2xl lg:max-w-3xl mx-auto flex items-center min-h-[calc(100vh-8rem)] sm:min-h-[calc(100vh-10rem)]">
         {!joinToken ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-rose-100/50 w-full"
+            className="bg-white/80 backdrop-blur-md p-6 sm:p-8 rounded-2xl shadow-lg border border-rose-100/50 w-full"
           >
-            <div className="text-center mb-8">
+            <div className="text-center mb-6 sm:mb-8">
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="bg-rose-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
+                className="bg-rose-50 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4"
               >
-                <Users className="w-8 h-8 text-rose-500" />
+                <Users className="w-6 h-6 sm:w-8 sm:h-8 text-rose-500" />
               </motion.div>
-              <h1 className="text-2xl font-lora font-bold text-gray-800 mb-2">
+              <h1 className="text-xl sm:text-2xl font-lora font-bold text-gray-800 mb-2">
                 Create Your Family Space
               </h1>
-              <p className="text-gray-600 max-w-md mx-auto">
+              <p className="text-gray-600 max-w-md mx-auto text-sm sm:text-base">
                 Set up a private space for your family to share memories and stay connected
               </p>
             </div>
 
-            <form onSubmit={handleSubmit((data) => createFamily(data))} className="space-y-8">
+            <form onSubmit={handleSubmit((data) => createFamily(data))} className="space-y-6 sm:space-y-8">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">
                   Family Name
@@ -122,7 +123,7 @@ export default function CreateFamilyPage() {
                 <Input
                   {...register("name")}
                   placeholder="Enter your family name"
-                  className="w-full h-12 bg-white/50 border-gray-200 focus:border-rose-500 focus:ring-rose-500/20"
+                  className="w-full h-11 sm:h-12 bg-white/50 border-gray-200 focus:border-rose-500 focus:ring-rose-500/20 text-base"
                 />
                 {errors.name && (
                   <motion.p
@@ -143,7 +144,7 @@ export default function CreateFamilyPage() {
                 <textarea
                   {...register("description")}
                   placeholder="Tell us about your family..."
-                  className="w-full min-h-[120px] rounded-lg border border-gray-200 bg-white/50 focus:border-rose-500 focus:ring-rose-500/20 resize-none p-3"
+                  className="w-full min-h-[100px] sm:min-h-[120px] rounded-lg border border-gray-200 bg-white/50 focus:border-rose-500 focus:ring-rose-500/20 resize-none p-3 text-base"
                 />
                 {errors.description && (
                   <motion.p
@@ -159,12 +160,13 @@ export default function CreateFamilyPage() {
               <Button
                 type="submit"
                 disabled={isPending}
-                className="w-full h-12 bg-rose-500 hover:bg-rose-600 transition-all"
+                className="w-full h-11 sm:h-12 bg-rose-500 hover:bg-rose-600 transition-all text-base"
               >
                 {isPending ? (
                   <div className="flex items-center justify-center gap-2">
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    Creating your family space...
+                    <span className="hidden sm:inline">Creating your family space...</span>
+                    <span className="sm:hidden">Creating...</span>
                   </div>
                 ) : (
                   "Create Family"
@@ -176,51 +178,57 @@ export default function CreateFamilyPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-lg text-center w-full"
+            className="bg-white/80 backdrop-blur-md p-6 sm:p-8 rounded-2xl shadow-lg text-center w-full"
           >
-            <div className="bg-green-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Check className="w-8 h-8 text-green-500" />
+            <div className="bg-green-50 w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+              <Check className="w-6 h-6 sm:w-8 sm:h-8 text-green-500" />
             </div>
 
-            <h2 className="text-2xl font-lora font-bold text-gray-800 mb-2">
+            <h2 className="text-xl sm:text-2xl font-lora font-bold text-gray-800 mb-2">
               Family Created Successfully!
             </h2>
 
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">
               Share this invite code with your family members:
             </p>
 
-            <div className="flex items-center gap-2 justify-center mb-8">
-              <code className="bg-gray-100 px-4 py-2 rounded-lg text-lg font-mono">
+            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 justify-center mb-6 sm:mb-8">
+              <code className="bg-gray-100 px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-base sm:text-lg font-mono break-all text-center">
                 {joinToken}
               </code>
               <Button
                 variant="outline"
                 size="icon"
                 onClick={copyToClipboard}
-                className="flex-shrink-0"
+                className="shrink-0 h-10 w-16 sm:h-auto sm:w-auto"
               >
                 {copied ? (
+                  <div className="flex items-center gap-1">
                   <Check className="w-4 h-4 text-green-500" />
+                    <span className="text-green-600 text-sm hidden sm:inline">Copied!</span>
+                  </div>
                 ) : (
+                  <div className="flex items-center gap-1">
                   <Copy className="w-4 h-4" />
+                    <span className="text-sm hidden sm:inline">Copy</span>
+                  </div>
                 )}
               </Button>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <Button
-                onClick={() => router.push("/families")}
-                className="w-full bg-rose-500 hover:bg-rose-600"
+                onClick={() => router.push(`/families`)}
+                className="w-full bg-rose-500 hover:bg-rose-600 h-11 sm:h-12 text-base"
               >
-                View All Families
+                View My Families
               </Button>
               <Button
                 variant="outline"
                 onClick={() => router.push("/dashboard")}
-                className="w-full"
+                className="w-full h-11 sm:h-12 text-base"
               >
-                Back to Dashboard
+                Return to Dashboard
               </Button>
             </div>
           </motion.div>

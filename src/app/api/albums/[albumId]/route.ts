@@ -88,9 +88,22 @@ export async function GET(
       );
     }
 
+    // Check if the album is in the user's memories
+    const memoryRecord = await prisma.memory.findFirst({
+      where: {
+        albumId: albumId,
+        userId: dbUser.id,
+      },
+    });
+
+    const albumWithMemoryStatus = {
+      ...album,
+      isInMemory: !!memoryRecord,
+    };
+
     return NextResponse.json({
       success: true,
-      data: album,
+      data: albumWithMemoryStatus,
     });
   } catch (error) {
     console.error("Failed to fetch album:", error);

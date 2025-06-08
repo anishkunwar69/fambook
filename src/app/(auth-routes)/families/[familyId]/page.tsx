@@ -18,6 +18,7 @@ import type { Family, FamilyMember } from "@/types/family.types";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  AlertTriangle,
   ChevronRight,
   ExternalLink,
   Home,
@@ -78,14 +79,14 @@ function MemberSkeletonCard() {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex items-center gap-3 p-4 rounded-lg bg-gray-50/80 border border-gray-100/50"
+      className="flex items-center gap-3 p-3 sm:p-4 rounded-lg bg-gray-50/80 border border-gray-100/50 animate-pulse"
     >
-      <div className="w-12 h-12 bg-gray-200 rounded-full animate-pulse" />
+      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-200 rounded-full" />
       <div className="flex-1">
-        <div className="h-4 bg-gray-200 rounded animate-pulse mb-2" />
-        <div className="h-3 bg-gray-200 rounded animate-pulse w-1/2" />
+        <div className="h-3 sm:h-4 bg-gray-200 rounded mb-1 sm:mb-2" />
+        <div className="h-2 sm:h-3 bg-gray-200 rounded w-1/2" />
       </div>
-      <div className="w-20 h-8 bg-gray-200 rounded animate-pulse" />
+      <div className="w-16 sm:w-20 h-6 sm:h-8 bg-gray-200 rounded" />
     </motion.div>
   );
 }
@@ -126,7 +127,10 @@ function QuickActionsSkeleton() {
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[...Array(4)].map((_, index) => (
-            <div key={index} className="bg-white/80 backdrop-blur-md rounded-lg p-4 border border-rose-100/50">
+            <div
+              key={index}
+              className="bg-white/80 backdrop-blur-md rounded-lg p-4 border border-rose-100/50"
+            >
               <div className="flex flex-col items-center gap-2 text-center">
                 <div className="bg-gray-200 w-12 h-12 rounded-lg animate-pulse" />
                 <div>
@@ -239,7 +243,7 @@ function FullPageSkeleton() {
 export default function FamilyPage() {
   const { familyId } = useParams();
 
-  const { data: family, isLoading: isFamilyLoading } =
+  const { data: family, isLoading: isFamilyLoading, refetch } =
     useQuery<FamilyWithExtra>({
       queryKey: ["family", familyId],
       queryFn: async () => {
@@ -327,53 +331,70 @@ export default function FamilyPage() {
 
   if (!family) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-8">
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center text-gray-600 p-8 bg-white/80 rounded-2xl border border-rose-100/50"
+      <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8 w-full flex items-center justify-center">
+        <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="backdrop-blur-md rounded-2xl p-6 sm:p-12 text-center border border-red-100/50 text-red-700"
+      >
+        <div className="bg-red-100 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
+          <AlertTriangle className="w-6 h-6 sm:w-8 sm:h-8 text-red-500" />
+        </div>
+        <h3 className="text-lg sm:text-xl font-lora font-bold text-red-800 mb-2">
+          Failed to Load Families
+        </h3>
+        <p className="text-red-600 max-w-md mx-auto mb-4 sm:mb-6 text-sm sm:text-base">
+          An unknown error occurred.
+        </p>
+        <Button
+          onClick={() => refetch()}
+          variant="destructive"
+          className="bg-red-500 hover:bg-red-600 text-white w-full sm:w-auto"
         >
-          Family not found
-        </motion.div>
+          Retry
+        </Button>
+      </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-8">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8">
       {/* Breadcrumb with enhanced interactivity */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-2 text-sm text-gray-600 mb-8"
+        className="flex items-center gap-2 text-sm text-gray-600 mb-6 sm:mb-8 overflow-x-auto whitespace-nowrap"
       >
         <Link
           href="/"
-          className="hover:text-rose-500 transition-colors flex items-center gap-1 group"
+          className="hover:text-rose-500 transition-colors flex items-center gap-1 group shrink-0"
         >
           <Home className="w-4 h-4 group-hover:scale-110 transition-transform" />
-          <span>Home</span>
+          <span className="hidden sm:inline">Home</span>
         </Link>
-        <ChevronRight className="w-4 h-4" />
+        <ChevronRight className="w-4 h-4 shrink-0" />
         <Link
           href="/families"
-          className="hover:text-rose-500 transition-colors group"
+          className="hover:text-rose-500 transition-colors group shrink-0"
         >
           <span className="group-hover:underline">Families</span>
         </Link>
-        <ChevronRight className="w-4 h-4" />
-        <span className="text-rose-500 font-medium">Family Details</span>
+        <ChevronRight className="w-4 h-4 shrink-0" />
+        <span className="text-rose-500 font-medium shrink-0">
+          Family Details
+        </span>
       </motion.div>
 
       {/* Family Header with enhanced animations */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative mb-8 overflow-hidden group"
+        className="relative mb-6 sm:mb-8 overflow-hidden group"
       >
-        <div className="bg-white/80 backdrop-blur-md rounded-2xl p-8 border border-rose-100/50 transition-all duration-300 hover:bg-white/90 hover:border-rose-200/70">
-          <motion.div 
-            className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-rose-100/20 to-amber-100/20 rounded-full blur-3xl -z-10"
+        <div className="bg-white/80 backdrop-blur-md rounded-2xl p-4 sm:p-6 lg:p-8 border border-rose-100/50 transition-all duration-300 hover:bg-white/90 hover:border-rose-200/70">
+          <motion.div
+            className="absolute top-0 right-0 w-32 h-32 sm:w-64 sm:h-64 bg-gradient-to-br from-rose-100/20 to-amber-100/20 rounded-full blur-3xl -z-10"
             animate={{
               scale: [1, 1.2, 1],
               rotate: [0, 90, 0],
@@ -381,15 +402,15 @@ export default function FamilyPage() {
             transition={{
               duration: 20,
               repeat: Infinity,
-              ease: "linear"
+              ease: "linear",
             }}
             style={{
               translateX: "50%",
-              translateY: "-50%"
+              translateY: "-50%",
             }}
           />
-          <motion.div 
-            className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-rose-100/20 to-purple-100/20 rounded-full blur-3xl -z-10"
+          <motion.div
+            className="absolute bottom-0 left-0 w-32 h-32 sm:w-64 sm:h-64 bg-gradient-to-tr from-rose-100/20 to-purple-100/20 rounded-full blur-3xl -z-10"
             animate={{
               scale: [1, 1.1, 1],
               rotate: [0, -90, 0],
@@ -397,26 +418,28 @@ export default function FamilyPage() {
             transition={{
               duration: 15,
               repeat: Infinity,
-              ease: "linear"
+              ease: "linear",
             }}
             style={{
               translateX: "-50%",
-              translateY: "50%"
+              translateY: "50%",
             }}
           />
-          
-          <h1 className="text-4xl font-lora font-bold text-gray-800 mb-3 flex items-center gap-3">
-            <span className="hover:text-rose-600 transition-colors">{family.name}</span>
+
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-lora font-bold text-gray-800 mb-2 sm:mb-3 flex flex-row items-center gap-3">
+            <span className="hover:text-rose-600 transition-colors break-words -mb-3">
+              {family.name}
+            </span>
             {isAdmin && (
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger>
-                    <motion.span 
-                      className="text-sm font-normal bg-amber-100/50 text-amber-700 px-3 py-1 rounded-full"
+                    <motion.span
+                      className="text-xs sm:text-sm font-normal bg-amber-100/50 text-amber-700 px-2 sm:px-3 py-1 rounded-full self-start sm:self-auto border border-amber-200"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
-                      Admin
+                      ADMIN
                     </motion.span>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -427,8 +450,8 @@ export default function FamilyPage() {
             )}
           </h1>
           {family.description && (
-            <motion.p 
-              className="text-gray-600 max-w-2xl"
+            <motion.p
+              className="text-gray-600 max-w-2xl text-sm sm:text-base"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
@@ -443,42 +466,44 @@ export default function FamilyPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
+        className="mb-6 sm:mb-8"
       >
-        <div className="bg-white/80 backdrop-blur-md rounded-2xl p-6 border border-rose-100/50">
-          <div className="flex items-center gap-3 mb-6">
-            <motion.div 
-              className="bg-rose-100 w-10 h-10 rounded-lg flex items-center justify-center"
+        <div className="bg-white/80 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-rose-100/50">
+          <div className="flex items-center gap-3 mb-4 sm:mb-6">
+            <motion.div
+              className="bg-rose-100 w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center"
               whileHover={{ rotate: 15 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
-              <MessageSquare className="w-5 h-5 text-rose-600" />
+              <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5 text-rose-600" />
             </motion.div>
             <div>
-              <h3 className="font-medium text-gray-800">Quick Actions</h3>
-              <p className="text-sm text-gray-600">
+              <h3 className="font-medium text-gray-800 text-sm sm:text-base">
+                Quick Actions
+              </h3>
+              <p className="text-xs sm:text-sm text-gray-600">
                 Navigate to different family sections
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {/* Feed */}
             <Link href={`/feed?family=${familyId}`}>
-              <motion.div 
+              <motion.div
                 whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}
-                className="bg-white/80 backdrop-blur-md rounded-lg p-4 border border-rose-100/50 transition-all duration-300 hover:border-rose-300 hover:shadow-lg group cursor-pointer"
+                className="bg-white/80 backdrop-blur-md rounded-lg p-3 sm:p-4 border border-rose-100/50 transition-all duration-300 hover:border-rose-300 hover:shadow-lg group cursor-pointer"
               >
                 <div className="flex flex-col items-center gap-2 text-center">
-                  <div className="bg-rose-50 w-12 h-12 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <MessageSquare className="w-6 h-6 text-rose-500" />
+                  <div className="bg-rose-50 w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6 text-rose-500" />
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-800 group-hover:text-rose-600 transition-colors text-sm">
+                    <h4 className="font-medium text-gray-800 group-hover:text-rose-600 transition-colors text-xs sm:text-sm">
                       Feed
                     </h4>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 hidden sm:block">
                       Family posts
                     </p>
                   </div>
@@ -488,20 +513,20 @@ export default function FamilyPage() {
 
             {/* Albums */}
             <Link href={`/albums`}>
-              <motion.div 
+              <motion.div
                 whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}
-                className="bg-white/80 backdrop-blur-md rounded-lg p-4 border border-rose-100/50 transition-all duration-300 hover:border-rose-300 hover:shadow-lg group cursor-pointer"
+                className="bg-white/80 backdrop-blur-md rounded-lg p-3 sm:p-4 border border-rose-100/50 transition-all duration-300 hover:border-rose-300 hover:shadow-lg group cursor-pointer"
               >
                 <div className="flex flex-col items-center gap-2 text-center">
-                  <div className="bg-rose-50 w-12 h-12 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <ImageIcon className="w-6 h-6 text-rose-500" />
+                  <div className="bg-rose-50 w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <ImageIcon className="w-5 h-5 sm:w-6 sm:h-6 text-rose-500" />
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-800 group-hover:text-rose-600 transition-colors text-sm">
+                    <h4 className="font-medium text-gray-800 group-hover:text-rose-600 transition-colors text-xs sm:text-sm">
                       Albums
                     </h4>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 hidden sm:block">
                       Photo albums
                     </p>
                   </div>
@@ -511,20 +536,20 @@ export default function FamilyPage() {
 
             {/* Events */}
             <Link href={`/events`}>
-              <motion.div 
+              <motion.div
                 whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}
-                className="bg-white/80 backdrop-blur-md rounded-lg p-4 border border-rose-100/50 transition-all duration-300 hover:border-rose-300 hover:shadow-lg group cursor-pointer"
+                className="bg-white/80 backdrop-blur-md rounded-lg p-3 sm:p-4 border border-rose-100/50 transition-all duration-300 hover:border-rose-300 hover:shadow-lg group cursor-pointer"
               >
                 <div className="flex flex-col items-center gap-2 text-center">
-                  <div className="bg-rose-50 w-12 h-12 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <ImageIcon className="w-6 h-6 text-rose-500" />
+                  <div className="bg-rose-50 w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <ImageIcon className="w-5 h-5 sm:w-6 sm:h-6 text-rose-500" />
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-800 group-hover:text-rose-600 transition-colors text-sm">
+                    <h4 className="font-medium text-gray-800 group-hover:text-rose-600 transition-colors text-xs sm:text-sm">
                       Events
                     </h4>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 hidden sm:block">
                       Family events
                     </p>
                   </div>
@@ -534,20 +559,20 @@ export default function FamilyPage() {
 
             {/* Family Tree */}
             <Link href={`/roots`}>
-              <motion.div 
+              <motion.div
                 whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}
-                className="bg-white/80 backdrop-blur-md rounded-lg p-4 border border-rose-100/50 transition-all duration-300 hover:border-rose-300 hover:shadow-lg group cursor-pointer"
+                className="bg-white/80 backdrop-blur-md rounded-lg p-3 sm:p-4 border border-rose-100/50 transition-all duration-300 hover:border-rose-300 hover:shadow-lg group cursor-pointer"
               >
                 <div className="flex flex-col items-center gap-2 text-center">
-                  <div className="bg-rose-50 w-12 h-12 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <TreePine className="w-6 h-6 text-rose-500" />
+                  <div className="bg-rose-50 w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <TreePine className="w-5 h-5 sm:w-6 sm:h-6 text-rose-500" />
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-800 group-hover:text-rose-600 transition-colors text-sm">
+                    <h4 className="font-medium text-gray-800 group-hover:text-rose-600 transition-colors text-xs sm:text-sm">
                       Tree
                     </h4>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 hidden sm:block">
                       Family tree
                     </p>
                   </div>
@@ -563,39 +588,41 @@ export default function FamilyPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="mb-6 sm:mb-8"
         >
-          <div className="bg-amber-50/50 border border-amber-100 rounded-xl p-6 transition-all duration-300 hover:bg-amber-50/70 hover:border-amber-200">
-            <div className="flex items-center gap-3 mb-6">
-              <motion.div 
-                className="bg-amber-100 w-10 h-10 rounded-lg flex items-center justify-center"
+          <div className="bg-amber-50/50 border border-amber-100 rounded-xl p-4 sm:p-6 transition-all duration-300 hover:bg-amber-50/70 hover:border-amber-200">
+            <div className="flex items-center gap-3 mb-4 sm:mb-6">
+              <motion.div
+                className="bg-amber-100 w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center"
                 whileHover={{ rotate: 15 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
-                <Shield className="w-5 h-5 text-amber-600" />
+                <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />
               </motion.div>
               <div>
-                <h3 className="font-medium text-gray-800">Admin Actions</h3>
-                <p className="text-sm text-gray-600">
+                <h3 className="font-medium text-gray-800 text-sm sm:text-base">
+                  Admin Actions
+                </h3>
+                <p className="text-xs sm:text-sm text-gray-600">
                   Manage member requests
                 </p>
               </div>
             </div>
 
-            <div className="max-w-[100%]">
+            <div className="w-full">
               {/* Join Requests Card */}
               <Link href={`/families/${familyId}/requests`}>
-                <motion.div 
+                <motion.div
                   whileHover={{ scale: 1.02, y: -2 }}
                   whileTap={{ scale: 0.98 }}
-                  className="bg-white/80 backdrop-blur-md rounded-lg p-4 border border-amber-100/50 transition-all duration-300 hover:border-rose-300 hover:shadow-lg group cursor-pointer"
+                  className="bg-white/80 backdrop-blur-md rounded-lg p-3 sm:p-4 border border-amber-100/50 transition-all duration-300 hover:border-rose-300 hover:shadow-lg group cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="bg-rose-50 w-10 h-10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <UserPlus className="w-5 h-5 text-rose-500" />
+                    <div className="bg-rose-50 w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 text-rose-500" />
                     </div>
-                    <div>
-                      <h4 className="font-medium text-gray-800 group-hover:text-rose-600 transition-colors">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-gray-800 group-hover:text-rose-600 transition-colors text-sm sm:text-base">
                         Join Requests
                       </h4>
                       <AnimatePresence mode="wait">
@@ -605,10 +632,12 @@ export default function FamilyPage() {
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 10 }}
-                            className="text-sm text-rose-500 flex items-center gap-1"
+                            className="text-xs sm:text-sm text-rose-500 flex items-center gap-1"
                           >
-                            {family.pendingRequestsCount} pending request
-                            {family.pendingRequestsCount !== 1 && "s"}
+                            {family.pendingRequestsCount} pending
+                            <span className="hidden sm:inline">
+                              request{family.pendingRequestsCount !== 1 && "s"}
+                            </span>
                           </motion.p>
                         ) : (
                           <motion.p
@@ -616,9 +645,12 @@ export default function FamilyPage() {
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 10 }}
-                            className="text-sm text-gray-500"
+                            className="text-xs sm:text-sm text-gray-500"
                           >
-                            No pending requests
+                            <span className="hidden sm:inline">
+                              No pending requests
+                            </span>
+                            <span className="sm:hidden">None pending</span>
                           </motion.p>
                         )}
                       </AnimatePresence>
@@ -638,33 +670,38 @@ export default function FamilyPage() {
         transition={{ delay: 0.2 }}
       >
         <Card className="bg-white/80 backdrop-blur-md border-rose-100/50 overflow-hidden">
-          <CardHeader className="border-b border-rose-100/20 bg-gradient-to-r from-rose-50/50 via-rose-100/30 to-transparent">
-            <div className="flex items-center justify-between">
+          <CardHeader className="border-b border-rose-100/20 bg-gradient-to-r from-rose-50/50 via-rose-100/30 to-transparent p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <CardTitle className="font-lora text-xl text-rose-700">
+                <CardTitle className="font-lora text-lg sm:text-xl text-rose-700">
                   Family Members
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-sm">
                   All approved family members
                 </CardDescription>
               </div>
               <div className="flex items-center gap-4">
                 <div className="text-sm text-gray-600">
-                  <span className="font-medium">{stats?.members.approved || 0}</span> members
+                  <span className="font-medium">
+                    {stats?.members.approved || 0}
+                  </span>{" "}
+                  members
                 </div>
               </div>
             </div>
           </CardHeader>
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             {isMembersLoading ? (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {[...Array(5)].map((_, index) => (
                   <MemberSkeletonCard key={index} />
                 ))}
               </div>
             ) : isMembersError ? (
-              <div className="text-center py-8">
-                <p className="text-red-500 mb-4">Failed to load members</p>
+              <div className="text-center py-6 sm:py-8">
+                <p className="text-red-500 mb-4 text-sm sm:text-base">
+                  Failed to load members
+                </p>
                 <Button
                   onClick={() => window.location.reload()}
                   variant="outline"
@@ -674,90 +711,101 @@ export default function FamilyPage() {
                 </Button>
               </div>
             ) : allMembers.length === 0 ? (
-              <div className="text-center py-8">
-                <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">No members found</p>
+              <div className="text-center py-6 sm:py-8">
+                <Users className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
+                <p className="text-gray-500 text-sm sm:text-base">
+                  No members found
+                </p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <AnimatePresence mode="popLayout">
-                  {allMembers.map((member: FamilyMemberWithUser, index: number) => (
-                    <motion.div
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 20 }}
-                      transition={{ delay: index * 0.02 }}
-                      key={member.id}
-                      className="flex items-center gap-4 p-4 rounded-lg bg-gray-50/80 hover:bg-rose-50/50 transition-all border border-gray-100/50 group"
-                    >
-                      <div className="relative">
-                        <img
-                          src={
-                            member.user.imageUrl ||
-                            "/placeholder-avatar.png"
-                          }
-                          alt={member.user.fullName}
-                          className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm group-hover:border-rose-100 transition-colors"
-                        />
-                        {member.role === "ADMIN" && (
-                          <div className="absolute -top-1 -right-1 bg-amber-500 w-4 h-4 rounded-full border-2 border-white" />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-800 text-sm group-hover:text-rose-600 transition-colors">
-                          {member.user.fullName}
-                        </p>
-                        <div className="flex items-center gap-2 text-xs text-gray-500">
-                          <span
-                            className={`w-1.5 h-1.5 rounded-full ${
-                              member.role === "ADMIN"
-                                ? "bg-amber-500"
-                                : "bg-rose-500"
-                            }`}
+                  {allMembers.map(
+                    (member: FamilyMemberWithUser, index: number) => (
+                      <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
+                        transition={{ delay: index * 0.02 }}
+                        key={member.id}
+                        className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg bg-gray-50/80 hover:bg-rose-50/50 transition-all border border-gray-100/50 group"
+                      >
+                        <div className="relative">
+                          <img
+                            src={
+                              member.user.imageUrl || "/placeholder-avatar.png"
+                            }
+                            alt={member.user.fullName}
+                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-white shadow-sm group-hover:border-rose-100 transition-colors"
                           />
-                          <span className="capitalize">{member.role.toLowerCase()}</span>
-                          {member.user.username && (
-                            <>
-                              <span>•</span>
-                              <span>@{member.user.username}</span>
-                            </>
+                          {member.role === "ADMIN" && (
+                            <div className="absolute -top-1 -right-1 bg-amber-500 w-3 h-3 sm:w-4 sm:h-4 rounded-full border-2 border-white" />
                           )}
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Link href={`/profile/${member.user.id}`}>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="gap-2 hover:bg-rose-50 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"
-                                >
-                                  <ExternalLink className="w-3 h-3" />
-                                  Profile
-                                </Button>
-                              </Link>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>View {member.user.fullName}'s profile</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-                    </motion.div>
-                  ))}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-gray-800 text-sm sm:text-base group-hover:text-rose-600 transition-colors truncate">
+                            {member.user.fullName}
+                          </p>
+                          <div className="flex items-center gap-2 text-xs text-gray-500">
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${
+                                member.role === "ADMIN"
+                                  ? "bg-amber-500"
+                                  : "bg-rose-500"
+                              }`}
+                            />
+                            <span className="capitalize">
+                              {member.role.toLowerCase()}
+                            </span>
+                            {member.user.username && (
+                              <>
+                                <span className="hidden sm:inline">•</span>
+                                <span className="hidden sm:inline">
+                                  @{member.user.username}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Link href={`/profile/${member.user.id}`}>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="gap-1 sm:gap-2 hover:bg-rose-50 hover:text-rose-500 transition-colors h-8 px-2 sm:h-auto sm:px-3"
+                                  >
+                                    <ExternalLink className="w-3 h-3" />
+                                    <span className="hidden sm:inline">
+                                      Profile
+                                    </span>
+                                  </Button>
+                                </Link>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>View {member.user.fullName}'s profile</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                      </motion.div>
+                    )
+                  )}
                 </AnimatePresence>
 
                 {/* Load More Trigger */}
                 <div ref={loadMoreRef} className="pt-4 flex justify-center">
                   {isFetchingNextPage ? (
-                    <Loader2 className="w-6 h-6 text-rose-500 animate-spin" />
+                    <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 text-rose-500 animate-spin" />
                   ) : hasNextPage ? (
-                    <span className="text-gray-500 text-sm">Loading more members...</span>
+                    <span className="text-gray-500 text-xs sm:text-sm">
+                      Loading more members...
+                    </span>
                   ) : (
-                    <span className="flex items-center gap-2 text-sm text-rose-600 px-4 py-2 bg-rose-50 rounded-full border border-rose-200 shadow-sm">
-                      <Users className="w-4 h-4" />
+                    <span className="flex items-center gap-2 text-xs sm:text-sm text-rose-600 px-3 sm:px-4 py-2 bg-rose-50 rounded-full border border-rose-200 shadow-sm">
+                      <Users className="w-3 h-3 sm:w-4 sm:h-4" />
                       All members loaded
                     </span>
                   )}

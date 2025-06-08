@@ -1,7 +1,7 @@
-import { uploadToCloudinary } from "@/lib/cloudinary";
 import prisma from "@/lib/prisma";
 import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { MediaType } from "@prisma/client";
 
 // GET: Fetch posts for a family
 export async function GET(
@@ -116,7 +116,7 @@ export async function POST(
   { params }: { params: { familyId: string } }
 ) {
   try {
-    // 1. Validate and get familyId
+    // 1. Validate familyId
     const { familyId } = await params;
     if (!familyId) {
       return NextResponse.json(
@@ -135,10 +135,7 @@ export async function POST(
     }
 
     // 3. Get user
-    const user = await prisma.user.findUnique({
-      where: { externalId: auth.id },
-    });
-
+    const user = await prisma.user.findUnique({ where: { externalId: auth.id } });
     if (!user) {
       return NextResponse.json(
         { success: false, message: "User not found" },
@@ -146,15 +143,10 @@ export async function POST(
       );
     }
 
-    // 4. Check if user is a member of the family
+    // 4. Check family membership
     const member = await prisma.familyMember.findFirst({
-      where: {
-        userId: user.id,
-        familyId,
-        status: "APPROVED",
-      },
+      where: { userId: user.id, familyId, status: "APPROVED" },
     });
-
     if (!member) {
       return NextResponse.json(
         { success: false, message: "Access denied" },
@@ -162,117 +154,69 @@ export async function POST(
       );
     }
 
-    // 5. Parse form data
-    const formData = await request.formData();
-    const text = formData.get("text") as string;
-    const mediaFiles = formData.getAll("media") as File[];
+    // 5. Parse JSON body
+    const body = await request.json();
+    const { text, media } = body;
 
     // 6. Validate input
-    if (!text && mediaFiles.length === 0) {
+    if (!text && (!media || media.length === 0)) {
       return NextResponse.json(
         { success: false, message: "Post must contain text or media" },
         { status: 400 }
       );
     }
 
-    try {
-      // 7. Upload media files to Cloudinary
-      const mediaUrls = await Promise.all(
-        mediaFiles.map((file) => uploadToCloudinary(file))
-      );
-
-      // 8. Create post with media in a transaction
-      const post = await prisma.$transaction(async (tx) => {
-        // Create the post
-        const post = await tx.post.create({
-          data: {
-            text,
-            userId: user.id,
-            familyId,
-            media: {
-              create: mediaUrls.map((media) => ({
-                url: media.url,
-                type: media.type,
-              })),
-            },
+    // 7. Create post with media in a transaction
+    const post = await prisma.$transaction(async (tx) => {
+      const newPost = await tx.post.create({
+        data: {
+          text,
+          userId: user.id,
+          familyId,
+          media: {
+            create: media.map(
+              (m: { url: string; type: "PHOTO" | "VIDEO" }) => ({
+                url: m.url,
+                type: m.type,
+              })
+            ),
           },
-          include: {
-            user: {
-              select: {
-                id: true,
-                fullName: true,
-                imageUrl: true,
-              },
-            },
-            media: true,
-            _count: {
-              select: {
-                likes: true,
-                comments: true,
-              },
-            },
-          },
-        });
-
-        // Create notifications for family members
-        const familyMembers = await tx.familyMember.findMany({
-          where: {
-            familyId,
-            status: "APPROVED",
-            NOT: {
-              userId: user.id,
-            },
-          },
-        });
-
-        await Promise.all(
-          familyMembers.map((member) =>
-            tx.notification.create({
-              data: {
-                userId: member.userId,
-                type: "NEW_POST",
-                content: `${user.fullName} shared a new post in your family`,
-              },
-            })
-          )
-        );
-
-        return post;
+        },
+        include: {
+          user: { select: { id: true, fullName: true, imageUrl: true } },
+          media: true,
+          _count: { select: { likes: true, comments: true } },
+        },
       });
 
-      return NextResponse.json(
-        {
-          success: true,
-          message: "Post created successfully",
-          data: {
-            ...post,
-            isLiked: false,
-          },
-        },
-        { status: 201 }
+      // Create notifications for family members
+      const familyMembers = await tx.familyMember.findMany({
+        where: { familyId, status: "APPROVED", NOT: { userId: user.id } },
+      });
+      await Promise.all(
+        familyMembers.map((member) =>
+          tx.notification.create({
+            data: {
+              userId: member.userId,
+              type: "NEW_POST",
+              content: `${user.fullName} shared a new post in your family`,
+            },
+          })
+        )
       );
-    } catch (uploadError) {
-      console.error("Failed to upload media or create post:", uploadError);
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Failed to upload media or create post",
-          error:
-            uploadError instanceof Error
-              ? uploadError.message
-              : "Unknown error",
-        },
-        { status: 500 }
-      );
-    }
+
+      return newPost;
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "Post created successfully",
+      data: { ...post, isLiked: false },
+    });
   } catch (error) {
     console.error("Failed to create post:", error);
     return NextResponse.json(
-      {
-        success: false,
-        message: "Failed to create post",
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
+      { success: false, message: "Failed to create post" },
       { status: 500 }
     );
   }

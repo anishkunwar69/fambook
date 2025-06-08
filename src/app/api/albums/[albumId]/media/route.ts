@@ -1,4 +1,3 @@
-import { uploadToCloudinary } from "@/lib/cloudinary";
 import prisma from "@/lib/prisma";
 import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
@@ -8,8 +7,7 @@ export async function POST(
   { params }: { params: { albumId: string } }
 ) {
   try {
-    // 1. Validate and get albumId
-    const { albumId } = params;
+    const { albumId } = await params;
     if (!albumId) {
       return NextResponse.json(
         { success: false, message: "Album ID is required" },
@@ -17,7 +15,6 @@ export async function POST(
       );
     }
 
-    // 2. Auth check
     const auth = await currentUser();
     if (!auth) {
       return NextResponse.json(
@@ -26,11 +23,9 @@ export async function POST(
       );
     }
 
-    // 3. Get user
     const user = await prisma.user.findUnique({
       where: { externalId: auth.id },
     });
-
     if (!user) {
       return NextResponse.json(
         { success: false, message: "User not found" },
@@ -38,25 +33,15 @@ export async function POST(
       );
     }
 
-    // 4. Get album and check if user can access it
     const album = await prisma.album.findUnique({
       where: { id: albumId },
       include: {
         family: {
           include: {
-            members: {
-              where: {
-                userId: user.id,
-                status: "APPROVED",
-              },
-            },
+            members: { where: { userId: user.id, status: "APPROVED" } },
           },
         },
-        _count: {
-          select: {
-            media: true,
-          },
-        },
+        _count: { select: { media: true } },
       },
     });
 
@@ -66,7 +51,6 @@ export async function POST(
         { status: 404 }
       );
     }
-
     if (album.family.members.length === 0) {
       return NextResponse.json(
         { success: false, message: "Access denied" },
@@ -74,11 +58,17 @@ export async function POST(
       );
     }
 
-    // 5. Check media limit
-    const formData = await request.formData();
-    const mediaFiles = formData.getAll("media") as File[];
+    const body = await request.json();
+    const { media: mediaItems } = body;
 
-    if (album._count.media + mediaFiles.length > album.mediaLimit) {
+    if (!mediaItems || !Array.isArray(mediaItems) || mediaItems.length === 0) {
+      return NextResponse.json(
+        { success: false, message: "No media items provided" },
+        { status: 400 }
+      );
+    }
+
+    if (album._count.media + mediaItems.length > album.mediaLimit) {
       return NextResponse.json(
         {
           success: false,
@@ -88,76 +78,48 @@ export async function POST(
       );
     }
 
-    // 6. Upload media files and create records in a transaction
-    try {
-      // Upload files to Cloudinary
-      const mediaUrls = await Promise.all(
-        mediaFiles.map((file) => uploadToCloudinary(file))
-      );
-
-      // Create media records in a transaction
-      const result = await prisma.$transaction(async (tx) => {
-        // Create media records
-        const media = await Promise.all(
-          mediaUrls.map((media) =>
-            tx.media.create({
-              data: {
-                url: media.url,
-                type: media.type,
-                albumId,
-              },
-            })
-          )
-        );
-
-        // Create notifications for family members
-        const familyMembers = await tx.familyMember.findMany({
-          where: {
-            familyId: album.family.id,
-            status: "APPROVED",
-            NOT: {
-              userId: user.id,
+    const result = await prisma.$transaction(async (tx) => {
+      const createdMedia = await Promise.all(
+        mediaItems.map((media) =>
+          tx.media.create({
+            data: {
+              url: media.url,
+              type: media.type,
+              albumId,
             },
-          },
-        });
+          })
+        )
+      );
 
-        await Promise.all(
-          familyMembers.map((member) =>
-            tx.notification.create({
-              data: {
-                userId: member.userId,
-                type: "NEW_ALBUM",
-                content: `${user.fullName} added ${mediaFiles.length} new items to "${album.name}"`,
-              },
-            })
-          )
-        );
-
-        return media;
+      const familyMembers = await tx.familyMember.findMany({
+        where: {
+          familyId: album.family.id,
+          status: "APPROVED",
+          NOT: { userId: user.id },
+        },
       });
+      await Promise.all(
+        familyMembers.map((member) =>
+          tx.notification.create({
+            data: {
+              userId: member.userId,
+              type: "NEW_ALBUM",
+              content: `${user.fullName} added ${mediaItems.length} new items to "${album.name}"`,
+            },
+          })
+        )
+      );
+      return createdMedia;
+    });
 
-      return NextResponse.json(
-        {
-          success: true,
-          message: "Media uploaded successfully",
-          data: result,
-        },
-        { status: 201 }
-      );
-    } catch (uploadError) {
-      console.error("Failed to upload media:", uploadError);
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Failed to upload media",
-          error:
-            uploadError instanceof Error
-              ? uploadError.message
-              : "Unknown error",
-        },
-        { status: 500 }
-      );
-    }
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Media uploaded successfully",
+        data: result,
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Failed to handle media upload:", error);
     return NextResponse.json(

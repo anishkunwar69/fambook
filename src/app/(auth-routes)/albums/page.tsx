@@ -23,12 +23,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertTriangle,
-  Calendar,
   ChevronRight,
   Clock,
   Home,
   Image as ImageIcon,
-  ImagePlus,
   Loader2,
   Pencil,
   Plus,
@@ -52,9 +50,9 @@ function debounce<T extends (...args: any[]) => any>(
   };
 }
 
-type Album = {  
+type Album = {
   id: string;
-  name: string;     
+  name: string;
   description: string | null;
   coverImage: string | null;
   familyId: string;
@@ -80,18 +78,14 @@ function AlbumSkeletonCard() {
   return (
     <div className="group relative bg-white/80 backdrop-blur-md rounded-2xl border border-gray-200 overflow-hidden animate-pulse">
       <div className="aspect-[4/3] relative">
-        <div className="w-full h-full bg-gray-200"></div> {/* Skeleton Image */}
+        <div className="w-full h-full bg-gray-200"></div>
       </div>
-      <div className="p-4">
-        <div className="h-5 bg-gray-200 rounded w-3/4 mb-2"></div>{" "}
-        {/* Skeleton Title */}
-        <div className="h-4 bg-gray-200 rounded w-1/2 mb-3"></div>{" "}
-        {/* Skeleton Family Name */}
+      <div className="p-3 sm:p-4">
+        <div className="h-4 sm:h-5 bg-gray-200 rounded w-3/4 mb-2"></div>
+        <div className="h-3 sm:h-4 bg-gray-200 rounded w-1/2 mb-3"></div>
         <div className="flex items-center justify-between text-sm">
-          <div className="h-4 bg-gray-200 rounded w-1/4"></div>{" "}
-          {/* Skeleton Item Count */}
-          <div className="h-4 bg-gray-200 rounded w-1/4"></div>{" "}
-          {/* Skeleton Date */}
+          <div className="h-3 sm:h-4 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-3 sm:h-4 bg-gray-200 rounded w-1/4"></div>
         </div>
       </div>
     </div>
@@ -502,71 +496,76 @@ export default function AlbumsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-8">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8">
       {/* Breadcrumb */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-2 text-sm text-gray-600 mb-8"
+        className="flex items-center gap-2 text-sm text-gray-600 mb-6 sm:mb-8 overflow-x-auto whitespace-nowrap"
       >
         <Link
           href="/"
-          className="hover:text-rose-500 transition-colors flex items-center gap-1"
+          className="hover:text-rose-500 transition-colors flex items-center gap-1 shrink-0"
         >
           <Home className="w-4 h-4" />
           <span>Home</span>
         </Link>
-        <ChevronRight className="w-4 h-4" />
-        <span className="text-rose-500 font-medium">Albums</span>
+        <ChevronRight className="w-4 h-4 shrink-0" />
+        <span className="text-rose-500 font-medium shrink-0">Albums</span>
       </motion.div>
 
       {/* Header Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white/80 backdrop-blur-md rounded-2xl p-6 border border-rose-100/50 mb-8"
+        className="bg-white/80 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-rose-100/50 mb-6 sm:mb-8"
       >
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-lora font-bold text-gray-800 mb-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 mb-4 sm:mb-6">
+          <div className="text-center sm:text-left">
+            <h1 className="text-2xl sm:text-3xl font-lora font-bold text-gray-800 mb-2">
               Family Albums 🖼️
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-600 text-sm sm:text-base">
               Create and view photo albums for your precious memories
             </p>
           </div>
-          <Link href="/albums/create">
-            <Button className="bg-rose-500 hover:bg-rose-600 flex items-center gap-2">
+          <Link href="/albums/create" className="w-full sm:w-auto">
+            <Button className="bg-rose-500 hover:bg-rose-600 flex items-center justify-center gap-2 w-full sm:w-auto">
               <Plus className="w-4 h-4" />
-              Create Album
+              <span>Create Album</span>
             </Button>
           </Link>
         </div>
 
         {/* Filters and Search */}
-        <div className="flex flex-col sm:flex-row gap-4 items-center">
-          <div className="relative flex-1">
+        <div className="flex flex-col xl:flex-row xl:items-center gap-3 sm:gap-4">
+          <div className="relative w-full xl:flex-grow">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               placeholder="Search albums..."
               value={search}
               onChange={handleSearchChange}
-              className="pl-10 bg-white"
+              className="pl-10 bg-white w-full h-10 sm:h-auto"
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row sm:w-full xl:w-auto gap-2 sm:gap-2 xl:flex-shrink-0">
             {/* Family Filter */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-2 w-full sm:w-1/3 xl:w-auto h-10 sm:h-auto"
+                >
                   <Home className="w-4 h-4" />
-                  {selectedFamily === "ALL" 
-                    ? "All Families" 
-                    : families?.find((f: any) => f.id === selectedFamily)
-                        ?.name || "Select Family"}
+                  <span className="truncate text-sm sm:text-base">
+                    {selectedFamily === "ALL"
+                      ? "All Families"
+                      : families?.find((f: any) => f.id === selectedFamily)
+                          ?.name || "Select Family"}
+                  </span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="max-h-60 overflow-y-auto">
+              <DropdownMenuContent className="max-h-60 overflow-y-auto w-56">
                 <DropdownMenuRadioGroup
                   value={selectedFamily}
                   onValueChange={setSelectedFamily}
@@ -585,14 +584,19 @@ export default function AlbumsPage() {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-2 w-full sm:w-1/3 xl:w-auto h-10 sm:h-auto"
+                >
                   <SlidersHorizontal className="w-4 h-4" />
-                  {filter === "ALL"
-                    ? "All Albums"
-                    : filter === "NORMAL"
-                      ? "Normal Albums"
-                      : "Event Albums"}
-                  <span className="ml-1 text-xs text-gray-500">
+                  <span className="truncate text-sm sm:text-base">
+                    {filter === "ALL"
+                      ? "All Albums"
+                      : filter === "NORMAL"
+                        ? "Normal Albums"
+                        : "Event Albums"}
+                  </span>
+                  <span className="ml-1 text-xs text-gray-500 hidden sm:inline">
                     (
                     {filter === "ALL"
                       ? counts.all
@@ -603,48 +607,42 @@ export default function AlbumsPage() {
                   </span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent>
+              <DropdownMenuContent className="w-56">
                 <DropdownMenuRadioGroup
                   value={filter}
                   onValueChange={(value) => setFilter(value as FilterType)}
                 >
-                  <DropdownMenuRadioItem
-                    value="ALL"
-                    className="flex items-center gap-2"
-                  >
-                    <ImageIcon className="w-4 h-4" />
+                  <DropdownMenuRadioItem value="ALL">
                     All Albums ({counts.all})
                   </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem
-                    value="NORMAL"
-                    className="flex items-center gap-2"
-                  >
-                    <ImagePlus className="w-4 h-4" />
+                  <DropdownMenuRadioItem value="NORMAL">
                     Normal Albums ({counts.normal})
                   </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem
-                    value="EVENTS"
-                    className="flex items-center gap-2"
-                  >
-                    <Calendar className="w-4 h-4" />
+                  <DropdownMenuRadioItem value="EVENTS">
                     Event Albums ({counts.events})
                   </DropdownMenuRadioItem>
                 </DropdownMenuRadioGroup>
               </DropdownMenuContent>
             </DropdownMenu>
 
+            {/* Sort Button */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-2 w-full sm:w-1/3 xl:w-auto h-10 sm:h-auto"
+                >
                   <Clock className="w-4 h-4" />
-                  {sort === "NEWEST"
-                    ? "Newest First"
-                    : sort === "OLDEST"
-                      ? "Oldest First"
-                      : "Most Photos"}
+                  <span className="truncate text-sm sm:text-base">
+                    {sort === "NEWEST"
+                      ? "Newest First"
+                      : sort === "OLDEST"
+                        ? "Oldest First"
+                        : "Most Photos"}
+                  </span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent>
+              <DropdownMenuContent className="w-48">
                 <DropdownMenuRadioGroup
                   value={sort}
                   onValueChange={(value) => setSort(value as SortType)}
@@ -668,7 +666,7 @@ export default function AlbumsPage() {
       {/* Albums Grid */}
       <div>
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-4 sm:gap-6">
             {[...Array(ALBUMS_PER_PAGE)].map((_, index) => (
               <AlbumSkeletonCard key={index} />
             ))}
@@ -677,30 +675,30 @@ export default function AlbumsPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white/80 backdrop-blur-md rounded-2xl p-8 text-center border border-rose-100/50"
+            className="bg-white/80 backdrop-blur-md rounded-2xl p-6 sm:p-8 text-center border border-rose-100/50"
           >
-            <div className="bg-rose-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-              <ImageIcon className="w-8 h-8 text-rose-500" />
+            <div className="bg-rose-50 w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+              <ImageIcon className="w-6 h-6 sm:w-8 sm:h-8 text-rose-500" />
             </div>
-            <h3 className="text-xl font-lora font-bold text-gray-800 mb-2">
+            <h3 className="text-lg sm:text-xl font-lora font-bold text-gray-800 mb-2">
               {debouncedSearch ? "No matching albums found" : "No Albums Yet"}
             </h3>
-            <p className="text-gray-600 max-w-md mx-auto mb-6">
+            <p className="text-gray-600 max-w-md mx-auto mb-4 sm:mb-6 text-sm sm:text-base">
               {debouncedSearch
                 ? "Try adjusting your search or filters"
                 : "Start creating beautiful albums to organize your family memories!"}
             </p>
             {!debouncedSearch && (
-              <Link href="/albums/create">
-                <Button className="bg-rose-500 hover:bg-rose-600">
+              <Link href="/albums/create" className="w-full sm:w-auto">
+                <Button className="bg-rose-500 hover:bg-rose-600 w-full sm:w-auto">
                   Create Your First Album
                 </Button>
               </Link>
             )}
           </motion.div>
         ) : (
-          <div className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="space-y-6 sm:space-y-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-4 sm:gap-6">
               <AnimatePresence mode="popLayout">
                 {paginatedAlbums.map((album, index) => (
                   <motion.div
@@ -716,25 +714,25 @@ export default function AlbumsPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="text-gray-500 hover:text-blue-500 hover:bg-blue-50/50 w-7 h-7"
+                            className="text-gray-500 hover:text-blue-500 hover:bg-blue-50/50 w-6 h-6 sm:w-7 sm:h-7"
                             onClick={(e) => {
-                              e.preventDefault(); // Prevent link navigation
+                              e.preventDefault();
                               e.stopPropagation();
                               setAlbumToEdit(album);
                               setIsEditAlbumModalOpen(true);
                             }}
                             title="Edit Album"
                           >
-                            <Pencil className="w-4 h-4" />
+                            <Pencil className="w-3 h-3 sm:w-4 sm:h-4" />
                           </Button>
                         </div>
                         <div className="absolute top-2 right-2 z-30 bg-white/70 backdrop-blur-sm p-0.5 rounded-md shadow-sm">
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="text-gray-500 hover:text-red-500 hover:bg-red-50/50 w-7 h-7"
+                            className="text-gray-500 hover:text-red-500 hover:bg-red-50/50 w-6 h-6 sm:w-7 sm:h-7"
                             onClick={(e) => {
-                              e.preventDefault(); // Prevent link navigation
+                              e.preventDefault();
                               e.stopPropagation();
                               setAlbumToDelete({
                                 id: album.id,
@@ -744,7 +742,7 @@ export default function AlbumsPage() {
                             }}
                             title="Delete Album"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                           </Button>
                         </div>
                       </>
@@ -760,7 +758,7 @@ export default function AlbumsPage() {
                           />
                         ) : (
                           <div className="w-full h-full bg-rose-50 flex items-center justify-center">
-                            <ImageIcon className="w-12 h-12 text-rose-300" />
+                            <ImageIcon className="w-8 h-8 sm:w-12 sm:h-12 text-rose-300" />
                           </div>
                         )}
                         {album.event && (
@@ -770,20 +768,26 @@ export default function AlbumsPage() {
                             </span>
                           </div>
                         )}
-                        <div className="absolute bottom-4 left-4 right-4 z-20">
-                          <h3 className="text-white font-bold text-xl mb-1 line-clamp-1">
+                        <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 right-3 sm:right-4 z-20">
+                          <h3 className="text-white font-bold text-lg sm:text-xl mb-1 line-clamp-1">
                             {album.name}
                           </h3>
-                          <p className="text-white/90 text-sm line-clamp-1">
+                          <p className="text-white/90 text-xs sm:text-sm line-clamp-1">
                             {album.family.name}
                           </p>
                         </div>
                       </div>
-                      <div className="p-4">
-                        <div className="flex items-center justify-between text-sm text-gray-600">
+                      <div className="p-3 sm:p-4">
+                        <div className="flex items-center justify-between text-xs sm:text-sm text-gray-600">
                           <span>{album.mediaCount} items</span>
-                          <span>
+                          <span className="hidden sm:inline">
                             {new Date(album.createdAt).toLocaleDateString()}
+                          </span>
+                          <span className="sm:hidden">
+                            {new Date(album.createdAt).toLocaleDateString(
+                              "en-US",
+                              { month: "short", day: "numeric" }
+                            )}
                           </span>
                         </div>
                       </div>
@@ -795,34 +799,34 @@ export default function AlbumsPage() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex justify-center items-center gap-2 mt-8">
+              <div className="flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-4 mt-6 sm:mt-8">
                 <Button
                   variant="outline"
                   onClick={() =>
                     setCurrentPage((prev) => Math.max(prev - 1, 1))
                   }
                   disabled={currentPage === 1}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 w-full sm:w-auto"
                 >
                   Previous
                 </Button>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map(
                     (pageNum) => (
-                    <Button
-                      key={pageNum}
+                      <Button
+                        key={pageNum}
                         variant={
                           pageNum === currentPage ? "default" : "outline"
                         }
-                      onClick={() => setCurrentPage(pageNum)}
-                      className={`w-10 h-10 ${
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`w-8 h-8 sm:w-10 sm:h-10 text-sm ${
                           pageNum === currentPage
                             ? "bg-rose-500 hover:bg-rose-600"
                             : ""
-                      }`}
-                    >
-                      {pageNum}
-                    </Button>
+                        }`}
+                      >
+                        {pageNum}
+                      </Button>
                     )
                   )}
                 </div>
@@ -832,7 +836,7 @@ export default function AlbumsPage() {
                     setCurrentPage((prev) => Math.min(prev + 1, totalPages))
                   }
                   disabled={currentPage === totalPages}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 w-full sm:w-auto"
                 >
                   Next
                 </Button>
@@ -857,4 +861,4 @@ export default function AlbumsPage() {
       />
     </div>
   );
-} 
+}

@@ -14,10 +14,10 @@ import {
   ExternalLink,
   Flower2,
   Heart,
+  Loader2,
   MapPin,
   Star,
   User2,
-  Loader2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -57,7 +57,7 @@ export function MemberDetailsViewDialog({
 }: MemberDetailsViewDialogProps) {
   const router = useRouter();
   const [isNavigating, setIsNavigating] = useState(false);
-  
+
   // Check if today is the person's birthday (same month and day, regardless of year)
   const isBirthday = (() => {
     if (!member.dateOfBirth) return false;
@@ -83,7 +83,7 @@ export function MemberDetailsViewDialog({
   };
 
   const currentAge = getAge(member.dateOfBirth);
-  const ageAtDeath = member.dateOfDeath 
+  const ageAtDeath = member.dateOfDeath
     ? getAge(member.dateOfBirth, member.dateOfDeath)
     : null;
 
@@ -95,25 +95,28 @@ export function MemberDetailsViewDialog({
 
     try {
       setIsNavigating(true);
-      console.log("[DEBUG] Fetching user ID for member:", member.linkedMemberId);
-      
+      console.log(
+        "[DEBUG] Fetching user ID for member:",
+        member.linkedMemberId
+      );
+
       const response = await fetch(
         `/api/families/${familyId}/members/${member.linkedMemberId}/user`
       );
-      
+
       if (!response.ok) {
         throw new Error("Failed to get user information");
       }
-      
+
       const result = await response.json();
-      
+
       if (!result.success) {
         throw new Error(result.message || "Failed to get user information");
       }
-      
+
       const userId = result.data.userId;
       console.log("[DEBUG] Navigating to profile for user ID:", userId);
-      
+
       // Navigate to the correct profile URL
       router.push(`/profile/${userId}`);
     } catch (error) {
@@ -128,22 +131,22 @@ export function MemberDetailsViewDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         className={cn(
-        "max-w-2xl bg-white",
-        !member.isAlive && "bg-gradient-to-b from-gray-50 to-white",
-        isBirthday && "bg-gradient-to-br from-rose-50 via-white to-rose-50"
+          "max-w-2xl bg-white",
+          !member.isAlive && "bg-gradient-to-b from-gray-50 to-white",
+          isBirthday && "bg-gradient-to-br from-rose-50 via-white to-rose-50"
         )}
       >
         <DialogHeader>
-          <DialogTitle
-            className={cn(
-              "font-lora text-2xl flex items-center justify-between -mb-1",
-              member.isAlive ? isBirthday ? "text-gray-800" : "text-gray-800 mb-5" : "text-slate-700 mb-5"
-            )}
-          >
-            <span>
+          <div className="flex flex-col items-center md:gap-4 md:flex-row md:justify-between w-full md:my-6">
+            <DialogTitle
+              className={cn(
+                "font-lora text-xl md:text-2xl text-center md:text-left",
+                member.isAlive ? "text-gray-800" : "text-slate-700"
+              )}
+            >
               {member.firstName} {member.lastName}'s Details
-            </span>
-            <div className="flex items-center gap-2 my-5">
+            </DialogTitle>
+            <div className="flex items-center gap-2">
               {member.linkedMemberId && (
                 <Button
                   variant="outline"
@@ -160,7 +163,7 @@ export function MemberDetailsViewDialog({
                   {isNavigating ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                  <ExternalLink className="w-4 h-4" />
+                    <ExternalLink className="w-4 h-4" />
                   )}
                   {isNavigating ? "Loading..." : "View Profile"}
                 </Button>
@@ -182,7 +185,7 @@ export function MemberDetailsViewDialog({
                 </Button>
               )}
             </div>
-          </DialogTitle>
+          </div>
         </DialogHeader>
 
         {/* Birthday Wish Section */}
@@ -208,10 +211,10 @@ export function MemberDetailsViewDialog({
           {/* Profile Image and Name Section */}
           <div
             className={cn(
-              "flex flex-col items-center -mt-6 pt-8 pb-6 px-4 rounded-xl bg-gradient-to-b relative overflow-hidden",
-            member.isAlive 
-              ? "from-rose-50 to-white" 
-              : "from-gray-100/80 to-white border border-gray-100"
+              "flex flex-col items-center -mt-2 md:-mt-6 pt-6 md:pt-8 pb-6 px-4 rounded-xl bg-gradient-to-b relative overflow-hidden",
+              member.isAlive
+                ? "from-rose-50 to-white"
+                : "from-gray-100/80 to-white border border-gray-100"
             )}
           >
             {/* Decorative elements for deceased members */}
@@ -232,7 +235,7 @@ export function MemberDetailsViewDialog({
             <div
               className={cn(
                 "w-24 h-24 rounded-full border-4 mb-4 overflow-hidden relative",
-              member.isAlive ? "border-rose-200" : "border-gray-200"
+                member.isAlive ? "border-rose-200" : "border-gray-200"
               )}
             >
               {member.profileImage ? (
@@ -248,15 +251,15 @@ export function MemberDetailsViewDialog({
               ) : (
                 <div
                   className={cn(
-                  "w-full h-full flex items-center justify-center",
-                  member.isAlive 
-                    ? "bg-rose-50" 
+                    "w-full h-full flex items-center justify-center",
+                    member.isAlive
+                      ? "bg-rose-50"
                       : "bg-gradient-to-br from-slate-100 to-blue-50"
                   )}
                 >
                   <User2
                     className={cn(
-                    "w-12 h-12",
+                      "w-12 h-12",
                       member.isAlive ? "text-rose-300" : "text-slate-400"
                     )}
                   />
@@ -270,7 +273,7 @@ export function MemberDetailsViewDialog({
 
             <h2
               className={cn(
-                "text-2xl font-semibold text-center mb-1 font-serif",
+                "text-xl sm:text-2xl font-semibold text-center mb-1 font-serif",
                 member.isAlive ? "text-gray-800" : "text-slate-700"
               )}
             >
@@ -317,7 +320,7 @@ export function MemberDetailsViewDialog({
           )}
 
           {/* Details Grid */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Birth Details */}
             <div className="space-y-2">
               <h3
@@ -340,8 +343,8 @@ export function MemberDetailsViewDialog({
                   <div className="flex items-center gap-2">
                     <CalendarDays
                       className={cn(
-                      "w-4 h-4",
-                      member.isAlive ? "text-rose-500" : "text-gray-500"
+                        "w-4 h-4",
+                        member.isAlive ? "text-rose-500" : "text-gray-500"
                       )}
                     />
                     <p
@@ -391,8 +394,8 @@ export function MemberDetailsViewDialog({
                   <div className="flex items-center gap-2">
                     <MapPin
                       className={cn(
-                      "w-4 h-4",
-                      member.isAlive ? "text-rose-500" : "text-gray-500"
+                        "w-4 h-4",
+                        member.isAlive ? "text-rose-500" : "text-gray-500"
                       )}
                     />
                     <p
@@ -426,7 +429,7 @@ export function MemberDetailsViewDialog({
 
           {/* Death Information (if applicable) - Enhanced Memorial Section */}
           {!member.isAlive && member.dateOfDeath && (
-            <div className="mt-6 p-8 rounded-xl border border-slate-200/60 bg-gradient-to-br from-slate-50/90 via-blue-50/50 to-purple-50/30 shadow-lg backdrop-blur-sm relative overflow-hidden">
+            <div className="mt-6 p-4 md:p-8 rounded-xl border border-slate-200/60 bg-gradient-to-br from-slate-50/90 via-blue-50/50 to-purple-50/30 shadow-lg backdrop-blur-sm relative overflow-hidden">
               {/* Decorative background elements */}
               <div className="absolute inset-0 opacity-5">
                 <div className="absolute top-4 left-4">
@@ -442,32 +445,32 @@ export function MemberDetailsViewDialog({
 
               {/* Memorial content */}
               <div className="relative z-10">
-                <div className="flex items-center justify-center gap-4 mb-6">
+                <div className="flex items-center justify-center gap-2 md:gap-4 mb-4 md:mb-6">
                   <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-300/60 to-transparent" />
-                  <div className="flex items-center gap-2 bg-white/80 px-4 py-2 rounded-full shadow-sm backdrop-blur-sm">
-                    <Heart className="w-5 h-5 text-blue-400" />
-                    <span className="text-sm font-medium text-slate-600">
+                  <div className="flex items-center gap-2 bg-white/80 px-3 md:px-4 py-1 md:py-2 rounded-full shadow-sm backdrop-blur-sm">
+                    <Heart className="w-4 h-4 md:w-5 md:h-5 text-blue-400" />
+                    <span className="text-xs md:text-sm font-medium text-slate-600">
                       Passed away on
                     </span>
                   </div>
                   <div className="h-px flex-1 bg-gradient-to-l from-transparent via-slate-300/60 to-transparent" />
                 </div>
 
-                <div className="text-center space-y-4">
-                  <p className="text-lg font-serif text-slate-700 font-medium">
+                <div className="text-center space-y-2 md:space-y-4">
+                  <p className="text-base md:text-lg font-serif text-slate-700 font-medium">
                     {format(new Date(member.dateOfDeath), "MMMM d, yyyy")}
-              </p>
-                  <p className="text-slate-600">
+                  </p>
+                  <p className="text-sm md:text-base text-slate-600">
                     At the age of{" "}
                     <span className="font-medium">{ageAtDeath}</span>
-              </p>
+                  </p>
 
-                  <div className="mt-6 pt-4 border-t border-slate-200/50">
-                    <p className="text-slate-500 italic font-serif text-lg leading-relaxed">
+                  <div className="mt-4 md:mt-6 pt-4 border-t border-slate-200/50">
+                    <p className="text-base md:text-lg italic font-serif leading-relaxed text-slate-500">
                       "In loving memory of Dear {member.firstName}{" "}
                       {member.lastName}"
-                </p>
-                    <div className="mt-4 flex items-center justify-center gap-2 text-slate-400">
+                    </p>
+                    <div className="mt-3 md:mt-4 flex items-center justify-center gap-2 text-slate-400">
                       <Star className="w-4 h-4 text-rose-500" />
                       <span className="text-xs text-rose-500 font-medium tracking-wider uppercase">
                         ❤️ Forever in our hearts ❤️
@@ -483,4 +486,4 @@ export function MemberDetailsViewDialog({
       </DialogContent>
     </Dialog>
   );
-} 
+}

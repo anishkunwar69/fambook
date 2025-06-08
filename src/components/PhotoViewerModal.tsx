@@ -1,25 +1,41 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { X, ChevronLeft, ChevronRight, Heart, MessageCircle, Send, Loader2, AlertTriangle, Trash2, MoreHorizontal, Edit3 } from "lucide-react";
-import Image from "next/image";
-import { format, formatDistanceToNow } from "date-fns";
 import { Textarea } from "@/components/ui/textarea";
-import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { useInView } from "react-intersection-observer";
-import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { format, formatDistanceToNow } from "date-fns";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  AlertTriangle,
+  ChevronLeft,
+  ChevronRight,
+  Edit3,
+  Heart,
+  Loader2,
+  MessageCircle,
+  MoreHorizontal,
+  Send,
+  Trash2,
+  X,
+} from "lucide-react";
+import Image from "next/image";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useInView } from "react-intersection-observer";
 
 // Assuming Post type is similar to or can be imported from where it's defined (e.g., feed/page.tsx)
 // For now, let's define it inline for clarity if not directly importable
@@ -108,7 +124,13 @@ interface CommentItemProps {
   currentUserId: string | undefined;
 }
 
-function CommentItem({ comment, onDelete, onEdit, isDeleting, currentUserId }: CommentItemProps) {
+function CommentItem({
+  comment,
+  onDelete,
+  onEdit,
+  isDeleting,
+  currentUserId,
+}: CommentItemProps) {
   return (
     <motion.div
       layout
@@ -130,7 +152,11 @@ function CommentItem({ comment, onDelete, onEdit, isDeleting, currentUserId }: C
           {currentUserId === comment.user.id && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-slate-600">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-slate-400 hover:text-slate-600"
+                >
                   <MoreHorizontal className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -146,10 +172,14 @@ function CommentItem({ comment, onDelete, onEdit, isDeleting, currentUserId }: C
                 )}
                 <DropdownMenuItem
                   onSelect={() => onDelete(comment.id)}
-              disabled={isDeleting}
+                  disabled={isDeleting}
                   className="cursor-pointer text-red-600 hover:!text-red-600 hover:!bg-red-50 flex items-center gap-2"
-            >
-              {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                >
+                  {isDeleting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-4 h-4" />
+                  )}
                   Delete Comment
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -157,7 +187,9 @@ function CommentItem({ comment, onDelete, onEdit, isDeleting, currentUserId }: C
           )}
         </div>
         <p className="text-xs text-slate-500 mb-1.5">
-          {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
+          {formatDistanceToNow(new Date(comment.createdAt), {
+            addSuffix: true,
+          })}
         </p>
         <p className="text-sm text-slate-700 whitespace-pre-wrap">
           {comment.content}
@@ -183,12 +215,15 @@ export function PhotoViewerModal({
   const queryClient = useQueryClient();
   const { user: currentUser } = useCurrentUser();
   const [commentText, setCommentText] = useState("");
-  const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
+  const [deletingCommentId, setDeletingCommentId] = useState<string | null>(
+    null
+  );
   const commentInputRef = useRef<HTMLTextAreaElement>(null); // For focusing
 
-  const { ref: loadMoreCommentsRef, inView: loadMoreCommentsInView } = useInView({
-    threshold: 0.5,
-  });
+  const { ref: loadMoreCommentsRef, inView: loadMoreCommentsInView } =
+    useInView({
+      threshold: 0.5,
+    });
 
   useEffect(() => {
     if (post && initialMediaIndex < post.media.length) {
@@ -198,7 +233,7 @@ export function PhotoViewerModal({
     }
     // Reset comment text when modal opens or post changes
     if (isOpen) {
-        setCommentText("");
+      setCommentText("");
     }
   }, [initialMediaIndex, post, isOpen]);
 
@@ -214,30 +249,32 @@ export function PhotoViewerModal({
 
   const handlePrev = useCallback(() => {
     if (post && post.media.length > 0) {
-      setCurrentIndex((prevIndex) => (prevIndex - 1 + post.media.length) % post.media.length);
+      setCurrentIndex(
+        (prevIndex) => (prevIndex - 1 + post.media.length) % post.media.length
+      );
     }
   }, [post]);
-  
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (!isOpen || !post ) return;
+      if (!isOpen || !post) return;
       // Allow typing in textarea without triggering image navigation
       if (event.target === commentInputRef.current) {
-          if (event.key === "Escape") {
-             // if textarea is focused and escape is pressed, it will just blur.
-             // To close modal, user has to press escape again when textarea is not focused.
-             // Or click outside.
-          } else {
-            return;
-          }
+        if (event.key === "Escape") {
+          // if textarea is focused and escape is pressed, it will just blur.
+          // To close modal, user has to press escape again when textarea is not focused.
+          // Or click outside.
+        } else {
+          return;
+        }
       }
 
       if (post.media.length > 1) {
         if (event.key === "ArrowRight") {
-            handleNext();
-          } else if (event.key === "ArrowLeft") {
-            handlePrev();
-          }
+          handleNext();
+        } else if (event.key === "ArrowLeft") {
+          handlePrev();
+        }
       }
       if (event.key === "Escape") {
         handleClose();
@@ -256,7 +293,7 @@ export function PhotoViewerModal({
     fetchNextPage: fetchNextCommentsPage,
     hasNextPage: hasNextCommentsPage,
     isLoading: isLoadingComments,
-    isFetchingNextPage: isFetchingNextCommentsPage,
+    isFetchingNextPage,
     isError: isCommentsError,
     error: commentsError,
     refetch: refetchComments,
@@ -283,14 +320,20 @@ export function PhotoViewerModal({
   });
 
   useEffect(() => {
-    if (loadMoreCommentsInView && hasNextCommentsPage && !isFetchingNextCommentsPage) {
+    if (loadMoreCommentsInView && hasNextCommentsPage && !isFetchingNextPage) {
       fetchNextCommentsPage();
     }
-  }, [loadMoreCommentsInView, hasNextCommentsPage, isFetchingNextCommentsPage, fetchNextCommentsPage]);
+  }, [
+    loadMoreCommentsInView,
+    hasNextCommentsPage,
+    isFetchingNextPage,
+    fetchNextCommentsPage,
+  ]);
 
-  const allComments = commentPages?.pages.flatMap((page) => page.comments) || [];
-  const totalCommentsCount = commentPages?.pages[0]?.totalComments ?? post?._count.comments ?? 0;
-
+  const allComments =
+    commentPages?.pages.flatMap((page) => page.comments) || [];
+  const totalCommentsCount =
+    commentPages?.pages[0]?.totalComments ?? post?._count.comments ?? 0;
 
   // Add Comment Mutation
   const addCommentMutation = useMutation({
@@ -309,14 +352,18 @@ export function PhotoViewerModal({
       setCommentText("");
       queryClient.invalidateQueries({ queryKey: ["comments", post?.id] });
       // Optimistically update the post's comment count in the main feed query if possible, or just invalidate
-      queryClient.invalidateQueries({ queryKey: ["feed"] }); 
+      queryClient.invalidateQueries({ queryKey: ["feed"] });
       // Potentially update the comment count in the PhotoViewerModal's local post state if needed,
       // but query invalidation for 'comments' query should handle the list update.
       // And `totalCommentsCount` should update from the refetched `commentPages`.
       toast({ title: "Comment posted!", variant: "default" });
     },
     onError: (error: Error) => {
-      toast({ title: "Error posting comment", description: error.message, variant: "destructive" });
+      toast({
+        title: "Error posting comment",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 
@@ -328,11 +375,13 @@ export function PhotoViewerModal({
         method: "DELETE",
       });
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: "Failed to delete comment" }));
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Failed to delete comment" }));
         throw new Error(errorData.message);
       }
       // For 204 No Content, no JSON to parse
-      if (response.status === 204) return null; 
+      if (response.status === 204) return null;
       return response.json();
     },
     onSuccess: () => {
@@ -341,26 +390,32 @@ export function PhotoViewerModal({
       toast({ title: "Comment deleted", variant: "default" });
     },
     onError: (error: Error) => {
-      toast({ title: "Error deleting comment", description: error.message, variant: "destructive" });
+      toast({
+        title: "Error deleting comment",
+        description: error.message,
+        variant: "destructive",
+      });
     },
     onSettled: () => {
       setDeletingCommentId(null);
     },
   });
 
-  const handleCommentSubmit = (e?: React.FormEvent) => { // Make e optional for direct calls
+  const handleCommentSubmit = (e?: React.FormEvent) => {
+    // Make e optional for direct calls
     e?.preventDefault();
     if (!commentText.trim() || !post?.id) return;
     addCommentMutation.mutate({ content: commentText.trim() });
   };
 
-  const handleTextareaKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleTextareaKeyDown = (
+    e: React.KeyboardEvent<HTMLTextAreaElement>
+  ) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleCommentSubmit();
     }
   };
-
 
   if (!isOpen || !post) {
     return null;
@@ -368,177 +423,270 @@ export function PhotoViewerModal({
 
   const currentMedia = post.media[currentIndex];
 
+  const imageDisplayArea = (
+    <div className="flex items-center justify-center relative h-[60vh] w-full lg:h-full lg:flex-1 lg:w-auto bg-black">
+      {currentMedia.type === "PHOTO" ? (
+        <Image
+          src={currentMedia.url}
+          alt={currentMedia.caption || `Post media ${currentIndex + 1}`}
+          fill
+          className="object-contain"
+          priority
+        />
+      ) : (
+        <video
+          src={currentMedia.url}
+          controls
+          className="max-w-full max-h-full object-contain"
+        />
+      )}
+
+      {post.media.length > 1 && (
+        <>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handlePrev}
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700 hover:text-black bg-white/50 hover:bg-white/80 rounded-full p-2 shadow-md"
+          >
+            <ChevronLeft className="w-7 h-7" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleNext}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-700 hover:text-black bg-white/50 hover:bg-white/80 rounded-full p-2 shadow-md"
+          >
+            <ChevronRight className="w-7 h-7" />
+          </Button>
+        </>
+      )}
+    </div>
+  );
+
+  const sidebarContent = (
+    <div className="flex flex-col w-full lg:w-[400px] lg:flex-none flex-1 min-h-0 lg:h-full bg-white text-gray-800 lg:border-l border-gray-200">
+      {/* Header: User Info & Post Text */}
+      <div className="p-5 border-b border-gray-200">
+        <div className="flex items-center gap-3 mb-3">
+          <Avatar className="w-10 h-10">
+            <AvatarImage
+              src={post.user.imageUrl || undefined}
+              alt={post.user.fullName}
+            />
+            <AvatarFallback>
+              {post.user.fullName
+                ? post.user.fullName.charAt(0).toUpperCase()
+                : "U"}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <p className="font-semibold text-sm text-gray-900">
+              {post.user.fullName}
+            </p>
+            <p className="text-xs text-gray-500">
+              {format(new Date(post.createdAt), "MMM d, yyyy 'at' h:mm a")}
+            </p>
+          </div>
+        </div>
+        {post.text && (
+          <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed mt-5">
+            {post.text}
+          </p>
+        )}
+      </div>
+
+      {/* Actions: Likes & Comments Count */}
+      <div className="p-5 border-b border-gray-200 flex items-center justify-start gap-2">
+        <button
+          onClick={() => onLikePost(post.id)}
+          disabled={isLikingStatus}
+          className="flex items-center gap-1.5 text-gray-600 hover:text-rose-600 group disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Heart
+            className={`w-5 h-5 group-hover:text-rose-500 ${post.isLiked ? "fill-rose-500 text-rose-500" : "text-gray-400"}`}
+          />
+        </button>
+        <button
+          onClick={() => post._count.likes > 0 && onOpenLikesModal(post.id)} // Only open if likes > 0
+          className="text-sm font-medium text-gray-600 hover:text-rose-600 disabled:cursor-default disabled:hover:text-gray-600"
+          disabled={post._count.likes === 0}
+        >
+          {post._count.likes} {post._count.likes === 1 ? "like" : "likes"}
+        </button>
+        {/* Comment Icon - now just visual or could scroll to comments */}
+        <div className="flex items-center gap-1.5 text-gray-600 group">
+          <MessageCircle className="w-5 h-5 text-gray-400" />
+          <span className="text-sm font-medium">
+            {totalCommentsCount}{" "}
+            {totalCommentsCount === 1 ? "comment" : "comments"}
+          </span>
+        </div>
+      </div>
+
+      {/* Comments Section */}
+      <div className="flex-grow p-0 flex flex-col overflow-hidden">
+        {" "}
+        {/* Changed padding to p-0 and added flex flex-col */}
+        <div className="flex-grow overflow-y-auto styled-scrollbar">
+          {" "}
+          {/* This inner div will scroll */}
+          <AnimatePresence mode="popLayout">
+            {isLoadingComments && !allComments.length ? (
+              <div className="py-2">
+                {[...Array(3)].map((_, i) => (
+                  <CommentSkeletonItem key={`skeleton-${i}`} />
+                ))}
+              </div>
+            ) : isCommentsError ? (
+              <div className="flex flex-col items-center justify-center h-full p-6 text-center">
+                <AlertTriangle className="w-10 h-10 text-red-400 mb-3" />
+                <p className="font-semibold text-slate-700 mb-1">
+                  Error loading comments
+                </p>
+                <p className="text-sm text-slate-500 mb-3">
+                  {commentsError instanceof Error
+                    ? commentsError.message
+                    : "Something went wrong."}
+                </p>
+                <Button
+                  onClick={() => refetchComments()}
+                  variant="outline"
+                  size="sm"
+                >
+                  Try Again
+                </Button>
+              </div>
+            ) : allComments.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full p-6 text-center text-slate-500">
+                <MessageCircle className="w-10 h-10  mb-3" />
+                <p className="font-semibold text-slate-700 mb-1">
+                  No comments yet
+                </p>
+                <p className="text-sm">Be the first to share your thoughts!</p>
+              </div>
+            ) : (
+              allComments.map((comment) => (
+                <CommentItem
+                  key={comment.id}
+                  comment={comment}
+                  onDelete={
+                    onDeleteComment
+                      ? (commentId) => onDeleteComment(commentId, post!.id)
+                      : () => deleteCommentMutation.mutate(comment.id)
+                  }
+                  onEdit={
+                    onEditComment
+                      ? (comment) => onEditComment(comment, post!.id)
+                      : undefined
+                  }
+                  isDeleting={
+                    deleteCommentMutation.isPending &&
+                    deletingCommentId === comment.id
+                  }
+                  currentUserId={currentUser?.id}
+                />
+              ))
+            )}
+          </AnimatePresence>
+          {/* Load More Trigger for Comments */}
+          <div
+            ref={loadMoreCommentsRef}
+            className="h-10 flex justify-center items-center"
+          >
+            {isFetchingNextPage && (
+              <Loader2 className="w-5 h-5 text-rose-500 animate-spin" />
+            )}
+            {!hasNextCommentsPage &&
+              allComments.length > 0 &&
+              !isLoadingComments &&
+              !isFetchingNextPage && (
+                <span className="text-xs text-slate-400">
+                  All comments loaded.
+                </span>
+              )}
+          </div>
+        </div>
+      </div>
+
+      {/* Comment Input */}
+      <form
+        onSubmit={handleCommentSubmit}
+        className="p-4 border-t border-gray-200 bg-slate-50/50 mt-auto shrink-0"
+      >
+        <div className="flex items-center gap-2">
+          <Avatar className="w-8 h-8 shrink-0">
+            <AvatarImage src={currentUser?.imageUrl || undefined} />
+            <AvatarFallback>
+              {currentUser?.fullName
+                ? currentUser.fullName.charAt(0).toUpperCase()
+                : "U"}
+            </AvatarFallback>
+          </Avatar>
+          <Textarea
+            ref={commentInputRef}
+            placeholder="Write a comment..."
+            value={commentText}
+            onChange={(e) => setCommentText(e.target.value)}
+            onKeyDown={handleTextareaKeyDown}
+            className="bg-white border-gray-300 text-gray-800 placeholder:text-gray-400 resize-none text-sm focus-visible:ring-1 focus-visible:ring-rose-500 focus-visible:border-rose-500"
+            rows={1} // Start with 1 row, can expand if needed or make it a fixed height
+            disabled={addCommentMutation.isPending}
+          />
+          <Button
+            type="submit"
+            variant="ghost"
+            size="icon"
+            className="text-rose-500 hover:text-rose-600 disabled:text-gray-400"
+            disabled={!commentText.trim() || addCommentMutation.isPending}
+          >
+            {addCommentMutation.isPending ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <Send className="w-5 h-5" />
+            )}
+          </Button>
+        </div>
+      </form>
+    </div>
+  );
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="p-0 m-0 w-screen h-screen max-w-none sm:max-w-none flex bg-white overflow-hidden border-0">
+      <DialogContent className="p-0 bg-white dark:bg-slate-900 border-0 max-w-none w-screen h-screen sm:h-[calc(var(--vh,1vh)*100)] flex flex-col">
         <VisuallyHidden>
-          <DialogHeader>
-            <DialogTitle>View Post Media</DialogTitle>
-          </DialogHeader>
+          <DialogTitle>Media Viewer</DialogTitle>
         </VisuallyHidden>
+        <div className="flex-1 flex flex-col lg:flex-row min-h-0 relative">
+          {/* Close Button for mobile/tablet */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="lg:hidden absolute top-3 right-3 z-50 bg-black/30 text-white rounded-full h-9 w-9"
+            onClick={handleClose}
+            aria-label="Close viewer"
+          >
+            <X className="h-5 w-5" />
+          </Button>
 
-        {/* Image Display Area */}
-        <div className="flex-1 flex items-center justify-center relative h-full w-[calc(100%-400px)] bg-black">
-          {currentMedia.type === "PHOTO" ? (
-            <Image
-              src={currentMedia.url}
-              alt={currentMedia.caption || `Post media ${currentIndex + 1}`}
-              fill
-              className="object-contain"
-              priority
-            />
-          ) : (
-            <video
-              src={currentMedia.url}
-              controls
-              className="max-w-full max-h-full object-contain"
-            />
-          )}
-
-          {post.media.length > 1 && (
-            <>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handlePrev}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700 hover:text-black bg-white/50 hover:bg-white/80 rounded-full p-2 shadow-md"
+          {/* Image/Video view */}
+          <div className="flex-1 lg:w-[calc(100%-420px)] bg-black/95 dark:bg-black/90 flex items-center justify-center relative overflow-hidden">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentIndex}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="absolute inset-0"
               >
-                <ChevronLeft className="w-7 h-7" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleNext}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-700 hover:text-black bg-white/50 hover:bg-white/80 rounded-full p-2 shadow-md"
-              >
-                <ChevronRight className="w-7 h-7" />
-              </Button>
-            </>
-          )}
-        </div>
-
-        {/* Sidebar */}
-        <div className="w-[400px] bg-white text-gray-800 flex flex-col h-full border-l border-gray-200">
-          {/* Header: User Info & Post Text */}
-          <div className="p-5 border-b border-gray-200">
-            <div className="flex items-center gap-3 mb-3">
-              <Avatar className="w-10 h-10">
-                <AvatarImage src={post.user.imageUrl || undefined} alt={post.user.fullName} />
-                <AvatarFallback>{post.user.fullName ? post.user.fullName.charAt(0).toUpperCase() : "U"}</AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="font-semibold text-sm text-gray-900">{post.user.fullName}</p>
-                <p className="text-xs text-gray-500">
-                  {format(new Date(post.createdAt), "MMM d, yyyy 'at' h:mm a")}
-                </p>
-              </div>
-            </div>
-            {post.text && <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed mb-3">{post.text}</p>}
+                {imageDisplayArea}
+              </motion.div>
+            </AnimatePresence>
           </div>
 
-          {/* Actions: Likes & Comments Count */}
-          <div className="p-5 border-b border-gray-200 flex items-center justify-start gap-2">
-              <button 
-                onClick={() => onLikePost(post.id)}
-                disabled={isLikingStatus}
-                className="flex items-center gap-1.5 text-gray-600 hover:text-rose-600 group disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                  <Heart className={`w-5 h-5 group-hover:text-rose-500 ${post.isLiked ? "fill-rose-500 text-rose-500" : "text-gray-400"}`} />
-              </button>
-              <button 
-                onClick={() => post._count.likes > 0 && onOpenLikesModal(post.id)} // Only open if likes > 0
-                className="text-sm font-medium text-gray-600 hover:text-rose-600 disabled:cursor-default disabled:hover:text-gray-600"
-                disabled={post._count.likes === 0}
-              >
-                {post._count.likes} {post._count.likes === 1 ? "like" : "likes"}
-              </button>
-              {/* Comment Icon - now just visual or could scroll to comments */}
-              <div className="flex items-center gap-1.5 text-gray-600 group">
-                  <MessageCircle className="w-5 h-5 text-gray-400" /> 
-                  <span className="text-sm font-medium">
-                    {totalCommentsCount} {totalCommentsCount === 1 ? "comment" : "comments"}
-                  </span>
-              </div>
-          </div>
-          
-          {/* Comments Section */}
-          <div className="flex-grow p-0 flex flex-col overflow-hidden"> {/* Changed padding to p-0 and added flex flex-col */}
-            <div className="flex-grow overflow-y-auto styled-scrollbar"> {/* This inner div will scroll */}
-              <AnimatePresence mode="popLayout">
-                {isLoadingComments && !allComments.length ? (
-                  <div className="py-2">
-                    {[...Array(3)].map((_, i) => <CommentSkeletonItem key={`skeleton-${i}`} />)}
-                  </div>
-                ) : isCommentsError ? (
-                  <div className="flex flex-col items-center justify-center h-full p-6 text-center">
-                    <AlertTriangle className="w-10 h-10 text-red-400 mb-3" />
-                    <p className="font-semibold text-slate-700 mb-1">Error loading comments</p>
-                    <p className="text-sm text-slate-500 mb-3">
-                      {commentsError instanceof Error ? commentsError.message : "Something went wrong."}
-                    </p>
-                    <Button onClick={() => refetchComments()} variant="outline" size="sm">
-                      Try Again
-                    </Button>
-                  </div>
-                ) : allComments.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-full p-6 text-center text-slate-500">
-                     <MessageCircle className="w-10 h-10  mb-3" />
-                    <p className="font-semibold text-slate-700 mb-1">No comments yet</p>
-                    <p className="text-sm">Be the first to share your thoughts!</p>
-                  </div>
-                ) : (
-                  allComments.map(comment => (
-                    <CommentItem 
-                      key={comment.id} 
-                      comment={comment}
-                      onDelete={onDeleteComment ? (commentId) => onDeleteComment(commentId, post!.id) : () => deleteCommentMutation.mutate(comment.id)}
-                      onEdit={onEditComment ? (comment) => onEditComment(comment, post!.id) : undefined}
-                      isDeleting={deleteCommentMutation.isPending && deletingCommentId === comment.id}
-                      currentUserId={currentUser?.id}
-                    />
-                  ))
-                )}
-              </AnimatePresence>
-              {/* Load More Trigger for Comments */}
-              <div ref={loadMoreCommentsRef} className="h-10 flex justify-center items-center">
-                {isFetchingNextCommentsPage && <Loader2 className="w-5 h-5 text-rose-500 animate-spin" />}
-                {!hasNextCommentsPage && allComments.length > 0 && !isLoadingComments && !isFetchingNextCommentsPage && (
-                  <span className="text-xs text-slate-400">All comments loaded.</span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Comment Input */}
-          <form onSubmit={handleCommentSubmit} className="p-4 border-t border-gray-200 bg-slate-50/50 mt-auto shrink-0">
-            <div className="flex items-center gap-2">
-              <Avatar className="w-8 h-8 shrink-0">
-                  <AvatarImage src={currentUser?.imageUrl || undefined} />
-                  <AvatarFallback>{currentUser?.fullName ? currentUser.fullName.charAt(0).toUpperCase() : "U"}</AvatarFallback>
-              </Avatar>
-              <Textarea 
-                ref={commentInputRef}
-                placeholder="Write a comment..." 
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                onKeyDown={handleTextareaKeyDown}
-                className="bg-white border-gray-300 text-gray-800 placeholder:text-gray-400 resize-none text-sm focus-visible:ring-1 focus-visible:ring-rose-500 focus-visible:border-rose-500"
-                rows={1} // Start with 1 row, can expand if needed or make it a fixed height
-                disabled={addCommentMutation.isPending}
-              />
-              <Button 
-                type="submit" 
-                variant="ghost" 
-                size="icon" 
-                className="text-rose-500 hover:text-rose-600 disabled:text-gray-400"
-                disabled={!commentText.trim() || addCommentMutation.isPending}
-              >
-                {addCommentMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
-              </Button>
-            </div>
-          </form>
+          {sidebarContent}
         </div>
       </DialogContent>
     </Dialog>
   );
-} 
+}
