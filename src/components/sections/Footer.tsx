@@ -45,54 +45,25 @@ export default function Footer() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <a
-                href="mailto:feedback@fambook.app"
+                href="mailto:anishkunwar808@gmail.com"
                 className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-all hover:scale-105"
               >
                 <Mail className="w-4 h-4" />
-                <span className="font-poppins">feedback@fambook.app</span>
+                <span className="font-poppins">anishkunwar808@gmail.com</span>
               </a>
               <a
-                href="https://github.com/yourusername/fambook/issues"
+                href="https://www.instagram.com/anishkunwar_21/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-all hover:scale-105"
               >
-                <Github className="w-4 h-4" />
-                <span className="font-poppins">Report Issues</span>
-              </a>
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  // You can replace this with your preferred feedback form/survey
-                  window.open('mailto:feedback@fambook.app?subject=FamBook Feedback&body=Hi! I would like to share my feedback about FamBook:', '_blank');
-                }}
-                className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-all hover:scale-105"
-              >
-                <MessageCircle className="w-4 h-4" />
-                <span className="font-poppins">Send Feedback</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2Zm0 1.5A4.25 4.25 0 0 0 3.5 7.75v8.5A4.25 4.25 0 0 0 7.75 20.5h8.5A4.25 4.25 0 0 0 20.5 16.25v-8.5A4.25 4.25 0 0 0 16.25 3.5h-8.5Zm4.25 2.25a6.25 6.25 0 1 1 0 12.5a6.25 6.25 0 0 1 0-12.5Zm0 1.5a4.75 4.75 0 1 0 0 9.5a4.75 4.75 0 0 0 0-9.5Zm6.25 1.25a1 1 0 1 1-2 0a1 1 0 0 1 2 0Z" fill="currentColor"/></svg>
+                <span className="font-poppins">@anishkunwar_21</span>
               </a>
             </div>
           </motion.div>
 
-          <motion.div
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-lg mx-auto mb-8"
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ delay: 0.4 }}
-          >
-            <Input
-              type="email"
-              placeholder="Enter your family email..."
-              value={""}
-              onChange={(e) => {}}
-              className="font-poppins text-lg px-6 py-6 w-full bg-white text-gray-800"
-            />
-            <Button className="bg-white text-rose-500 hover:bg-gray-50 font-poppins text-lg px-8 py-6 w-full sm:w-auto shadow-lg hover:scale-105 transition-all whitespace-nowrap">
-              Get Started Free
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
-          </motion.div>
+          
 
           <p className="font-poppins text-sm opacity-80 mb-8">
             Free forever • No credit card required • Set up in 2 minutes
