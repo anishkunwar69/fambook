@@ -88,16 +88,16 @@ function Navbar() {
               // Public Navigation
               <div className="flex items-center gap-6">
                 <Link
-                  href="/about"
+                  href="#features"
                   className="font-poppins text-gray-600 hover:text-gray-900 hover:scale-105 transition-all"
                 >
-                  Our Story
+                  Features
                 </Link>
                 <Link
-                  href="/features"
+                  href="#comparisons"
                   className="font-poppins text-gray-600 hover:text-gray-900 hover:scale-105 transition-all"
                 >
-                  What We Offer
+                  Why Us
                 </Link>
                 <Link href="/sign-in">
                   <Button

@@ -54,6 +54,7 @@ export default function Comparisons() {
     <section
       ref={ref}
       className="py-20 bg-gradient-to-r from-rose-50 to-amber-50"
+      id="comparisons"
     >
       <Container>
         <motion.div
