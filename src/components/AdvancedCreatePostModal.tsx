@@ -149,26 +149,23 @@ export function AdvancedCreatePostModal({
   );
 
   const handleRemoveMedia = (indexToRemove: number) => {
+    if (isSharing) return;
     setSelectedMedia((currentMedia) => {
       const newMedia = currentMedia.filter(
         (_, index) => index !== indexToRemove
       );
-
-      // Adjust the current index if needed
       if (postDetailsMediaIndex >= newMedia.length) {
         setPostDetailsMediaIndex(Math.max(0, newMedia.length - 1));
       }
-
-      // If no media is left, go back to the selection step
       if (newMedia.length === 0) {
         setCurrentStep("selectFiles");
       }
-
       return newMedia;
     });
   };
 
   const openFileDialog = () => {
+    if (isSharing) return;
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
       fileInputRef.current.click();
@@ -310,6 +307,7 @@ export function AdvancedCreatePostModal({
               onClick={openFileDialog}
               variant="default"
               className="bg-rose-500 hover:bg-rose-600 text-white text-sm md:text-base px-6 py-3"
+              disabled={isSharing}
             >
               Select from computer
             </Button>
@@ -338,6 +336,7 @@ export function AdvancedCreatePostModal({
                 size="icon"
                 onClick={() => setCurrentStep("selectFiles")}
                 className="hover:bg-gray-100 rounded-full"
+                disabled={isSharing}
               >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
@@ -396,6 +395,7 @@ export function AdvancedCreatePostModal({
                   className="absolute top-2 right-2 z-20 bg-black/50 text-white hover:bg-black/75 hover:text-white rounded-full h-8 w-8"
                   onClick={() => handleRemoveMedia(postDetailsMediaIndex)}
                   aria-label="Remove image"
+                  disabled={isSharing}
                 >
                   <X className="h-5 w-5" />
                 </Button>
@@ -412,6 +412,7 @@ export function AdvancedCreatePostModal({
                           setPostDetailsMediaIndex((p) => p - 1);
                         }}
                         className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/75 text-white rounded-full p-1.5 z-10"
+                        disabled={isSharing}
                       >
                         <ChevronLeft className="w-5 h-5" />
                       </Button>
@@ -425,6 +426,7 @@ export function AdvancedCreatePostModal({
                           setPostDetailsMediaIndex((p) => p + 1);
                         }}
                         className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full p-1.5 z-10"
+                        disabled={isSharing}
                       >
                         <ChevronRight className="w-5 h-5" />
                       </Button>
@@ -444,6 +446,7 @@ export function AdvancedCreatePostModal({
                           setPostDetailsMediaIndex(index);
                         }}
                         className={`w-1.5 h-1.5 rounded-full ${postDetailsMediaIndex === index ? "bg-white scale-125" : "bg-white/50"}`}
+                        disabled={isSharing}
                       ></button>
                     ))}
                   </div>
@@ -476,6 +479,7 @@ export function AdvancedCreatePostModal({
                   onChange={(e) => setCaption(e.target.value)}
                   className="min-h-[120px] text-sm border-gray-200 focus-visible:ring-rose-500/50 resize-none"
                   maxLength={2200}
+                  disabled={isSharing}
                 />
                 <div className="text-xs text-gray-400 text-right">
                   {caption.length}/2200
@@ -491,6 +495,7 @@ export function AdvancedCreatePostModal({
                   <Select
                     value={selectedFamilyId}
                     onValueChange={setSelectedFamilyId}
+                    disabled={isSharing}
                   >
                     <SelectTrigger className="w-full text-sm">
                       <SelectValue placeholder="Select a family to share with" />
@@ -511,6 +516,7 @@ export function AdvancedCreatePostModal({
                 <Button
                   onClick={openFileDialog}
                   className="w-full text-sm bg-rose-500 hover:bg-rose-600 text-white mt-auto"
+                  disabled={isSharing}
                 >
                   <ImagePlus className="w-4 h-4 mr-2" /> Add more media
                 </Button>
@@ -528,7 +534,7 @@ export function AdvancedCreatePostModal({
     <Dialog
       open={isOpen}
       onOpenChange={(open) => {
-        if (!open) resetModal();
+        if (!isSharing && !open) resetModal();
       }}
     >
       <DialogContent
@@ -546,8 +552,15 @@ export function AdvancedCreatePostModal({
           className="hidden"
           accept="image/*,video/*"
           multiple
+          disabled={isSharing}
         />
         <AnimatePresence mode="wait">{renderStepContent()}</AnimatePresence>
+        {isSharing && (
+          <div className="absolute inset-0 bg-white/70 flex items-center justify-center z-50 cursor-not-allowed">
+            <Loader2 className="w-10 h-10 text-rose-500 animate-spin" />
+            <span className="ml-4 text-lg font-semibold text-rose-500">Uploading...</span>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

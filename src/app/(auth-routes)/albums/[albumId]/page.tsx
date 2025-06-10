@@ -212,7 +212,7 @@ function AddMediaDialog({
 
       // 2. Upload each file directly to Cloudinary
       const uploadPromises = selectedFiles.map(async (file) => {
-        const formData = new FormData();
+      const formData = new FormData();
         formData.append("file", file);
         formData.append("api_key", apiKey);
         formData.append("timestamp", timestamp);
@@ -267,16 +267,17 @@ function AddMediaDialog({
   });
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl bg-white border-rose-100/50">
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      if (!isUploading && !open) onClose();
+    }}>
+      <DialogContent className="sm:max-w-2xl bg-white border-rose-100/50" hideCloseButton={true}>
         <DialogHeader>
           <DialogTitle className="text-rose-600 flex items-center gap-2">
             <Upload className="w-5 h-5" />
             Add Media to "{albumName}"
           </DialogTitle>
           <DialogDescription>
-            Select photos or videos to upload. You can add up to{" "}
-            {mediaLimit - currentMediaCount - selectedFiles.length} more items.
+            Select photos or videos to upload. You can add up to {mediaLimit - currentMediaCount - selectedFiles.length} more items.
             (Total limit: {mediaLimit})
           </DialogDescription>
         </DialogHeader>
@@ -286,6 +287,7 @@ function AddMediaDialog({
             {...getInputProps()}
             ref={fileInputRefDialog}
             className="hidden"
+            disabled={isUploading}
           />
           <div
             className={`mt-1 flex justify-center items-center px-6 pt-5 pb-6 border-2 ${
@@ -293,7 +295,8 @@ function AddMediaDialog({
                 ? "border-rose-500 bg-rose-50/50"
                 : "border-gray-300 border-dashed"
             } rounded-md cursor-pointer transition-colors`}
-            onClick={() => fileInputRefDialog.current?.click()}
+            onClick={() => { if (!isUploading) fileInputRefDialog.current?.click(); }}
+            style={isUploading ? { pointerEvents: 'none', opacity: 0.7 } : {}}
           >
             <div className="space-y-1 text-center">
               <CloudUpload
@@ -348,9 +351,10 @@ function AddMediaDialog({
                       </div>
                     )}
                     <button
-                      onClick={() => removeFile(index)}
+                      onClick={() => { if (!isUploading) removeFile(index); }}
                       className="absolute top-1 right-1 p-1 bg-black/60 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80"
                       title="Remove file"
+                      disabled={isUploading}
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -380,6 +384,12 @@ function AddMediaDialog({
             )}
           </Button>
         </DialogFooter>
+        {isUploading && (
+          <div className="absolute inset-0 bg-white/70 flex items-center justify-center z-50 cursor-not-allowed">
+            <Loader2 className="w-10 h-10 text-rose-500 animate-spin" />
+            <span className="ml-4 text-lg font-semibold text-rose-500">Uploading...</span>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
