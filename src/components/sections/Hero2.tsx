@@ -1,7 +1,7 @@
 "use client";
 import { motion, useInView } from "framer-motion";
-import { Calendar, Heart, Play } from "lucide-react";
-import { useRef, useState, useEffect } from "react";
+import { Calendar, Heart } from "lucide-react";
+import { useEffect, useRef } from "react";
 import Container from "../Container";
 import Navbar from "../Navbar";
 import { Button } from "../ui/button";
@@ -154,21 +154,14 @@ function DemoVideoSection() {
           >
             {/* Auto-playing Video */}
             <div className="aspect-video bg-black rounded-2xl overflow-hidden relative">
-              <video
-                ref={videoRef}
-                className="w-full h-full object-cover"
-                autoPlay
-                muted
-                loop
-                playsInline
-                controls
-              >
-                <source
-                  src="https://res.cloudinary.com/dmq5tx0bd/video/upload/f_auto:video,q_auto/gzuwet0vgeht9usgdsev"
-                  type="video/mp4"
-                />
-                Your browser does not support the video tag.
-              </video>
+              <iframe
+                className="w-full h-full"
+                src="https://www.youtube.com/embed/2JAVG0VSJDU"
+                title="Fambook Demo"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
 
               {/* Video Info Overlay */}
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 pointer-events-none">

@@ -3,7 +3,6 @@ import { currentUser } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
 import { v2 as cloudinary } from 'cloudinary';
 import { MediaType } from '@prisma/client';
-import { uploadToCloudinary } from "@/lib/cloudinary";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -123,7 +122,7 @@ export async function PUT(
     // Fetch the existing post to verify ownership
     const existingPost = await prisma.post.findUnique({
       where: { id: postId },
-      select: { userId: true, user: { select: { externalId: true }} }, // Select only needed fields for auth
+      select: { userId: true, user: { select: { externalId: true }} },
     });
 
     if (!existingPost) {
@@ -134,15 +133,13 @@ export async function PUT(
       return NextResponse.json({ success: false, message: "Forbidden: You are not the author of this post" }, { status: 403 });
     }
 
-    const formData = await request.formData();
-    const text = formData.get("text") as string | null;
-    const mediaToRemoveIds = formData.getAll("mediaToRemove[]") as string[];
-    const newMediaFiles = formData.getAll("newMediaFiles") as File[];
-
+    // Expect JSON body with: text, mediaToRemoveIds, newMedia (array of {url, type, [thumbnailUrl]})
+    const body = await request.json();
+    const { text, mediaToRemoveIds, newMedia } = body;
     const operations: any[] = [];
 
     // 1. Handle media to remove
-    if (mediaToRemoveIds && mediaToRemoveIds.length > 0) {
+    if (mediaToRemoveIds && Array.isArray(mediaToRemoveIds) && mediaToRemoveIds.length > 0) {
       for (const mediaId of mediaToRemoveIds) {
         const mediaItem = await prisma.media.findUnique({ where: { id: mediaId } });
         if (mediaItem) {
@@ -151,10 +148,8 @@ export async function PUT(
             try {
               const resourceType = mediaItem.type === MediaType.PHOTO ? 'image' : 'video';
               await cloudinary.uploader.destroy(publicId, { resource_type: resourceType });
-              console.log(`Successfully deleted ${publicId} from Cloudinary during edit.`);
             } catch (cloudinaryError) {
-              console.error(`Failed to delete ${publicId} from Cloudinary during edit:`, cloudinaryError);
-              // Potentially collect these errors and decide if to halt or report them
+              // Log and continue
             }
           }
           operations.push(prisma.media.delete({ where: { id: mediaId } }));
@@ -162,25 +157,19 @@ export async function PUT(
       }
     }
 
-    // 2. Handle new media uploads
-    if (newMediaFiles && newMediaFiles.length > 0) {
-      for (const file of newMediaFiles) {
-        try {
-          const uploadedMedia = await uploadToCloudinary(file);
-          operations.push(
-            prisma.media.create({
-              data: {
-                url: uploadedMedia.url,
-                type: uploadedMedia.type,
-                postId: postId,
-              },
-            })
-          );
-        } catch (uploadError) {
-          console.error("Failed to upload new media during edit:", uploadError);
-          // Decide how to handle partial failures; maybe return an error to the client
-          return NextResponse.json({ success: false, message: "Failed to upload one or more new media files." }, { status: 500 });
-        }
+    // 2. Handle new media (client should have already uploaded to Cloudinary)
+    if (newMedia && Array.isArray(newMedia) && newMedia.length > 0) {
+      for (const media of newMedia) {
+        operations.push(
+          prisma.media.create({
+            data: {
+              url: media.url,
+              type: media.type,
+              postId: postId,
+              // thumbnailUrl: media.thumbnailUrl, // Uncomment if you add this to your schema
+            },
+          })
+        );
       }
     }
 
@@ -188,7 +177,7 @@ export async function PUT(
     operations.push(
       prisma.post.update({
         where: { id: postId },
-        data: { text: text || null }, // Ensure text is explicitly null if empty
+        data: { text: text || null },
       })
     );
 
@@ -198,17 +187,16 @@ export async function PUT(
     // Fetch the updated post to return
     const updatedPost = await prisma.post.findUnique({
       where: { id: postId },
-      include: { media: true, user: {select: {id: true, fullName: true, imageUrl: true}}, family: {select: {id: true, name: true}}, _count: {select: {likes: true, comments: true}} }, // Include necessary data for Post type on client
+      include: { media: true, user: {select: {id: true, fullName: true, imageUrl: true}}, family: {select: {id: true, name: true}}, _count: {select: {likes: true, comments: true}} },
     });
 
     return NextResponse.json({ success: true, data: updatedPost });
 
   } catch (error) {
-    console.error("Error updating post:", error);
     let message = "Internal server error while updating post.";
     if (error instanceof Error) {
         message = error.message;
     }
     return NextResponse.json({ success: false, message }, { status: 500 });
   }
-} 
+}
