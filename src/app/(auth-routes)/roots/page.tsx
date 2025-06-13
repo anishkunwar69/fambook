@@ -324,7 +324,7 @@ export default function AllFamilyRootsPage() {
             <h1 className="text-2xl md:text-3xl font-lora font-bold text-gray-800 mb-2 flex items-center justify-center md:justify-start gap-2">
               Family Trees 🌳
             </h1>
-            <p className="text-gray-600 text-sm md:text-base">
+            <p className="text-gray-600 text-xs sm:text-base">
               Browse and manage all family trees you are a part of.
             </p>
           </div>
