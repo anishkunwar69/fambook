@@ -478,7 +478,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8 pb-8 sm:pb-11 max-lg:pb-20">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8 pb-8 sm:pb-11 max-lg:pb-20 overflow-x-hidden">
       <div>
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -508,7 +508,7 @@ export default function ProfilePage() {
       <div className="mt-4 sm:mt-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <div className="flex flex-col items-center md:flex-row md:items-center justify-between gap-4 mb-2">
-            <TabsList className="flex w-full md:justify-start h-10 sm:h-12 bg-transparent rounded-none p-0 md:overflow-x-auto">
+            <TabsList className="flex w-full md:justify-start h-10 sm:h-12 bg-transparent rounded-none p-0 md:overflow-x-auto max-w-full">
               <TabsTrigger
                 value="details"
                 className="flex flex-1 md:flex-none justify-center items-center data-[state=active]:border-rose-500 rounded-none border-b-2 border-transparent text-sm sm:text-base md:whitespace-nowrap px-3 sm:px-4"
