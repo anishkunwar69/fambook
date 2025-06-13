@@ -6,9 +6,11 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Prevent auto-zooming on input fields */
-input, select, textarea {
-  font-size: 16px; /* Minimum font size to prevent zoom on iOS */
+/* Prevent zooming on input fields */
+@layer base {
+  input, select, textarea {
+    font-size: 16px; /* Minimum font size to prevent zoom on iOS */
+  }
 }
 
 @layer base {
