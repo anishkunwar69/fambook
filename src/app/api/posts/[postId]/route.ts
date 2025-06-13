@@ -114,7 +114,7 @@ export async function PUT(
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
     }
 
-    const { postId } = params;
+    const { postId } = await params;
     if (!postId) {
       return NextResponse.json({ success: false, message: "Post ID is required" }, { status: 400 });
     }
@@ -133,13 +133,15 @@ export async function PUT(
       return NextResponse.json({ success: false, message: "Forbidden: You are not the author of this post" }, { status: 403 });
     }
 
-    // Expect JSON body with: text, mediaToRemoveIds, newMedia (array of {url, type, [thumbnailUrl]})
-    const body = await request.json();
-    const { text, mediaToRemoveIds, newMedia } = body;
+    // Handle FormData instead of JSON
+    const formData = await request.formData();
+    const text = formData.get('text') as string;
+    const mediaToRemoveIds = formData.getAll('mediaToRemove[]').map(id => id.toString());
+    const newMediaFiles = formData.getAll('newMediaFiles');
     const operations: any[] = [];
 
     // 1. Handle media to remove
-    if (mediaToRemoveIds && Array.isArray(mediaToRemoveIds) && mediaToRemoveIds.length > 0) {
+    if (mediaToRemoveIds && mediaToRemoveIds.length > 0) {
       for (const mediaId of mediaToRemoveIds) {
         const mediaItem = await prisma.media.findUnique({ where: { id: mediaId } });
         if (mediaItem) {
@@ -150,6 +152,7 @@ export async function PUT(
               await cloudinary.uploader.destroy(publicId, { resource_type: resourceType });
             } catch (cloudinaryError) {
               // Log and continue
+              console.error("Error deleting from Cloudinary:", cloudinaryError);
             }
           }
           operations.push(prisma.media.delete({ where: { id: mediaId } }));
@@ -157,19 +160,50 @@ export async function PUT(
       }
     }
 
-    // 2. Handle new media (client should have already uploaded to Cloudinary)
-    if (newMedia && Array.isArray(newMedia) && newMedia.length > 0) {
-      for (const media of newMedia) {
-        operations.push(
-          prisma.media.create({
-            data: {
-              url: media.url,
-              type: media.type,
-              postId: postId,
-              // thumbnailUrl: media.thumbnailUrl, // Uncomment if you add this to your schema
-            },
-          })
-        );
+    // 2. Handle new media files (upload to Cloudinary)
+    if (newMediaFiles && newMediaFiles.length > 0) {
+      for (const fileItem of newMediaFiles) {
+        if (fileItem instanceof File) {
+          try {
+            // Determine file type
+            const isVideo = fileItem.type.startsWith('video/');
+            const resourceType = isVideo ? 'video' : 'image';
+            const mediaType = isVideo ? MediaType.VIDEO : MediaType.PHOTO;
+            
+            // Convert File to buffer for Cloudinary upload
+            const arrayBuffer = await fileItem.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+            
+            // Upload to Cloudinary
+            const result = await new Promise<any>((resolve, reject) => {
+              const uploadStream = cloudinary.uploader.upload_stream(
+                { resource_type: resourceType },
+                (error, result) => {
+                  if (error) reject(error);
+                  else resolve(result);
+                }
+              );
+              
+              // Write buffer to stream
+              uploadStream.write(buffer);
+              uploadStream.end();
+            });
+            
+            // Add to database
+            operations.push(
+              prisma.media.create({
+                data: {
+                  url: result.secure_url,
+                  type: mediaType,
+                  postId: postId,
+                },
+              })
+            );
+          } catch (error) {
+            console.error("Error uploading media:", error);
+            // Continue with other files if one fails
+          }
+        }
       }
     }
 

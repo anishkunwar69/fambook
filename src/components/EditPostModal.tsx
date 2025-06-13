@@ -131,15 +131,28 @@ export function EditPostModal({
   const updatePostMutation = useMutation({
     mutationFn: async (formData: FormData) => {
       if (!postToEdit) throw new Error("No post selected for editing.");
-      const response = await fetch(`/api/posts/${postToEdit.id}`, {
-        method: "PUT",
-        body: formData,
-      });
-      const result = await response.json();
-      if (!result.success) {
-        throw new Error(result.message || "Failed to update post.");
+      
+      try {
+        const response = await fetch(`/api/posts/${postToEdit.id}`, {
+          method: "PUT",
+          body: formData,
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Server error response:", errorText);
+          throw new Error(`Server error: ${response.status} ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        if (!result.success) {
+          throw new Error(result.message || "Failed to update post.");
+        }
+        return result.data;
+      } catch (error) {
+        console.error("Error in mutation:", error);
+        throw error;
       }
-      return result.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["feed"] });
@@ -148,8 +161,8 @@ export function EditPostModal({
       onClose(); // Close modal on success
     },
     onError: (error: Error) => {
-      setFormError(error.message || "An unexpected error occurred.");
-      toast.error(error.message || "Error updating post.");
+      setFormError("An unexpected error occurred.");
+      toast.error("Error updating post.");
     },
   });
 
