@@ -38,7 +38,23 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            // Prevent zoom on focus
+            document.addEventListener('touchstart', function(event) {
+              if (event.target.tagName === 'INPUT' || event.target.tagName === 'SELECT' || event.target.tagName === 'TEXTAREA') {
+                // Prevent zooming
+                document.documentElement.style.touchAction = 'manipulation';
+                
+                // Restore after focus is lost
+                event.target.addEventListener('blur', function() {
+                  document.documentElement.style.touchAction = '';
+                }, { once: true });
+              }
+            });
+          `
+        }} />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable} ${lora.variable} antialiased`}
@@ -51,4 +67,3 @@ export default function RootLayout({
     </html>
   );
 }
-// "text-gray-400 group-hover:text-rose-400"} ${isLiking ? "opacity-50" : ""}`}

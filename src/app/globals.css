@@ -8,8 +8,29 @@ body {
 
 /* Prevent zooming on input fields */
 @layer base {
-  input, select, textarea {
-    font-size: 16px; /* Minimum font size to prevent zoom on iOS */
+  html {
+    touch-action: manipulation; /* Prevent double-tap zoom */
+  }
+  
+  input, select, textarea, button {
+    font-size: 16px !important; /* Minimum font size to prevent zoom on iOS */
+    transform: scale(1); /* Force hardware acceleration */
+    -webkit-text-size-adjust: 100%; /* Prevent iOS text size adjust */
+    touch-action: manipulation; /* Prevent zoom gesture */
+  }
+  
+  /* Target iOS specifically */
+  @supports (-webkit-touch-callout: none) {
+    input, select, textarea, button {
+      font-size: 16px !important;
+    }
+    
+    /* iOS form fix */
+    input[type="text"], input[type="email"], input[type="password"], input[type="number"], textarea {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+    }
   }
 }
 
