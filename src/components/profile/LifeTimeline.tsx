@@ -390,13 +390,28 @@ export function LifeTimeline({ userId, isCurrentUser }: LifeTimelineProps) {
   });
 
   return (
-    <div className="space-y-8">
+    <div
+      className={`${sortedYearGroups.length > 0 ? "space-y-8" : "space-y-0"}`}
+    >
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold font-lora">Life Timeline</h2>
-        {isActuallyCurrentUser && (
+        <h2 className="text-2xl font-semibold font-lora text-rose-500 hidden sm:block">
+          Life Timeline
+        </h2>
+        {isActuallyCurrentUser && sortedYearGroups.length > 0 && (
           <Button
             onClick={handleAddEvent}
-            className="bg-rose-500 hover:bg-rose-600 flex items-center gap-2"
+            className="bg-rose-500 hover:bg-rose-600 flex items-center gap-2 sm:w-auto w-full sm:bg-rose-500 sm:hover:bg-rose-600 sm:text-white sm:border-transparent sm:dark:bg-rose-600 sm:dark:hover:bg-rose-700 
+            hidden sm:flex"
+          >
+            <Plus className="w-4 h-4" />
+            Add Event
+          </Button>
+        )}
+        {isActuallyCurrentUser && sortedYearGroups.length > 0 && (
+          <Button
+            onClick={handleAddEvent}
+            variant="outline"
+            className="w-full sm:hidden flex items-center justify-center gap-2 border-rose-500 text-rose-500 hover:bg-rose-50 dark:border-rose-400 dark:text-rose-400 dark:hover:bg-rose-950/20"
           >
             <Plus className="w-4 h-4" />
             Add Event
@@ -505,7 +520,7 @@ export function LifeTimeline({ userId, isCurrentUser }: LifeTimelineProps) {
           ))}
 
           {/* Load More Trigger */}
-          <div ref={loadMoreRef} className="flex justify-center">
+          <div ref={loadMoreRef} className="flex justify-center max-sm:">
             {isFetchingNextPage ? (
               <Loader2 className="w-6 h-6 text-rose-500 animate-spin" />
             ) : hasNextPage ? (

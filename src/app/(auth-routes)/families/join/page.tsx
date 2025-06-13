@@ -56,7 +56,7 @@ export default function JoinFamilyPage() {
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-2 text-sm text-gray-600 mb-6 sm:mb-8 overflow-x-auto whitespace-nowrap"
+        className="flex items-center gap-2 text-sm text-gray-600 sm:mb-8 overflow-x-auto whitespace-nowrap mt-[8px]"
       >
         <Link
           href="/"
@@ -102,7 +102,7 @@ export default function JoinFamilyPage() {
               <h1 className="text-xl sm:text-2xl font-lora font-bold text-gray-800 mb-2">
                 Join a Family
               </h1>
-              <p className="text-gray-600 max-w-md mx-auto text-sm sm:text-base">
+              <p className="text-gray-600 max-w-md mx-auto text-xs sm:text-base">
                 Enter the invite code shared by your family member to join their
                 family space
               </p>
@@ -112,14 +112,14 @@ export default function JoinFamilyPage() {
               onSubmit={handleSubmit((data) => joinFamily(data))}
               className="space-y-6 sm:space-y-8"
             >
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
+              <div className="sm:space-y-2 space-y-1">
+                <label className="sm:text-sm text-xs font-medium text-gray-700">
                   Family Invite Code
                 </label>
                 <Input
                   {...register("token")}
                   placeholder="Enter the invite code"
-                  className="w-full h-11 sm:h-12 bg-white/50 border-gray-200 focus:border-rose-500 focus:ring-rose-500/20 font-mono text-base"
+                  className="w-full h-11 sm:h-12 bg-white/50 border-gray-200 focus:border-rose-500 focus:ring-rose-500/20 font-mono sm:text-base text-xs"
                 />
                 {errors.token && (
                   <motion.p

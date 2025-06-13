@@ -148,9 +148,9 @@ export const FamilyMemberNode = memo(({ data, selected }: FamilyMemberNodeProps)
             <h3 className="font-medium text-gray-800 whitespace-nowrap overflow-hidden text-ellipsis">
               {data.firstName} {data.lastName}
             </h3>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-1">
               <p className="text-xs text-gray-500">{getAgeDisplay()}</p>
-              <div className="flex gap-1">
+              <div className="flex flex-wrap gap-1 mt-1">
                 {!data.isAlive && (
                   <div className="px-1.5 py-0.5 rounded-full bg-gray-100 border border-gray-200 flex items-center gap-1">
                     <Heart className="w-3 h-3 text-gray-500" />

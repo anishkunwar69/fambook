@@ -152,7 +152,7 @@ export function MemberDetailsViewDialog({
                   variant="outline"
                   size="sm"
                   className={cn(
-                    "gap-2 backdrop-blur-sm transition-all duration-200 shadow-sm hover:shadow",
+                    "gap-2 backdrop-blur-sm transition-all duration-200 shadow-sm hover:shadow my-2 mb-3",
                     member.isAlive
                       ? "bg-white/50 border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-300"
                       : "bg-white/70 border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-700 hover:border-slate-300"
@@ -188,18 +188,18 @@ export function MemberDetailsViewDialog({
           </div>
         </DialogHeader>
 
-        {/* Birthday Wish Section */}
-        {isBirthday && (
+        {/* Birthday Wish Section - Only show for living members */}
+        {isBirthday && member.isAlive && (
           <div className="p-6 rounded-xl bg-gradient-to-r from-rose-50 via-white to-rose-50 border border-rose-100 mb-6">
             <div className="flex items-center justify-center gap-3 mb-4">
               <div className="h-px flex-1 bg-gradient-to-r from-transparent to-rose-200" />
               <Cake className="w-6 h-6 text-rose-500" />
               <div className="h-px flex-1 bg-gradient-to-l from-transparent to-rose-200" />
             </div>
-            <h3 className="text-xl text-center font-semibold text-rose-600 mb-2">
+            <h3 className="sm:text-xl text-lg text-center font-semibold text-rose-600 mb-2">
               🎉 Happy Birthday, {member.firstName}! 🎂
             </h3>
-            <p className="text-center text-rose-600/80 text-sm">
+            <p className="text-center text-rose-600/80 sm:text-sm text-xs">
               Wishing you a day filled with joy, love, and beautiful moments.
               May this special day bring you happiness and wonderful memories
               with your loved ones.
@@ -290,10 +290,10 @@ export function MemberDetailsViewDialog({
 
           {/* Introduction Section */}
           {member.biography && (
-            <div className="space-y-2">
+            <div className="md:space-y-2 space-y-1">
               <h3
                 className={cn(
-                  "text-sm font-medium",
+                  "sm:text-sm text-xs font-medium",
                   member.isAlive ? "text-gray-500" : "text-slate-600"
                 )}
               >
@@ -322,10 +322,10 @@ export function MemberDetailsViewDialog({
           {/* Details Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Birth Details */}
-            <div className="space-y-2">
+            <div className="md:space-y-2 space-y-1">
               <h3
                 className={cn(
-                  "text-sm font-medium",
+                  "sm:text-sm text-xs font-medium",
                   member.isAlive ? "text-gray-500" : "text-slate-600"
                 )}
               >
@@ -349,7 +349,7 @@ export function MemberDetailsViewDialog({
                     />
                     <p
                       className={cn(
-                        "text-sm",
+                        "sm:text-sm text-xs",
                         member.isAlive ? "text-gray-600" : "text-slate-600"
                       )}
                     >
@@ -359,7 +359,7 @@ export function MemberDetailsViewDialog({
                   </div>
                   <p
                     className={cn(
-                      "text-sm pl-6",
+                      "sm:text-sm text-xs pl-6",
                       member.isAlive ? "text-gray-600" : "text-slate-600"
                     )}
                   >
@@ -373,10 +373,10 @@ export function MemberDetailsViewDialog({
             </div>
 
             {/* Places */}
-            <div className="space-y-2">
+            <div className="md:space-y-2 space-y-1">
               <h3
                 className={cn(
-                  "text-sm font-medium",
+                  "sm:text-sm text-xs font-medium",
                   member.isAlive ? "text-gray-500" : "text-slate-600"
                 )}
               >
@@ -400,7 +400,7 @@ export function MemberDetailsViewDialog({
                     />
                     <p
                       className={cn(
-                        "text-sm",
+                        "sm:text-sm text-xs",
                         member.isAlive ? "text-gray-600" : "text-slate-600"
                       )}
                     >
@@ -412,7 +412,7 @@ export function MemberDetailsViewDialog({
                     <MapPin className="w-4 h-4 opacity-0" />
                     <p
                       className={cn(
-                        "text-sm",
+                        "sm:text-sm text-xs",
                         member.isAlive ? "text-gray-600" : "text-slate-600"
                       )}
                     >

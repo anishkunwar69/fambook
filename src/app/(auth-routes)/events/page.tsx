@@ -258,6 +258,11 @@ export default function EventsPage() {
     },
   });
 
+  const hasJoinedFamilies =
+    families &&
+    families.filter((family: any) => family.userMembershipStatus === "APPROVED")
+      .length > 0;
+
   // Filter events based on search query, category, and family
   const filteredEvents = useMemo(() => {
     if (!events) return [];
@@ -425,12 +430,12 @@ export default function EventsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8 max-lg:pb-20">
       {/* Breadcrumb */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-2 text-sm text-gray-600 mb-6 sm:mb-8 overflow-x-auto whitespace-nowrap"
+        className="flex items-center gap-2 text-sm text-gray-600 mb-6 sm:mb-8 overflow-x-auto whitespace-nowrap mt-[8px]"
       >
         <Link
           href="/"
@@ -443,26 +448,38 @@ export default function EventsPage() {
         <span className="text-rose-500 font-medium shrink-0">Events</span>
       </motion.div>
 
+     
+
       <Dialog open={isAddEventOpen} onOpenChange={setIsAddEventOpen}>
         {/* Header Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white/80 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-rose-100/50 mb-6 sm:mb-8"
+          className="bg-white/80 backdrop-blur-md rounded-2xl p-4 md:p-6 border border-rose-100/50 mb-6 md:mb-8"
         >
-          <div className="flex flex-col gap-4 sm:gap-6">
+          <div className="flex flex-col gap-4 md:gap-6">
             {/* Title and Add Event Button */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
-              <div className="text-center sm:text-left">
-                <h1 className="text-2xl sm:text-3xl font-lora font-bold text-gray-800 mb-2">
+            <div
+              className={`flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 ${hasJoinedFamilies ? "mb-4 md:mb-6" : "mb-0"}`}
+            >
+              <div className="text-center md:text-left">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-lora font-bold text-gray-800 mb-2">
                   Family Events 🎉
                 </h1>
-                <p className="text-gray-600 text-sm sm:text-base">
+                <p className="text-gray-600 text-xs sm:text-sm lg:text-base">
                   Keep track of all your family's special moments
                 </p>
               </div>
               <DialogTrigger asChild>
-                <Button className="bg-rose-500 hover:bg-rose-600 w-full sm:w-auto">
+                <Button
+                  className="bg-rose-500 hover:bg-rose-600 w-full md:w-auto"
+                  disabled={!hasJoinedFamilies}
+                  title={
+                    !hasJoinedFamilies
+                      ? "Join a family to add events"
+                      : "Add a new event"
+                  }
+                >
                   <Plus className="w-4 h-4 mr-2" />
                   Add Event
                 </Button>
@@ -470,93 +487,95 @@ export default function EventsPage() {
             </div>
 
             {/* Filters */}
-            <div className="flex flex-col gap-3 sm:gap-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                {/* Search Input - Takes full width on sm, 1/4 on lg+ */}
-                <div className="relative sm:col-span-2 lg:col-span-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input
-                    placeholder="Search events..."
-                    value={searchQuery}
-                    onChange={handleSearchChange}
-                    className="pl-10 w-full h-10 sm:h-auto"
-                  />
-                </div>
+            {hasJoinedFamilies && (
+              <div className="flex flex-col gap-3 md:gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                  {/* Search Input - Takes full width on sm, 1/4 on lg+ */}
+                  <div className="relative md:col-span-2 lg:col-span-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Input
+                      placeholder="Search events..."
+                      value={searchQuery}
+                      onChange={handleSearchChange}
+                      className="pl-10 w-full h-10 md:h-auto"
+                    />
+                  </div>
 
-                {/* Time Frame Filter - 1/2 width on sm, 1/4 on lg+ */}
-                <div className="sm:col-span-1">
-                  <Select
-                    value={timeFrame}
-                    onValueChange={(value: TimeFrame) =>
-                      handleTimeFrameChange(value)
-                    }
-                  >
-                    <SelectTrigger className="w-full h-10 sm:h-auto">
-                      <SelectValue placeholder="Select time frame" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ALL">All Events</SelectItem>
-                      <SelectItem value="THIS WEEK">This Week</SelectItem>
-                      <SelectItem value="THIS MONTH">This Month</SelectItem>
-                      <SelectItem value="THIS YEAR">This Year</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                  {/* Time Frame Filter - 1/2 width on sm, 1/4 on lg+ */}
+                  <div className="md:col-span-1">
+                    <Select
+                      value={timeFrame}
+                      onValueChange={(value: TimeFrame) =>
+                        handleTimeFrameChange(value)
+                      }
+                    >
+                      <SelectTrigger className="w-full h-10 md:h-auto">
+                        <SelectValue placeholder="Select time frame" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ALL">All Events</SelectItem>
+                        <SelectItem value="THIS WEEK">This Week</SelectItem>
+                        <SelectItem value="THIS MONTH">This Month</SelectItem>
+                        <SelectItem value="THIS YEAR">This Year</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                {/* Family Filter - 1/2 width on sm, 1/4 on lg+ */}
-                <div className="sm:col-span-1">
-                  <Select
-                    value={selectedFamily}
-                    onValueChange={setSelectedFamily}
-                  >
-                    <SelectTrigger className="w-full h-10 sm:h-auto">
-                      <SelectValue placeholder="Select family" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ALL">All Families</SelectItem>
-                      {families?.map((family: any) => (
-                        <SelectItem key={family.id} value={family.id}>
-                          {family.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                  {/* Family Filter - 1/2 width on sm, 1/4 on lg+ */}
+                  <div className="md:col-span-1">
+                    <Select
+                      value={selectedFamily}
+                      onValueChange={setSelectedFamily}
+                    >
+                      <SelectTrigger className="w-full h-10 md:h-auto">
+                        <SelectValue placeholder="Select family" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ALL">All Families</SelectItem>
+                        {families?.map((family: any) => (
+                          <SelectItem key={family.id} value={family.id}>
+                            {family.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                {/* Category Filter - Full width on sm, 1/4 on lg+ */}
-                <div className="sm:col-span-2 lg:col-span-1">
-                  <Select
-                    value={selectedCategory}
-                    onValueChange={(value: EventType | "ALL") =>
-                      setSelectedCategory(value)
-                    }
-                  >
-                    <SelectTrigger className="w-full h-10 sm:h-auto">
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ALL">All Categories</SelectItem>
-                      {eventTypes.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          <div className="flex items-center gap-2">
-                            <div
-                              className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full ${eventTypeColors[type as keyof typeof eventTypeColors]} flex items-center justify-center`}
-                            >
-                              {getEventIcon(
-                                type as keyof typeof eventTypeIcons
-                              )}
+                  {/* Category Filter - Full width on sm, 1/4 on lg+ */}
+                  <div className="md:col-span-2 lg:col-span-1">
+                    <Select
+                      value={selectedCategory}
+                      onValueChange={(value: EventType | "ALL") =>
+                        setSelectedCategory(value)
+                      }
+                    >
+                      <SelectTrigger className="w-full h-10 md:h-auto">
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ALL">All Categories</SelectItem>
+                        {eventTypes.map((type) => (
+                          <SelectItem key={type} value={type}>
+                            <div className="flex items-center gap-2">
+                              <div
+                                className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full ${eventTypeColors[type as keyof typeof eventTypeColors]} flex items-center justify-center`}
+                              >
+                                {getEventIcon(
+                                  type as keyof typeof eventTypeIcons
+                                )}
+                              </div>
+                              <span className="text-sm sm:text-base">
+                                {type.charAt(0) + type.slice(1).toLowerCase()}
+                              </span>
                             </div>
-                            <span className="text-sm sm:text-base">
-                              {type.charAt(0) + type.slice(1).toLowerCase()}
-                            </span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </motion.div>
 
@@ -612,16 +631,27 @@ export default function EventsPage() {
                   <h3 className="text-lg sm:text-xl font-lora font-bold text-gray-800 mb-2">
                     No Events Found
                   </h3>
-                  <p className="text-gray-600 max-w-md mx-auto mb-4 sm:mb-6 text-sm sm:text-base">
+                  <p className="text-gray-600 max-w-md mx-auto mb-4 sm:mb-6 text-xs sm:text-base">
                     {debouncedSearchQuery
                       ? "No events match your search criteria. Try adjusting your search or filters."
-                      : "Start adding special events to keep track of important dates!"}
+                      : hasJoinedFamilies
+                        ? "Start adding special events to keep track of important dates!"
+                        : "Join a family to start adding events and tracking special dates."}
                   </p>
-                  <DialogTrigger asChild>
-                    <Button className="bg-rose-500 hover:bg-rose-600 w-full sm:w-auto">
-                      Add Your First Event
-                    </Button>
-                  </DialogTrigger>
+                  {!debouncedSearchQuery &&
+                    (hasJoinedFamilies ? (
+                      <DialogTrigger asChild>
+                        <Button className="bg-rose-500 hover:bg-rose-600 w-full sm:w-auto">
+                          Add Your First Event
+                        </Button>
+                      </DialogTrigger>
+                    ) : (
+                      <Link href="/dashboard">
+                        <Button className="bg-rose-500 hover:bg-rose-600 w-full sm:w-auto">
+                          Join or Create a Family
+                        </Button>
+                      </Link>
+                    ))}
                 </motion.div>
               ) : (
                 paginatedEvents.map((event: SpecialDay, index: number) => {
@@ -933,7 +963,7 @@ export default function EventsPage() {
       <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Create Event Album</DialogTitle>
+            <DialogTitle className="sm:text-lg">Create Event Album</DialogTitle>
             <p className="text-sm text-gray-600 mt-2">
               Create a dedicated album for "{selectedEvent?.title}" to store all
               related photos and memories.

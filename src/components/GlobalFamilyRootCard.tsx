@@ -69,7 +69,7 @@ export default function GlobalFamilyRootCard({
         <Button
           variant="ghost"
           size="icon"
-          className="absolute top-2 right-2 z-10 text-gray-400 hover:text-red-500 hover:bg-red-50/50 h-8 w-8"
+          className="absolute top-2 right-2 z-10 text-gray-400 hover:text-red-500 hover:bg-red-50/50 h-10 w-10 mt-[13px]"
           onClick={handleDeleteClick}
           title="Delete Family Tree"
         >
@@ -98,7 +98,7 @@ export default function GlobalFamilyRootCard({
                 {root.family.name}
               </Badge>
             </CardDescription>
-            <CardDescription className="mt-1">
+            <CardDescription className="mt-1 sm:text-sm text-xs">
               Created by {root.createdBy.fullName}
             </CardDescription>
           </CardHeader>
@@ -109,7 +109,7 @@ export default function GlobalFamilyRootCard({
                   {root.description}
                 </p>
               ) : (
-                <p className="text-sm text-gray-400 italic">
+                <p className="sm:text-sm text-xs text-gray-400 italic">
                   No description provided.
                 </p>
               )}

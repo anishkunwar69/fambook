@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import toast from "react-hot-toast";
 
 type Notification = {
   id: string;
@@ -35,9 +36,12 @@ function NotificationSkeletonCard({ index }: { index: number }) {
     >
       <div className="flex items-start gap-4">
         <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse shrink-0" />
-        <div className="w-full">
+        <div className="flex-1 min-w-0 pr-4 lg:pr-0">
           <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4 mb-2" />
           <div className="h-3 bg-gray-200 rounded animate-pulse w-1/2" />
+        </div>
+        <div className="ml-auto flex-shrink-0">
+          <div className="w-[120px] h-8 bg-gray-200 rounded animate-pulse hidden lg:block" />
         </div>
       </div>
     </motion.div>
@@ -46,19 +50,19 @@ function NotificationSkeletonCard({ index }: { index: number }) {
 
 function NotificationsPageSkeleton() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8">
       {/* Header Skeleton */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="bg-white/80 backdrop-blur-md rounded-2xl p-4 md:p-6 border border-rose-100/50 mb-8"
       >
-        <div className="flex flex-col items-center text-center gap-4 sm:flex-row sm:text-left sm:justify-between">
+        <div className="flex flex-col items-center text-center gap-4 md:flex-row md:text-left md:justify-between">
           <div>
-            <div className="h-7 md:h-8 bg-gray-200 rounded animate-pulse w-48 mb-2 mx-auto sm:mx-0" />
-            <div className="h-4 bg-gray-200 rounded animate-pulse w-64 md:w-80 mx-auto sm:mx-0" />
+            <div className="h-7 md:h-8 bg-gray-200 rounded animate-pulse w-48 mb-2 mx-auto md:mx-0" />
+            <div className="h-4 bg-gray-200 rounded animate-pulse w-64 md:w-80 mx-auto md:mx-0" />
           </div>
-          <div className="bg-gray-200 w-12 h-12 rounded-lg animate-pulse mx-auto sm:mx-0" />
+          <div className="bg-gray-200 w-12 h-12 rounded-lg animate-pulse mx-auto md:mx-0" />
         </div>
       </motion.div>
       {/* Cards Skeleton */}
@@ -111,6 +115,9 @@ export default function NotificationsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
     },
+    onError: (error) => {
+      toast.error(error.message); 
+    },
   });
 
   const getNotificationIcon = (type: string) => {
@@ -136,12 +143,12 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8 max-lg:pb-20">
       {/* Breadcrumb */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-2 text-sm text-gray-600 mb-8 overflow-x-auto whitespace-nowrap"
+        className="flex items-center gap-2 text-sm text-gray-600 mb-8 overflow-x-auto whitespace-nowrap mt-[17px]"
       >
         <Link
           href="/"
@@ -160,17 +167,16 @@ export default function NotificationsPage() {
         animate={{ opacity: 1, y: 0 }}
         className="bg-white/80 backdrop-blur-md rounded-2xl p-4 md:p-6 border border-rose-100/50 mb-8"
       >
-         <div className="flex flex-col text-center gap-4 sm:flex-row sm:text-left sm:items-center sm:justify-between">
+         <div className="flex flex-col text-center gap-4 md:flex-row md:text-left md:items-center md:justify-between">
           <div>
-            <h1 className="text-2xl md:text-3xl font-lora font-bold text-gray-800 mb-2">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-lora font-bold text-gray-800 mb-2">
               Your Notifications 🔔
             </h1>
-            <p className="text-gray-600">
-              Here's what you've missed. Click a notification to mark it as
-              read.
+            <p className="text-gray-600 max-sm:text-sm">
+              Here's what you've missed. <span className="font-semibold">Click a notification to mark it as read.</span>
             </p>
           </div>
-          <div className="bg-rose-50 w-12 h-12 rounded-lg items-center justify-center shrink-0 mx-auto sm:mx-0 hidden md:flex">
+          <div className="bg-rose-50 w-12 h-12 rounded-lg items-center justify-center shrink-0 mx-auto md:mx-0 hidden md:flex">
             <Bell className="w-6 h-6 text-rose-500 hidden md:block" />
           </div>
         </div>
@@ -211,7 +217,7 @@ export default function NotificationsPage() {
             All Caught Up!
           </h3>
           <p className="text-gray-600 max-w-md mx-auto">
-            You have no new notifications.
+            You have no new notifications. When you receive notifications, click on them to mark as read.
           </p>
         </motion.div>
       )}
@@ -233,49 +239,39 @@ export default function NotificationsPage() {
               !notification.read
                   ? "border-rose-200/70"
                 : "border-rose-100/50",
-                isBeingMarkedAsRead && "opacity-50"
+                isBeingMarkedAsRead && "opacity-50",
+                !notification.read && "hover:border-rose-300 cursor-pointer"
             )}
+            onClick={() => {
+              if (!notification.read && !isMarkingAsRead) {
+                markAsRead(notification.id);
+              }
+            }}
           >
             <div className="flex items-start gap-4">
-              <div className="text-2xl mt-1">
+              <div className="text-2xl mt-1 shrink-0">
                 {getNotificationIcon(notification.type)}
               </div>
-              <div className="flex-1">
-                  <p className="font-medium text-gray-800">
+              <div className="flex-1 min-w-0 w-full">
+                <p className="font-medium text-gray-800 max-sm:text-xs">
                   {notification.content}
                 </p>
                 <div className="flex items-center gap-2 mt-1 text-xs text-gray-400">
-                  <Clock className="w-3 h-3" />
+                  <Clock className="w-3 h-3 shrink-0" />
                   <span>
                     {format(
                       new Date(notification.createdAt),
                       "MMM d, yyyy 'at' h:mm a"
                     )}
                   </span>
-                </div>
-              </div>
-                <div className="ml-auto flex shrink-0 items-center self-center pl-4">
-                  {!notification.read ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => markAsRead(notification.id)}
-                      disabled={isBeingMarkedAsRead}
-                      className="w-[120px]"
-                    >
-                      {isBeingMarkedAsRead ? (
-                        <Loader2 className="h-4 w-4 animate-spin mx-auto" />
-                      ) : (
-                        "Mark as read"
-                      )}
-                    </Button>
-                  ) : (
-                    <div className="flex items-center gap-1.5 text-sm text-green-600 font-medium w-[120px] justify-center">
-                      <CheckCircle2 className="h-4 w-4" />
+                  {notification.read && (
+                    <span className="flex items-center gap-1 text-green-600 font-medium ml-2">
+                      <CheckCircle2 className="h-3 w-3 shrink-0" />
                       <span>Read</span>
-                    </div>
+                    </span>
                   )}
                 </div>
+              </div>
             </div>
           </motion.div>
           );

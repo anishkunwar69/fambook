@@ -22,6 +22,7 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import BottomNavBar from "./BottomNavBar";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setSidebarOpen] = useState(true); // Default open for desktop
@@ -415,7 +416,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <main
           className={`transition-all duration-300 flex-1 relative ${
             isSidebarOpen ? "lg:ml-64" : "lg:ml-20"
-          }`}
+          } ${pathname.includes("/roots") ? "pb-4 lg:pb-0" : "pb-20 lg:pb-0"} safe-area-inset-bottom`}
         >
           {pathname.includes("/roots") && pathname.includes("/families") ? (
             <>
@@ -424,7 +425,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   variant="ghost"
                   size="icon"
                   onClick={() => router.back()}
-                  className=" backdrop-blur-sm rounded-full border h-10 w-10"
+                  className="backdrop-blur-sm rounded-full border h-10 w-10"
                 >
                   <ArrowLeft className="w-5 h-5 text-gray-600" />
                 </Button>
@@ -432,21 +433,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <div className="p-0">{children}</div>
             </>
           ) : (
-            <div className="px-4 sm:px-6 lg:px-8">
-              <div className="lg:hidden">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setIsMobileSidebarOpen(true)}
-                  className="sm:ml-[12px]  mt-6 -mb-[11px]"
-                >
-                  <Menu className="w-6 h-6 text-gray-600" />
-                </Button>
-              </div>
+            <div className="bg-amber-50">
+              {/* Mobile Notification Bell - Only visible on mobile */}
+              {!pathname.includes("/notifications") && (
+                <div className="lg:hidden fixed sm:top-[24px] top-[18px] right-7 z-30">
+                  <NotificationBell />
+                </div>
+              )}
               {children}
             </div>
           )}
         </main>
+
+        {/* Bottom Navigation Bar for Mobile */}
+        <BottomNavBar navigationItems={navigationItems} />
       </div>
     </div>
   );

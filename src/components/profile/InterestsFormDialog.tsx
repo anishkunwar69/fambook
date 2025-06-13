@@ -12,6 +12,14 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Plus, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { z } from "zod";
+
+// Define Zod schema for interests validation
+const InterestsSchema = z.object({
+  interests: z
+    .array(z.string())
+    .min(1, "Please add at least one interest before saving"),
+});
 
 interface InterestsFormDialogProps {
   isOpen: boolean;
@@ -32,19 +40,32 @@ export function InterestsFormDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [interestsList, setInterestsList] = useState<string[]>([]);
   const [newInterest, setNewInterest] = useState("");
+  const [error, setError] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isOpen) { 
+    if (isOpen) {
       setInterestsList(interests ? [...interests] : []);
-      setNewInterest(""); 
+      setNewInterest("");
+      setFormError(null);
     }
   }, [interests, isOpen]);
 
   const handleAddInterest = () => {
     const trimmedInterest = newInterest.trim();
-    if (trimmedInterest === "") return;
-    
-    if (interestsList.some((interest) => interest.toLowerCase() === trimmedInterest.toLowerCase())) {
+    if (trimmedInterest === "") {
+      setError(true);
+      return;
+    }
+
+    setError(false);
+    setFormError(null);
+
+    if (
+      interestsList.some(
+        (interest) => interest.toLowerCase() === trimmedInterest.toLowerCase()
+      )
+    ) {
       toast({
         title: "Duplicate interest",
         description: "This interest is already in your list.",
@@ -52,20 +73,22 @@ export function InterestsFormDialog({
       });
       return;
     }
-    if (interestsList.length >= 20) { 
-        toast({
-            title: "Limit reached",
-            description: "You can add a maximum of 20 interests.",
-            variant: "destructive",
-        });
-        return;
+    if (interestsList.length >= 20) {
+      toast({
+        title: "Limit reached",
+        description: "You can add a maximum of 20 interests.",
+        variant: "destructive",
+      });
+      return;
     }
     setInterestsList((prevList) => [...prevList, trimmedInterest]);
     setNewInterest("");
   };
 
-  const handleRemoveInterest = (interestToRemove: string) => { 
-    setInterestsList((prevList) => prevList.filter(interest => interest !== interestToRemove));
+  const handleRemoveInterest = (interestToRemove: string) => {
+    setInterestsList((prevList) =>
+      prevList.filter((interest) => interest !== interestToRemove)
+    );
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -77,84 +100,131 @@ export function InterestsFormDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
 
     let finalInterestsList = [...interestsList];
     const trimmedNewInterest = newInterest.trim();
 
     if (trimmedNewInterest !== "") {
-      if (!finalInterestsList.some((interest) => interest.toLowerCase() === trimmedNewInterest.toLowerCase())) {
+      if (
+        !finalInterestsList.some(
+          (interest) =>
+            interest.toLowerCase() === trimmedNewInterest.toLowerCase()
+        )
+      ) {
         if (finalInterestsList.length < 20) {
-            finalInterestsList.push(trimmedNewInterest);
+          finalInterestsList.push(trimmedNewInterest);
         } else {
-            toast({
-                title: "Limit reached during save",
-                description: "Could not add the last typed interest as the maximum is 20.",
-                variant: "destructive",
-            });
+          toast({
+            title: "Limit reached during save",
+            description:
+              "Could not add the last typed interest as the maximum is 20.",
+            variant: "destructive",
+          });
         }
       }
     }
-    setNewInterest(""); 
-    
+
+    // Validate the interests list with Zod
+    try {
+      InterestsSchema.parse({ interests: finalInterestsList });
+      setFormError(null);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        setFormError(error.errors[0].message);
+        return;
+      }
+    }
+
+    if (finalInterestsList.length === 0) {
+      setFormError("Please add at least one interest before saving");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setNewInterest("");
+
     try {
       const response = await fetch(`/api/users/${userId}/interests`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ interests: finalInterestsList }),
       });
-      
+
       const responseData = await response.json();
       if (responseData.success) {
-        toast({ title: "Success", description: "Interests updated successfully" });
+        toast({
+          title: "Success",
+          description: "Interests updated successfully",
+        });
         setInterestsList(finalInterestsList);
         onSuccess();
       } else {
         throw new Error(responseData.message || "Failed to update interests");
       }
     } catch (error) {
-      toast({ title: "Error", description: error instanceof Error ? error.message : "Failed to update interests", variant: "destructive" });
+      toast({
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to update interests",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
-  
+
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => {
-      if (!open) onClose();
-    }}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
       <DialogContent className="sm:max-w-lg bg-white dark:bg-gray-800 p-6">
-        <DialogHeader className="mb-4">
-          <DialogTitle className="text-xl font-semibold text-gray-800 dark:text-gray-100">Edit Interests & Hobbies</DialogTitle>
+        <DialogHeader>
+          <DialogTitle className="text-xl font-semibold text-gray-800 dark:text-gray-100">
+            Edit Interests & Hobbies
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <Label htmlFor="newInterest" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <Label
+              htmlFor="newInterest"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >
               Add an interest or hobby
             </Label>
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Input
                 id="newInterest"
                 value={newInterest}
-                onChange={(e) => setNewInterest(e.target.value)}
+                onChange={(e) => {
+                  setNewInterest(e.target.value);
+                  if (e.target.value.trim()) setError(false);
+                }}
                 onKeyDown={handleKeyDown}
                 placeholder="e.g., Photography, Hiking"
-                className="flex-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                className={`flex-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 ${error ? "border-red-500 focus:ring-red-500" : ""}`}
               />
               <Button
                 type="button"
                 onClick={handleAddInterest}
                 variant="outline"
-                className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                className="w-full sm:w-auto dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
               >
                 <Plus className="h-4 w-4 mr-1 sm:mr-2" /> Add
               </Button>
             </div>
-             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1.5">
+            {formError && (
+              <p className="mt-2 text-sm font-medium text-red-500 text-center">
+                {formError}
+              </p>
+            )}
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1.5">
               Max 20 interests. Press Enter or click Add.
             </p>
           </div>
-          
+
           <div>
             <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Your Interests
@@ -185,8 +255,8 @@ export function InterestsFormDialog({
               </div>
             )}
           </div>
-          
-          <DialogFooter className="pt-6">
+
+          <DialogFooter className="">
             <Button
               type="button"
               variant="outline"
@@ -215,4 +285,4 @@ export function InterestsFormDialog({
       </DialogContent>
     </Dialog>
   );
-} 
+}

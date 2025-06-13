@@ -330,19 +330,17 @@ export function MemberDetailsDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl bg-white max-h-[90vh] flex flex-col">
-        <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle className="font-lora text-2xl text-gray-800">
+        <DialogHeader className="mb-4">
+          <DialogTitle className="font-lora text-2xl text-gray-800 text-center w-full">
               {mode === "add"
                 ? "Add Family Member"
                 : mode === "edit"
                   ? "Edit Family Member"
                   : "View Family Member"}
             </DialogTitle>
-          </div>
-          <DialogDescription className="text-gray-600">
+          <DialogDescription className="text-gray-600 md:text-sm text-xs text-center">
             Fill in the details of your family member. Required fields are
-            marked with an asterisk (*).
+            marked with (*).
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -356,7 +354,7 @@ export function MemberDetailsDialog({
                 control={form.control}
                 name="firstName"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="space-y-0 md:space-y-2">
                     <FormLabel className="text-gray-700">
                       First Name *
                     </FormLabel>
@@ -376,7 +374,7 @@ export function MemberDetailsDialog({
                 control={form.control}
                 name="lastName"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="space-y-0 md:space-y-2">
                     <FormLabel className="text-gray-700">Last Name *</FormLabel>
                     <FormControl>
                       <Input
@@ -394,7 +392,7 @@ export function MemberDetailsDialog({
                 control={form.control}
                 name="gender"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="space-y-0 md:space-y-2">
                     <FormLabel className="text-gray-700">Gender *</FormLabel>
                     <FormControl>
                       <Select
@@ -423,7 +421,7 @@ export function MemberDetailsDialog({
                 control={form.control}
                 name="dateOfBirth"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="space-y-0 md:space-y-2">
                     <FormLabel className="text-gray-700">
                       Date of Birth *
                     </FormLabel>
@@ -451,7 +449,7 @@ export function MemberDetailsDialog({
                 control={form.control}
                 name="isAlive"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border border-gray-200 bg-white p-3 shadow-sm space-y-0 md:space-y-2">
                     <div className="space-y-0.5">
                       <FormLabel className="text-gray-700">
                         Living Status *
@@ -474,7 +472,7 @@ export function MemberDetailsDialog({
                   control={form.control}
                   name="dateOfDeath"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="space-y-0 md:space-y-2">
                       <FormLabel className="text-gray-700">
                         Date of Death *
                       </FormLabel>
@@ -507,7 +505,7 @@ export function MemberDetailsDialog({
                 control={form.control}
                 name="birthPlace"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="space-y-0 md:space-y-2">
                     <FormLabel className="text-gray-700">
                       Birth Place *
                     </FormLabel>
@@ -527,7 +525,7 @@ export function MemberDetailsDialog({
                 control={form.control}
                 name="currentPlace"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="space-y-0 md:space-y-2">
                     <FormLabel className="text-gray-700">
                       {form.watch("isAlive")
                         ? "Current Address *"
@@ -554,7 +552,7 @@ export function MemberDetailsDialog({
             {/* Optional Information */}
             <div className="space-y-6">
               <div className="bg-amber-50/50 border border-amber-200/50 rounded-lg p-4 mb-6">
-                <h3 className="font-semibold text-amber-800 flex items-center gap-2 mb-2">
+                <h3 className="font-semibold text-amber-800 flex items-center gap-2 mb-2 sm:text-base text-sm">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="20"
@@ -565,6 +563,7 @@ export function MemberDetailsDialog({
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
+                    className="sm:w-5 sm:h-5 w-4 h-4"
                   >
                     <circle cx="12" cy="12" r="10" />
                     <line x1="12" y1="16" x2="12" y2="12" />
@@ -572,7 +571,7 @@ export function MemberDetailsDialog({
                   </svg>
                   Help Preserve Family History
                 </h3>
-                <p className="text-sm text-amber-700">
+                <p className="sm:text-sm text-xs text-amber-700">
                   Adding detailed information helps future generations
                   understand their family history better. All optional fields
                   can be edited later by the family member themselves.
@@ -598,7 +597,7 @@ export function MemberDetailsDialog({
                 control={form.control}
                 name="profileImage"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="space-y-0 md:space-y-2">
                     <div className="flex items-start justify-between mb-2">
                       <FormLabel className="text-gray-700">
                         Profile Picture
@@ -660,14 +659,11 @@ export function MemberDetailsDialog({
                           ) : (
                             <>
                               <Upload className="w-4 h-4 mr-2" />
-                              Add a Photo
+                              <span className="sm:text-base text-sm">Add a Photo</span>
                             </>
                           )}
                         </Button>
-                        <p className="text-xs text-gray-500 mt-1">
-                          A photo helps family members easily recognize each
-                          other
-                        </p>
+                       
                       </div>
                     </div>
                     <FormMessage />
@@ -680,7 +676,7 @@ export function MemberDetailsDialog({
                 control={form.control}
                 name="biography"
                 render={({ field }) => (
-                  <FormItem>
+                      <FormItem className="space-y-0 md:space-y-2">
                     <div className="flex items-start justify-between mb-2">
                       <FormLabel className="text-gray-700">
                         Introduction
@@ -730,7 +726,7 @@ export function MemberDetailsDialog({
               control={form.control}
               name="linkedMemberId"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="space-y-2">
                   <FormLabel className="flex items-center gap-2">
                     <Link2 className="w-4 h-4" />
                     Link to Family Member
@@ -769,24 +765,9 @@ export function MemberDetailsDialog({
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormDescription className="flex items-center gap-2 text-gray-600">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <circle cx="12" cy="12" r="10" />
-                      <line x1="12" y1="16" x2="12" y2="12" />
-                      <line x1="12" y1="8" x2="12.01" y2="8" />
-                    </svg>
-                    Link this node to an existing family member who is not yet
-                    linked to any other node
+                  <FormDescription className="flex items-center text-gray-600 sm:text-base text-xs">
+                    <i>Link this node to an existing family member who is not yet
+                    linked to any other node</i>
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -801,7 +782,7 @@ export function MemberDetailsDialog({
                     isFormComplete ? "bg-green-500" : "bg-amber-500"
                   )}
                 />
-                <span className="text-sm text-gray-600">
+                <span className="sm:text-sm text-xs text-gray-600">
                   {isFormComplete
                     ? "All recommended fields completed"
                     : "Some recommended fields incomplete"}

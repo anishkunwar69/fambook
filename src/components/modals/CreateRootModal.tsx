@@ -116,14 +116,14 @@ const CreateRootModal: React.FC<CreateRootModalProps> = ({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[480px] bg-white">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-semibold text-gray-800">
+          <DialogTitle className="sm:text-2xl text-xl font-semibold text-gray-800">
             Create New Family Tree
           </DialogTitle>
-          <DialogDescription className="text-gray-600 mt-1">
+          <DialogDescription className="text-gray-600 mt-1 sm:text-base text-xs">
             Select a family and provide a name for your new family tree.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-6 py-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="grid sm:gap-6 gap-4 sm:py-4 py-2">
           <div className="grid gap-2">
             <Label htmlFor="familyId" className="font-medium text-gray-700">
               Family

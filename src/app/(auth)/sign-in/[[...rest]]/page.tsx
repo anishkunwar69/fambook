@@ -8,7 +8,7 @@ const Page = () => {
       <SignIn
         appearance={{
           elements: {
-            rootBox: "mx-auto",
+            rootBox: "mx-auto mt-12",
             card: "bg-white/80 backdrop-blur-md shadow-xl border border-rose-100/50",
             headerTitle: "text-2xl font-bold text-gray-800 font-lora",
             headerSubtitle: "text-gray-600",

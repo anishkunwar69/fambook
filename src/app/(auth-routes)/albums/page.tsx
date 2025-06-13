@@ -439,6 +439,9 @@ export default function AlbumsPage() {
     },
   });
 
+  // Check if user has joined any families
+  const hasJoinedFamilies = families && families.filter((family: any) => family.userMembershipStatus === "APPROVED").length > 0;
+
   // Filter and sort albums
   const filteredAlbums = albums?.filter((album) => {
     // Apply search filter
@@ -496,12 +499,12 @@ export default function AlbumsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8 max-lg:pb-20">
       {/* Breadcrumb */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-2 text-sm text-gray-600 mb-6 sm:mb-8 overflow-x-auto whitespace-nowrap"
+        className="flex items-center gap-2 text-sm text-gray-600 mb-6 sm:mb-8 overflow-x-auto whitespace-nowrap mt-[8px]"
       >
         <Link
           href="/"
@@ -514,23 +517,29 @@ export default function AlbumsPage() {
         <span className="text-rose-500 font-medium shrink-0">Albums</span>
       </motion.div>
 
+      
+
       {/* Header Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white/80 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-rose-100/50 mb-6 sm:mb-8"
+        className="bg-white/80 backdrop-blur-md rounded-2xl p-4 md:p-6 border border-rose-100/50 mb-6 md:mb-8"
       >
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 mb-4 sm:mb-6">
-          <div className="text-center sm:text-left">
-            <h1 className="text-2xl sm:text-3xl font-lora font-bold text-gray-800 mb-2">
+        <div className={`flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 ${hasJoinedFamilies ? "mb-4 md:mb-6" : "mb-0"}`}>
+          <div className="text-center md:text-left">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-lora font-bold text-gray-800 mb-2">
               Family Albums 🖼️
             </h1>
-            <p className="text-gray-600 text-sm sm:text-base">
+            <p className="text-gray-600 text-xs sm:text-sm lg:text-base">
               Create and view photo albums for your precious memories
             </p>
           </div>
-          <Link href="/albums/create" className="w-full sm:w-auto">
-            <Button className="bg-rose-500 hover:bg-rose-600 flex items-center justify-center gap-2 w-full sm:w-auto">
+          <Link href="/albums/create" className="w-full md:w-auto">
+            <Button 
+              className="bg-rose-500 hover:bg-rose-600 flex items-center justify-center gap-2 w-full md:w-auto"
+              disabled={!hasJoinedFamilies}
+              title={!hasJoinedFamilies ? "Join a family to create albums" : "Create a new album"}
+            >
               <Plus className="w-4 h-4" />
               <span>Create Album</span>
             </Button>
@@ -538,23 +547,25 @@ export default function AlbumsPage() {
         </div>
 
         {/* Filters and Search */}
-        <div className="flex flex-col xl:flex-row xl:items-center gap-3 sm:gap-4">
+        {
+          hasJoinedFamilies && (
+            <div className="flex flex-col xl:flex-row xl:items-center gap-3 md:gap-4">
           <div className="relative w-full xl:flex-grow">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               placeholder="Search albums..."
               value={search}
               onChange={handleSearchChange}
-              className="pl-10 bg-white w-full h-10 sm:h-auto"
+              className="pl-10 bg-white w-full h-10 md:h-auto"
             />
           </div>
-          <div className="flex flex-col sm:flex-row sm:w-full xl:w-auto gap-2 sm:gap-2 xl:flex-shrink-0">
+          <div className="flex flex-col md:flex-row md:w-full xl:w-auto gap-2 md:gap-2 xl:flex-shrink-0">
             {/* Family Filter */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="outline"
-                  className="flex items-center gap-2 w-full sm:w-1/3 xl:w-auto h-10 sm:h-auto"
+                  className="flex items-center gap-2 w-full md:w-1/3 xl:w-auto h-10 md:h-auto"
                 >
                   <Home className="w-4 h-4" />
                   <span className="truncate text-sm sm:text-base">
@@ -586,7 +597,7 @@ export default function AlbumsPage() {
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="outline"
-                  className="flex items-center gap-2 w-full sm:w-1/3 xl:w-auto h-10 sm:h-auto"
+                  className="flex items-center gap-2 w-full md:w-1/3 xl:w-auto h-10 md:h-auto"
                 >
                   <SlidersHorizontal className="w-4 h-4" />
                   <span className="truncate text-sm sm:text-base">
@@ -596,7 +607,7 @@ export default function AlbumsPage() {
                         ? "Normal Albums"
                         : "Event Albums"}
                   </span>
-                  <span className="ml-1 text-xs text-gray-500 hidden sm:inline">
+                  <span className="ml-1 text-xs text-gray-500 hidden md:inline">
                     (
                     {filter === "ALL"
                       ? counts.all
@@ -630,7 +641,7 @@ export default function AlbumsPage() {
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="outline"
-                  className="flex items-center gap-2 w-full sm:w-1/3 xl:w-auto h-10 sm:h-auto"
+                  className="flex items-center gap-2 w-full md:w-1/3 xl:w-auto h-10 md:h-auto"
                 >
                   <Clock className="w-4 h-4" />
                   <span className="truncate text-sm sm:text-base">
@@ -661,6 +672,8 @@ export default function AlbumsPage() {
             </DropdownMenu>
           </div>
         </div>
+          )
+        }
       </motion.div>
 
       {/* Albums Grid */}
@@ -683,17 +696,27 @@ export default function AlbumsPage() {
             <h3 className="text-lg sm:text-xl font-lora font-bold text-gray-800 mb-2">
               {debouncedSearch ? "No matching albums found" : "No Albums Yet"}
             </h3>
-            <p className="text-gray-600 max-w-md mx-auto mb-4 sm:mb-6 text-sm sm:text-base">
+            <p className="text-gray-600 max-w-md mx-auto mb-4 sm:mb-6 text-xs sm:text-base">
               {debouncedSearch
                 ? "Try adjusting your search or filters"
-                : "Start creating beautiful albums to organize your family memories!"}
+                : hasJoinedFamilies 
+                  ? "Start creating beautiful albums to organize your family memories!"
+                  : "Join a family to start creating albums and sharing memories."}
             </p>
             {!debouncedSearch && (
-              <Link href="/albums/create" className="w-full sm:w-auto">
-                <Button className="bg-rose-500 hover:bg-rose-600 w-full sm:w-auto">
-                  Create Your First Album
-                </Button>
-              </Link>
+              hasJoinedFamilies ? (
+                <Link href="/albums/create" className="w-full sm:w-auto">
+                  <Button className="bg-rose-500 hover:bg-rose-600 w-full sm:w-auto">
+                    Create Your First Album
+                  </Button>
+                </Link>
+              ) : (
+                <Link href="/dashboard" className="w-full sm:w-auto">
+                  <Button className="bg-rose-500 hover:bg-rose-600 w-full sm:w-auto">
+                    Join or Create a Family
+                  </Button>
+                </Link>
+              )
             )}
           </motion.div>
         ) : (

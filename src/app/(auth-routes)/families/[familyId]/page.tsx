@@ -74,19 +74,18 @@ type FamilyMemberWithUser = {
   };
 };
 
-function MemberSkeletonCard() {
+function BreadcrumbSkeleton() {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex items-center gap-3 p-3 sm:p-4 rounded-lg bg-gray-50/80 border border-gray-100/50 animate-pulse"
+      className="flex items-center gap-2 text-sm text-gray-600 mb-4 sm:mb-6 overflow-hidden mt-[8px] w-full"
     >
-      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-200 rounded-full" />
-      <div className="flex-1">
-        <div className="h-3 sm:h-4 bg-gray-200 rounded mb-1 sm:mb-2" />
-        <div className="h-2 sm:h-3 bg-gray-200 rounded w-1/2" />
-      </div>
-      <div className="w-16 sm:w-20 h-6 sm:h-8 bg-gray-200 rounded" />
+      <div className="h-4 bg-gray-200 rounded animate-pulse w-8 shrink-0" />
+      <div className="w-4 h-4 bg-gray-200 rounded-full animate-pulse shrink-0" />
+      <div className="h-4 bg-gray-200 rounded animate-pulse w-16 shrink-0" />
+      <div className="w-4 h-4 bg-gray-200 rounded-full animate-pulse shrink-0" />
+      <div className="h-4 bg-gray-200 rounded animate-pulse w-20 shrink-0" />
     </motion.div>
   );
 }
@@ -96,14 +95,14 @@ function FamilyHeaderSkeleton() {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative mb-8 overflow-hidden"
+      className="relative mb-4 sm:mb-6 overflow-hidden w-full"
     >
-      <div className="bg-white/80 backdrop-blur-md rounded-2xl p-8 border border-rose-100/50">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="h-10 bg-gray-200 rounded animate-pulse w-64" />
-          <div className="h-7 bg-gray-200 rounded-full animate-pulse w-16" />
+      <div className="bg-white/80 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-rose-100/50">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-3">
+          <div className="h-8 sm:h-10 bg-gray-200 rounded animate-pulse w-3/4 sm:w-64 max-w-full" />
+          <div className="h-6 sm:h-7 bg-gray-200 rounded-full animate-pulse w-16 hidden sm:block" />
         </div>
-        <div className="h-4 bg-gray-200 rounded animate-pulse w-96 max-w-full" />
+        <div className="h-4 bg-gray-200 rounded animate-pulse w-full sm:w-3/4 max-w-full" />
       </div>
     </motion.div>
   );
@@ -114,28 +113,28 @@ function QuickActionsSkeleton() {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mb-8"
+      className="mb-4 sm:mb-6 w-full"
     >
-      <div className="bg-white/80 backdrop-blur-md rounded-2xl p-6 border border-rose-100/50">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="bg-gray-200 w-10 h-10 rounded-lg animate-pulse" />
-          <div>
-            <div className="h-5 bg-gray-200 rounded animate-pulse w-32 mb-2" />
-            <div className="h-4 bg-gray-200 rounded animate-pulse w-48" />
+      <div className="bg-white/80 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-rose-100/50">
+        <div className="flex items-center gap-3 mb-4 sm:mb-6">
+          <div className="bg-gray-200 w-8 h-8 sm:w-10 sm:h-10 rounded-lg animate-pulse shrink-0" />
+          <div className="flex-1 min-w-0">
+            <div className="h-4 sm:h-5 bg-gray-200 rounded animate-pulse w-24 sm:w-32 mb-1 sm:mb-2" />
+            <div className="h-3 sm:h-4 bg-gray-200 rounded animate-pulse w-32 sm:w-48 max-w-full" />
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
           {[...Array(4)].map((_, index) => (
             <div
               key={index}
-              className="bg-white/80 backdrop-blur-md rounded-lg p-4 border border-rose-100/50"
+              className="bg-white/80 backdrop-blur-md rounded-lg p-3 sm:p-4 border border-rose-100/50"
             >
               <div className="flex flex-col items-center gap-2 text-center">
-                <div className="bg-gray-200 w-12 h-12 rounded-lg animate-pulse" />
-                <div>
-                  <div className="h-4 bg-gray-200 rounded animate-pulse w-16 mb-1" />
-                  <div className="h-3 bg-gray-200 rounded animate-pulse w-20" />
+                <div className="bg-gray-200 w-8 h-8 sm:w-12 sm:h-12 rounded-lg animate-pulse" />
+                <div className="w-full">
+                  <div className="h-3 sm:h-4 bg-gray-200 rounded animate-pulse w-12 sm:w-16 mb-1 mx-auto" />
+                  <div className="h-2 sm:h-3 bg-gray-200 rounded animate-pulse w-16 sm:w-20 mx-auto hidden sm:block" />
                 </div>
               </div>
             </div>
@@ -151,29 +150,46 @@ function AdminActionsSkeleton() {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mb-8"
+      className="mb-4 sm:mb-6 w-full"
     >
-      <div className="bg-amber-50/50 border border-amber-100 rounded-xl p-6">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="bg-gray-200 w-10 h-10 rounded-lg animate-pulse" />
-          <div>
-            <div className="h-5 bg-gray-200 rounded animate-pulse w-32 mb-2" />
-            <div className="h-4 bg-gray-200 rounded animate-pulse w-40" />
+      <div className="bg-amber-50/50 border border-amber-100 rounded-xl p-4 sm:p-6">
+        <div className="flex items-center gap-3 mb-4 sm:mb-6">
+          <div className="bg-gray-200 w-8 h-8 sm:w-10 sm:h-10 rounded-lg animate-pulse shrink-0" />
+          <div className="flex-1 min-w-0">
+            <div className="h-4 sm:h-5 bg-gray-200 rounded animate-pulse w-24 sm:w-32 mb-1 sm:mb-2" />
+            <div className="h-3 sm:h-4 bg-gray-200 rounded animate-pulse w-32 sm:w-40 max-w-full" />
           </div>
         </div>
 
-        <div className="max-w-[100%]">
-          <div className="bg-white/80 backdrop-blur-md rounded-lg p-4 border border-amber-100/50">
+        <div className="w-full">
+          <div className="bg-white/80 backdrop-blur-md rounded-lg p-3 sm:p-4 border border-amber-100/50">
             <div className="flex items-center gap-3">
-              <div className="bg-gray-200 w-10 h-10 rounded-lg animate-pulse" />
-              <div>
-                <div className="h-4 bg-gray-200 rounded animate-pulse w-28 mb-2" />
-                <div className="h-3 bg-gray-200 rounded animate-pulse w-36" />
+              <div className="bg-gray-200 w-8 h-8 sm:w-10 sm:h-10 rounded-lg animate-pulse shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="h-3 sm:h-4 bg-gray-200 rounded animate-pulse w-20 sm:w-28 mb-1 sm:mb-2" />
+                <div className="h-2 sm:h-3 bg-gray-200 rounded animate-pulse w-24 sm:w-36 max-w-full" />
               </div>
             </div>
           </div>
         </div>
       </div>
+    </motion.div>
+  );
+}
+
+function MemberSkeletonCard() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-lg bg-gray-50/80 border border-gray-100/50 animate-pulse"
+    >
+      <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-gray-200 rounded-full shrink-0" />
+      <div className="flex-1 min-w-0">
+        <div className="h-3 sm:h-4 bg-gray-200 rounded mb-1 sm:mb-2 w-24 sm:w-32" />
+        <div className="h-2 sm:h-3 bg-gray-200 rounded w-16 sm:w-24" />
+      </div>
+      <div className="w-12 sm:w-16 md:w-20 h-6 sm:h-8 bg-gray-200 rounded shrink-0" />
     </motion.div>
   );
 }
@@ -184,21 +200,22 @@ function MembersCardSkeleton() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}
+      className="w-full"
     >
       <Card className="bg-white/80 backdrop-blur-md border-rose-100/50 overflow-hidden">
-        <CardHeader className="border-b border-rose-100/20 bg-gradient-to-r from-rose-50/50 via-rose-100/30 to-transparent">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="h-6 bg-gray-200 rounded animate-pulse w-40 mb-2" />
-              <div className="h-4 bg-gray-200 rounded animate-pulse w-48" />
+        <CardHeader className="border-b border-rose-100/20 bg-gradient-to-r from-rose-50/50 via-rose-100/30 to-transparent p-3 sm:p-4 md:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3">
+            <div className="flex-1 min-w-0">
+              <div className="h-5 sm:h-6 bg-gray-200 rounded animate-pulse w-32 sm:w-40 mb-1 sm:mb-2" />
+              <div className="h-3 sm:h-4 bg-gray-200 rounded animate-pulse w-40 sm:w-48 max-w-full" />
             </div>
-            <div className="flex items-center gap-4">
-              <div className="h-4 bg-gray-200 rounded animate-pulse w-20" />
+            <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+              <div className="h-3 sm:h-4 bg-gray-200 rounded animate-pulse w-16 sm:w-20" />
             </div>
           </div>
         </CardHeader>
-        <CardContent className="p-6">
-          <div className="space-y-4">
+        <CardContent className="p-3 sm:p-4 md:p-6">
+          <div className="space-y-2 sm:space-y-3 md:space-y-4">
             {[...Array(5)].map((_, index) => (
               <MemberSkeletonCard key={index} />
             ))}
@@ -211,19 +228,9 @@ function MembersCardSkeleton() {
 
 function FullPageSkeleton() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-8">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8">
       {/* Breadcrumb Skeleton */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-2 text-sm text-gray-600 mb-8"
-      >
-        <div className="h-4 bg-gray-200 rounded animate-pulse w-12" />
-        <div className="w-4 h-4 bg-gray-200 rounded animate-pulse" />
-        <div className="h-4 bg-gray-200 rounded animate-pulse w-16" />
-        <div className="w-4 h-4 bg-gray-200 rounded animate-pulse" />
-        <div className="h-4 bg-gray-200 rounded animate-pulse w-24" />
-      </motion.div>
+      <BreadcrumbSkeleton />
 
       {/* Family Header Skeleton */}
       <FamilyHeaderSkeleton />
@@ -243,18 +250,21 @@ function FullPageSkeleton() {
 export default function FamilyPage() {
   const { familyId } = useParams();
 
-  const { data: family, isLoading: isFamilyLoading, refetch } =
-    useQuery<FamilyWithExtra>({
-      queryKey: ["family", familyId],
-      queryFn: async () => {
-        const response = await fetch(`/api/families/${familyId}`);
-        const result = await response.json();
-        if (!result.success) {
-          throw new Error(result.message);
-        }
-        return result.data;
-      },
-    });
+  const {
+    data: family,
+    isLoading: isFamilyLoading,
+    refetch,
+  } = useQuery<FamilyWithExtra>({
+    queryKey: ["family", familyId],
+    queryFn: async () => {
+      const response = await fetch(`/api/families/${familyId}`);
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.message);
+      }
+      return result.data;
+    },
+  });
 
   const { data: stats, isLoading: isStatsLoading } = useQuery<FamilyStats>({
     queryKey: ["family-stats", familyId],
@@ -333,38 +343,38 @@ export default function FamilyPage() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8 w-full flex items-center justify-center">
         <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="backdrop-blur-md rounded-2xl p-6 sm:p-12 text-center border border-red-100/50 text-red-700"
-      >
-        <div className="bg-red-100 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
-          <AlertTriangle className="w-6 h-6 sm:w-8 sm:h-8 text-red-500" />
-        </div>
-        <h3 className="text-lg sm:text-xl font-lora font-bold text-red-800 mb-2">
-          Failed to Load Families
-        </h3>
-        <p className="text-red-600 max-w-md mx-auto mb-4 sm:mb-6 text-sm sm:text-base">
-          An unknown error occurred.
-        </p>
-        <Button
-          onClick={() => refetch()}
-          variant="destructive"
-          className="bg-red-500 hover:bg-red-600 text-white w-full sm:w-auto"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="backdrop-blur-md rounded-2xl p-6 sm:p-12 text-center border border-red-100/50 text-red-700"
         >
-          Retry
-        </Button>
-      </motion.div>
+          <div className="bg-red-100 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
+            <AlertTriangle className="w-6 h-6 sm:w-8 sm:h-8 text-red-500" />
+          </div>
+          <h3 className="text-lg sm:text-xl font-lora font-bold text-red-800 mb-2">
+            Failed to Load Families
+          </h3>
+          <p className="text-red-600 max-w-md mx-auto mb-4 sm:mb-6 text-sm sm:text-base">
+            An unknown error occurred.
+          </p>
+          <Button
+            onClick={() => refetch()}
+            variant="destructive"
+            className="bg-red-500 hover:bg-red-600 text-white w-full sm:w-auto"
+          >
+            Retry
+          </Button>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8 max-lg:pb-20">
       {/* Breadcrumb with enhanced interactivity */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-2 text-sm text-gray-600 mb-6 sm:mb-8 overflow-x-auto whitespace-nowrap"
+        className="flex items-center gap-2 text-sm text-gray-600 mb-6 sm:mb-8 overflow-x-auto whitespace-nowrap mt-[8px]"
       >
         <Link
           href="/"

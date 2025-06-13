@@ -432,12 +432,17 @@ export function PhotoViewerModal({
           fill
           className="object-contain"
           priority
+          sizes="100vw"
+          style={{ 
+            objectFit: "contain",
+            margin: "auto"
+          }}
         />
       ) : (
         <video
           src={currentMedia.url}
           controls
-          className="max-w-full max-h-full object-contain"
+          className="max-w-full max-h-full object-contain m-auto"
         />
       )}
 
@@ -467,9 +472,9 @@ export function PhotoViewerModal({
   const sidebarContent = (
     <div className="flex flex-col w-full lg:w-[400px] lg:flex-none flex-1 min-h-0 lg:h-full bg-white text-gray-800 lg:border-l border-gray-200">
       {/* Header: User Info & Post Text */}
-      <div className="p-5 border-b border-gray-200">
-        <div className="flex items-center gap-3 mb-3">
-          <Avatar className="w-10 h-10">
+      <div className="p-4 border-b border-gray-200">
+        <div className="flex items-center gap-3 mb-2">
+          <Avatar className="w-8 h-8">
             <AvatarImage
               src={post.user.imageUrl || undefined}
               alt={post.user.fullName}
@@ -485,19 +490,19 @@ export function PhotoViewerModal({
               {post.user.fullName}
             </p>
             <p className="text-xs text-gray-500">
-              {format(new Date(post.createdAt), "MMM d, yyyy 'at' h:mm a")}
+              {format(new Date(post.createdAt), "MMM d, yyyy")}
             </p>
           </div>
         </div>
         {post.text && (
-          <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed mt-5">
+          <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed mt-2">
             {post.text}
           </p>
         )}
       </div>
 
       {/* Actions: Likes & Comments Count */}
-      <div className="p-5 border-b border-gray-200 flex items-center justify-start gap-2">
+      <div className="py-2 px-4 border-b border-gray-200 flex items-center justify-start gap-2">
         <button
           onClick={() => onLikePost(post.id)}
           disabled={isLikingStatus}
@@ -525,12 +530,8 @@ export function PhotoViewerModal({
       </div>
 
       {/* Comments Section */}
-      <div className="flex-grow p-0 flex flex-col overflow-hidden">
-        {" "}
-        {/* Changed padding to p-0 and added flex flex-col */}
-        <div className="flex-grow overflow-y-auto styled-scrollbar">
-          {" "}
-          {/* This inner div will scroll */}
+      <div className="flex-grow p-0 flex flex-col overflow-hidden min-h-0"> 
+        <div className="flex-grow overflow-y-auto styled-scrollbar min-h-0"> 
           <AnimatePresence mode="popLayout">
             {isLoadingComments && !allComments.length ? (
               <div className="py-2">
@@ -558,8 +559,8 @@ export function PhotoViewerModal({
                 </Button>
               </div>
             ) : allComments.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full p-6 text-center text-slate-500">
-                <MessageCircle className="w-10 h-10  mb-3" />
+              <div className="flex flex-col items-center justify-center py-6 text-center text-slate-500">
+                <MessageCircle className="w-10 h-10 mb-3" />
                 <p className="font-semibold text-slate-700 mb-1">
                   No comments yet
                 </p>
@@ -592,7 +593,7 @@ export function PhotoViewerModal({
           {/* Load More Trigger for Comments */}
           <div
             ref={loadMoreCommentsRef}
-            className="h-10 flex justify-center items-center"
+            className="h-6 flex justify-center items-center"
           >
             {isFetchingNextPage && (
               <Loader2 className="w-5 h-5 text-rose-500 animate-spin" />
@@ -612,10 +613,10 @@ export function PhotoViewerModal({
       {/* Comment Input */}
       <form
         onSubmit={handleCommentSubmit}
-        className="p-4 border-t border-gray-200 bg-slate-50/50 mt-auto shrink-0"
+        className="p-2 border-t border-gray-200 bg-slate-50/50 mt-auto shrink-0"
       >
         <div className="flex items-center gap-2">
-          <Avatar className="w-8 h-8 shrink-0">
+          <Avatar className="w-6 h-6 shrink-0">
             <AvatarImage src={currentUser?.imageUrl || undefined} />
             <AvatarFallback>
               {currentUser?.fullName
@@ -629,7 +630,7 @@ export function PhotoViewerModal({
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
             onKeyDown={handleTextareaKeyDown}
-            className="bg-white border-gray-300 text-gray-800 placeholder:text-gray-400 resize-none text-sm focus-visible:ring-1 focus-visible:ring-rose-500 focus-visible:border-rose-500"
+            className="bg-white border-gray-300 text-gray-800 placeholder:text-gray-400 resize-none text-sm focus-visible:ring-1 focus-visible:ring-rose-500 focus-visible:border-rose-500 min-h-[36px] py-2"
             rows={1} // Start with 1 row, can expand if needed or make it a fixed height
             disabled={addCommentMutation.isPending}
           />
@@ -637,13 +638,13 @@ export function PhotoViewerModal({
             type="submit"
             variant="ghost"
             size="icon"
-            className="text-rose-500 hover:text-rose-600 disabled:text-gray-400"
+            className="text-rose-500 hover:text-rose-600 disabled:text-gray-400 h-8 w-8"
             disabled={!commentText.trim() || addCommentMutation.isPending}
           >
             {addCommentMutation.isPending ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
-              <Send className="w-5 h-5" />
+              <Send className="w-4 h-4" />
             )}
           </Button>
         </div>
@@ -653,16 +654,20 @@ export function PhotoViewerModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="p-0 bg-white dark:bg-slate-900 border-0 max-w-none w-screen h-screen sm:h-[calc(var(--vh,1vh)*100)] flex flex-col">
+      <DialogContent 
+        className="bg-white dark:bg-slate-900 flex flex-col rounded-none" 
+        fullWidth={true}
+        hideCloseButton={true}
+      >
         <VisuallyHidden>
           <DialogTitle>Media Viewer</DialogTitle>
         </VisuallyHidden>
-        <div className="flex-1 flex flex-col lg:flex-row min-h-0 relative">
-          {/* Close Button for mobile/tablet */}
+        <div className="flex-1 flex flex-col lg:flex-row min-h-0 relative h-full w-full">
+          {/* Close Button - visible on all screen sizes */}
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden absolute top-3 right-3 z-50 bg-black/30 text-white rounded-full h-9 w-9"
+            className="absolute top-3 right-3 z-50 bg-black/30 text-white rounded-full h-9 w-9 hover:bg-black/50"
             onClick={handleClose}
             aria-label="Close viewer"
           >
@@ -677,7 +682,7 @@ export function PhotoViewerModal({
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
-                className="absolute inset-0"
+                className="absolute inset-0 flex items-center justify-center"
               >
                 {imageDisplayArea}
               </motion.div>

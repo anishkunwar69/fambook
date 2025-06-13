@@ -290,27 +290,29 @@ export function AdvancedCreatePostModal({
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 50 }}
-            className="flex flex-col items-center justify-center h-full p-8 md:p-12 bg-gray-50"
+            className="flex flex-col items-center justify-center h-full w-full p-8 md:p-12 bg-gray-50"
             onDragOver={handleDragOver}
             onDrop={handleDrop}
           >
-            <UploadCloud className="w-20 h-20 md:w-28 md:h-28 text-gray-300 mb-6" />
-            <h2 className="text-lg md:text-2xl font-semibold text-gray-700 mb-3">
-              Drag photos and videos here
-            </h2>
-            {fileError && (
-              <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md my-4 max-w-sm text-center">
-                {fileError}
-              </p>
-            )}
-            <Button
-              onClick={openFileDialog}
-              variant="default"
-              className="bg-rose-500 hover:bg-rose-600 text-white text-sm md:text-base px-6 py-3"
-              disabled={isSharing}
-            >
-              Select from computer
-            </Button>
+            <div className="flex flex-col items-center justify-center text-center w-full max-w-md mx-auto">
+              <UploadCloud className="w-20 h-20 md:w-28 md:h-28 text-gray-300 mb-6" />
+              <h2 className="text-lg md:text-2xl font-semibold text-gray-700 mb-3">
+                Drag photos and videos here
+              </h2>
+              {fileError && (
+                <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md my-4 w-full text-center">
+                  {fileError}
+                </p>
+              )}
+              <Button
+                onClick={openFileDialog}
+                variant="default"
+                className="bg-rose-500 hover:bg-rose-600 text-white text-sm md:text-base px-6 py-3"
+                disabled={isSharing}
+              >
+                Select from computer
+              </Button>
+            </div>
           </motion.div>
         );
       case "postDetails":
@@ -328,7 +330,7 @@ export function AdvancedCreatePostModal({
             key="postDetails"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex flex-col h-full bg-white text-black"
+            className="flex flex-col h-full w-full bg-white text-black"
           >
             <div className="flex items-center justify-between p-3.5 border-b border-gray-200">
               <Button
@@ -357,7 +359,7 @@ export function AdvancedCreatePostModal({
 
             <div className="flex-grow flex flex-col md:flex-row h-full overflow-hidden">
               {/* Media Preview Section */}
-              <div className="relative w-full aspect-square md:aspect-auto md:flex-1 bg-black flex items-center justify-center overflow-hidden">
+              <div className="relative w-full sm:aspect-[4/3] aspect-square md:aspect-auto md:flex-1 bg-black flex items-center justify-center overflow-hidden">
                 <AnimatePresence initial={false} custom={direction}>
                   <motion.div
                     key={postDetailsMediaIndex}
@@ -454,10 +456,10 @@ export function AdvancedCreatePostModal({
               </div>
 
               {/* Right: Details Form */}
-              <div className="w-full md:w-[340px] md:flex-shrink-0 p-4 border-l border-gray-200 flex flex-col flex-1 md:flex-none space-y-4 overflow-y-auto">
+              <div className="w-full md:w-[340px] md:flex-shrink-0 p-4 border-l border-gray-200 flex flex-col flex-1 md:flex-none md:space-y-4 space-y-2 overflow-y-auto sm:max-h-[40vh] md:max-h-none">
                 {currentUser && (
                   <div className="flex items-center space-x-3">
-                    <Avatar className="h-9 w-9">
+                    <Avatar className="sm:h-9 sm:w-9 h-8 w-8">
                       <AvatarImage
                         src={currentUser.imageUrl || undefined}
                         alt={currentUser.fullName || "User"}
@@ -468,22 +470,23 @@ export function AdvancedCreatePostModal({
                           : "U"}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="font-medium text-sm">
+                    <span className="font-medium sm:text-sm text-xs">
                       {currentUser.fullName}
                     </span>
                   </div>
                 )}
+                <div className="text-xs text-gray-400 text-right">
+                  {caption.length}/2200
+                </div>
                 <Textarea
                   placeholder="Write a caption..."
                   value={caption}
                   onChange={(e) => setCaption(e.target.value)}
-                  className="min-h-[120px] text-sm border-gray-200 focus-visible:ring-rose-500/50 resize-none"
+                  className="md:min-h-[120px] min-h-[90px] text-sm border-gray-200 focus-visible:ring-rose-500/50 resize-none"
                   maxLength={2200}
                   disabled={isSharing}
                 />
-                <div className="text-xs text-gray-400 text-right">
-                  {caption.length}/2200
-                </div>
+                
 
                 {fileError && (
                   <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md my-2">
@@ -538,8 +541,9 @@ export function AdvancedCreatePostModal({
       }}
     >
       <DialogContent
-        className="sm:max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl h-[85vh] md:h-[calc(var(--vh,1vh)*85)] p-0 flex flex-col bg-white border-0 shadow-2xl rounded-lg overflow-hidden"
+        className="sm:max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl h-[85vh] md:h-[calc(var(--vh,1vh)*85)] flex flex-col bg-white border-0 shadow-2xl rounded-lg overflow-hidden"
         hideCloseButton={true}
+        fullScreen={true}
       >
         <DialogHeader className="sr-only">
           <DialogTitle>Create New Post</DialogTitle>

@@ -129,11 +129,11 @@ export default function CreateAlbumPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-8 flex flex-col">
+    <div className="lg:min-h-[97vh] min-h-[92vh] bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8 flex flex-col">
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-2 text-sm text-gray-600 mb-6"
+        className="flex items-center gap-2 text-sm text-gray-600 md:mb-6 sm:mb-4 mt-[8px]"
       >
         <Link
           href="/"
@@ -156,17 +156,20 @@ export default function CreateAlbumPage() {
           animate={{ opacity: 1, y: 0 }}
           className="bg-white/80 backdrop-blur-md rounded-2xl p-8 border border-rose-100/50 w-full max-w-2xl shadow-xl"
         >
-          <h1 className="text-3xl font-lora font-bold text-gray-800 mb-8 text-center">
+          <h1 className="sm:text-3xl text-2xl font-lora font-bold text-gray-800 sm:mb-8 mb-6 text-center">
             Create New Album
           </h1>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="sm:space-y-6 space-y-3"
+            >
               <FormField
                 control={form.control}
                 name="familyIds"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="space-y-0 sm:space-y-2">
                     <FormLabel>Select Family</FormLabel>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -267,7 +270,7 @@ export default function CreateAlbumPage() {
                       </DropdownMenuContent>
                     </DropdownMenu>
                     <FormDescription>
-                      Choose which family or families this album belongs to.
+                      Choose family
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -278,13 +281,15 @@ export default function CreateAlbumPage() {
                 control={form.control}
                 name="name"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Album Name</FormLabel>
+                  <FormItem className="space-y-0 sm:space-y-2">
+                    <FormLabel>
+                      Album Name
+                    </FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter album name" {...field} />
+                      <Input placeholder="Enter album name" {...field}/>
                     </FormControl>
                     <FormDescription>
-                      Give your album a meaningful name.
+                      Give a meaningful name.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -295,7 +300,7 @@ export default function CreateAlbumPage() {
                 control={form.control}
                 name="description"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="space-y-0 sm:space-y-2">
                     <FormLabel>Description</FormLabel>
                     <FormControl>
                       <Textarea
@@ -304,7 +309,7 @@ export default function CreateAlbumPage() {
                       />
                     </FormControl>
                     <FormDescription>
-                      Add some details about this album.
+                      Add description.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -315,7 +320,7 @@ export default function CreateAlbumPage() {
                 control={form.control}
                 name="mediaLimit"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="space-y-0 sm:space-y-2">
                     <FormLabel>Media Limit</FormLabel>
                     <FormControl>
                       <Input
@@ -329,7 +334,7 @@ export default function CreateAlbumPage() {
                       />
                     </FormControl>
                     <FormDescription>
-                      Maximum number of photos and videos (1-100).
+                      Maximum media limit (1-100).
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

@@ -27,10 +27,10 @@ const Page = () => {
   }, [data, router]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white flex items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white flex items-center justify-center px-2">
       <BackgroundPattern className="absolute inset-0 left-1/2 z-0 -translate-x-1/2 opacity-75" />
 
-      <div className="relative z-10 flex flex-col items-center gap-6 text-center">
+      <div className="relative z-10 flex flex-col items-center sm:gap-6 gap-4 text-center">
         {/* Custom Loading Spinner */}
         <div className="relative">
           <motion.div
@@ -38,19 +38,15 @@ const Page = () => {
             transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
             className="relative"
           >
-            <Heart className="w-12 h-12 text-rose-500" />
+            <Heart className="sm:w-12 w-10 h-10 text-rose-500" />
           </motion.div>
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-            className="absolute inset-0 border-2 border-t-rose-500 border-r-rose-300 border-b-rose-200 border-l-rose-100 rounded-full"
-          />
+          
         </div>
 
-        <h1 className="font-lora text-3xl font-bold text-gray-800">
+        <h1 className="font-lora sm:text-3xl text-2xl font-bold text-gray-800">
           Setting things up for you...
         </h1>
-        <p className="text-base/7 text-gray-600 max-w-prose">
+        <p className="sm:text-base/7 text-xs text-gray-600 max-w-prose">
           Just a moment while we set things up for you. This will take a few
           seconds.
         </p>

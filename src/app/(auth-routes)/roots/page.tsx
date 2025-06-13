@@ -215,23 +215,29 @@ export default function AllFamilyRootsPage() {
     },
   });
 
-  // Fetch user's families for the filter dropdown
-  const { data: familiesForFilter, isLoading: isLoadingFamilies } = useQuery<
-    FamilyForFilter[],
-    Error
-  >({
-    queryKey: ["familiesForFilter"],
-    queryFn: async () => {
-      const response = await fetch("/api/families"); // Assuming this endpoint returns [{id, name}, ...]
-      const result = await response.json();
-      if (!result.success) {
-        throw new Error(
-          result.message || "Failed to fetch families for filter"
-        );
-      }
-      return result.data;
-    },
-  });
+  // Fetch user's families
+  const { data: families, isLoading: isLoadingFamilies } = useQuery<any[], Error>(
+    {
+      queryKey: ["families"],
+      queryFn: async () => {
+        const response = await fetch("/api/families");
+        const result = await response.json();
+        if (!result.success) {
+          throw new Error(result.message || "Failed to fetch families");
+        }
+        return result.data;
+      },
+    }
+  );
+
+  const approvedFamilies = useMemo(() => {
+    if (!families) return [];
+    return families.filter(
+      (family) => family.userMembershipStatus === "APPROVED"
+    );
+  }, [families]);
+
+  const hasJoinedFamilies = approvedFamilies.length > 0;
 
   const filteredRoots = allRoots?.filter((root) => {
     if (
@@ -258,40 +264,42 @@ export default function AllFamilyRootsPage() {
 
   // Filter families to only include those without an existing root
   const familiesWithoutRoots = useMemo(() => {
-    if (!familiesForFilter || !allRoots) {
-      return familiesForFilter; // Return all families if roots haven't loaded yet, or if no families
+    if (!approvedFamilies || !allRoots) {
+      return approvedFamilies;
     }
     const familiesWithRootsIds = new Set(
       allRoots.map((root) => root.family.id)
     );
-    return familiesForFilter.filter(
+    return approvedFamilies.filter(
       (family) => !familiesWithRootsIds.has(family.id)
     );
-  }, [familiesForFilter, allRoots]);
+  }, [approvedFamilies, allRoots]);
 
   const allFamiliesHaveRootsState = useMemo(() => {
     if (isLoadingFamilies || isLoadingRoots) return false;
     // True if families list is not empty, but the list of families eligible for new roots is empty.
     return (
-      !!familiesForFilter &&
-      familiesForFilter.length > 0 &&
+      !!approvedFamilies &&
+      approvedFamilies.length > 0 &&
       !!familiesWithoutRoots &&
       familiesWithoutRoots.length === 0
     );
   }, [
-    familiesForFilter,
+    approvedFamilies,
     familiesWithoutRoots,
     isLoadingFamilies,
     isLoadingRoots,
   ]);
 
+  const hasActiveFilters = debouncedSearch !== "" || selectedFamily !== "ALL";
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8 max-lg:pb-20">
       {/* Breadcrumb */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-2 text-sm text-gray-600 mb-6 sm:mb-8 overflow-x-auto whitespace-nowrap"
+        className="flex items-center gap-2 text-sm text-gray-600 mb-6 sm:mb-8 overflow-x-auto whitespace-nowrap mt-[8px]"
       >
         <Link
           href="/"
@@ -305,25 +313,30 @@ export default function AllFamilyRootsPage() {
           Family Trees
         </span>
       </motion.div>
-
       {/* Header Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white/80 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-rose-100/50 mb-6 sm:mb-8"
+        className="bg-white/80 backdrop-blur-md rounded-2xl p-4 md:p-6 border border-rose-100/50 mb-6 md:mb-8"
       >
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 mb-4 sm:mb-6">
-          <div className="text-center sm:text-left">
-            <h1 className="text-2xl sm:text-3xl font-lora font-bold text-gray-800 mb-2 flex items-center justify-center sm:justify-start gap-2">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 mb-4 md:mb-6">
+          <div className="text-center md:text-left">
+            <h1 className="text-2xl md:text-3xl font-lora font-bold text-gray-800 mb-2 flex items-center justify-center md:justify-start gap-2">
               Family Trees 🌳
             </h1>
-            <p className="text-gray-600 text-sm sm:text-base">
+            <p className="text-gray-600 text-sm md:text-base">
               Browse and manage all family trees you are a part of.
             </p>
           </div>
           <Button
-            className="bg-rose-500 hover:bg-rose-600 flex items-center justify-center gap-2 w-full sm:w-auto"
+            className="bg-rose-500 hover:bg-rose-600 flex items-center justify-center gap-2 w-full md:w-auto"
             onClick={() => setIsCreateRootModalOpen(true)}
+            disabled={!hasJoinedFamilies}
+            title={
+              !hasJoinedFamilies
+                ? "You must join a family first"
+                : "Create a new family tree"
+            }
           >
             <PlusCircle className="w-4 h-4" />
             <span>Create New Tree</span>
@@ -331,59 +344,65 @@ export default function AllFamilyRootsPage() {
         </div>
 
         {/* Filters and Search */}
-        <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
-          <div className="relative w-full sm:flex-grow">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              placeholder="Search roots by name or description..."
-              value={search}
-              onChange={handleSearchChange}
-              className="pl-10 bg-white w-full h-10"
-            />
-          </div>
-          <div className="flex justify-center w-full sm:w-auto sm:justify-start sm:flex-shrink-0">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="flex items-center gap-2 w-full sm:w-auto h-10"
-                >
-                  <Users className="w-4 h-4" />
-                  <span className="truncate text-sm sm:text-base">
-                    {selectedFamily === "ALL"
-                      ? "All Families"
-                      : familiesForFilter?.find((f) => f.id === selectedFamily)
-                          ?.name || "Select Family"}
-                  </span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="max-h-60 overflow-y-auto w-56">
-                <DropdownMenuRadioGroup
-                  value={selectedFamily}
-                  onValueChange={(value) => {
-                    setSelectedFamily(value);
-                    setCurrentPage(1);
-                  }}
-                >
-                  <DropdownMenuRadioItem value="ALL">
-                    All Families
-                  </DropdownMenuRadioItem>
-                  {isLoadingFamilies ? (
-                    <DropdownMenuRadioItem value="loading" disabled>
-                      Loading families...
+        {hasJoinedFamilies && (
+          <div className="flex flex-col md:flex-row items-center gap-3 md:gap-4">
+            <div className="relative w-full md:flex-grow">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                placeholder="Search roots by name or description..."
+                value={search}
+                onChange={handleSearchChange}
+                className="pl-10 bg-white w-full h-10"
+              />
+            </div>
+            <div className="flex justify-center w-full md:w-auto md:justify-start md:flex-shrink-0">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="flex items-center gap-2 w-full md:w-auto h-10"
+                  >
+                    <Users className="w-4 h-4" />
+                    <span className="truncate text-sm md:text-base">
+                      {selectedFamily === "ALL"
+                        ? "All Families"
+                        : approvedFamilies?.find(
+                            (f) => f.id === selectedFamily
+                          )?.name || "Select Family"}
+                    </span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="max-h-60 overflow-y-auto w-56">
+                  <DropdownMenuRadioGroup
+                    value={selectedFamily}
+                    onValueChange={(value) => {
+                      setSelectedFamily(value);
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <DropdownMenuRadioItem value="ALL">
+                      All Families
                     </DropdownMenuRadioItem>
-                  ) : (
-                    familiesForFilter?.map((family) => (
-                      <DropdownMenuRadioItem key={family.id} value={family.id}>
-                        {family.name}
+                    {isLoadingFamilies ? (
+                      <DropdownMenuRadioItem value="loading" disabled>
+                        Loading families...
                       </DropdownMenuRadioItem>
-                    ))
-                  )}
-                </DropdownMenuRadioGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                    ) : (
+                      approvedFamilies?.map((family) => (
+                        <DropdownMenuRadioItem
+                          key={family.id}
+                          value={family.id}
+                        >
+                          {family.name}
+                        </DropdownMenuRadioItem>
+                      ))
+                    )}
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
-        </div>
+        )}
       </motion.div>
 
       {/* Roots Grid or States */}
@@ -426,25 +445,69 @@ export default function AllFamilyRootsPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`bg-white/80 backdrop-blur-md rounded-2xl p-6 sm:p-12 text-center border border-rose-100/50 text-gray-600 w-full ${(debouncedSearch || selectedFamily !== "ALL") && "hidden"}`}
+            className="bg-white/80 backdrop-blur-md rounded-2xl p-6 sm:p-12 text-center border border-rose-100/50 text-gray-600 w-full"
           >
-            <div className="bg-rose-50 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
-              <Trees className="w-6 h-6 sm:w-8 sm:h-8 text-rose-500" />
-            </div>
-            <h3 className="text-lg sm:text-xl font-lora font-bold text-gray-800 mb-2">
-              No Family Trees Yet
-            </h3>
-            <p className="text-gray-500 max-w-md mx-auto mb-4 sm:mb-6 text-sm sm:text-base">
-              Once family trees are created in your families, they will appear
-              here. Or you can start a new one!
-            </p>
-            <Button
-              onClick={() => setIsCreateRootModalOpen(true)}
-              className="bg-rose-500 hover:bg-rose-600 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg font-medium transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-opacity-50 flex items-center gap-2 mx-auto w-full sm:w-auto"
-            >
-              <PlusCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span>Create Family Tree</span>
+            {hasActiveFilters ? (
+              <>
+                <div className="bg-rose-50 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                  <Search className="w-6 h-6 sm:w-8 sm:h-8 text-rose-500" />
+                </div>
+                <h3 className="text-lg sm:text-xl font-lora font-bold text-gray-800 mb-2">
+                  No Matching Trees Found
+                </h3>
+                <p className="text-gray-500 max-w-md mx-auto mb-4 sm:mb-6 text-sm sm:text-base">
+                  Try adjusting your search or filter settings to find what
+                  you're looking for.
+                </p>
+                <Button
+                  onClick={() => {
+                    setSearch("");
+                    debouncedSetSearch("");
+                    setSelectedFamily("ALL");
+                  }}
+                  className="bg-rose-500 hover:bg-rose-600 text-white"
+                >
+                  Clear Filters
+                </Button>
+              </>
+            ) : !hasJoinedFamilies ? (
+              <>
+                <div className="bg-rose-50 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                  <Trees className="w-6 h-6 sm:w-8 sm:h-8 text-rose-500" />
+                </div>
+                <h3 className="text-lg sm:text-xl font-lora font-bold text-gray-800 mb-2">
+                Join a Family to Manage Family Trees
+                </h3>
+                <p className="text-gray-500 max-w-md mx-auto mb-4 sm:mb-6 text-sm sm:text-base">
+                Join or create a family to manage family trees.
+                </p>
+                <Link href="/dashboard">
+            <Button className="bg-rose-500 hover:bg-rose-600 text-white">
+              <Home className="w-4 h-4 mr-2" />
+              Find or Create a Family
             </Button>
+          </Link>
+              </>
+            ) : (
+              <>
+                <div className="bg-rose-50 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                  <Trees className="w-6 h-6 sm:w-8 sm:h-8 text-rose-500" />
+                </div>
+                <h3 className="text-lg sm:text-xl font-lora font-bold text-gray-800 mb-2">
+                No Family Trees Found
+                </h3>
+                <p className="text-gray-500 max-w-md mx-auto mb-4 sm:mb-6 text-xs sm:text-base">
+                Create your first family tree to start building your family history.
+                </p>
+                <Button 
+                  onClick={() => setIsCreateRootModalOpen(true)}
+                  className="bg-rose-500 hover:bg-rose-600 text-white"
+                >
+                  <PlusCircle className="w-4 h-4 mr-2" />
+                  Create New Tree
+                </Button>
+              </>
+            )}
           </motion.div>
         ) : (
           <div className="space-y-6 sm:space-y-8">
@@ -516,15 +579,7 @@ export default function AllFamilyRootsPage() {
       </div>
 
       {isCreateRootModalOpen &&
-        familiesWithoutRoots &&
-        familiesWithoutRoots.length > 0 && (
-          <CreateRootModal
-            isOpen={isCreateRootModalOpen}
-            onClose={() => setIsCreateRootModalOpen(false)}
-            families={familiesWithoutRoots}
-          />
-        )}
-      {isCreateRootModalOpen &&
+        hasJoinedFamilies &&
         (!familiesWithoutRoots || familiesWithoutRoots.length === 0) &&
         !isLoadingFamilies &&
         !isLoadingRoots && (
@@ -532,6 +587,20 @@ export default function AllFamilyRootsPage() {
             isOpen={isCreateRootModalOpen}
             onClose={() => setIsCreateRootModalOpen(false)}
             allFamiliesHaveRoots={allFamiliesHaveRootsState}
+          />
+        )}
+
+      {/* Create Root Modal - Show when families have no roots */}
+      {isCreateRootModalOpen &&
+        hasJoinedFamilies &&
+        familiesWithoutRoots &&
+        familiesWithoutRoots.length > 0 &&
+        !isLoadingFamilies &&
+        !isLoadingRoots && (
+          <CreateRootModal
+            isOpen={isCreateRootModalOpen}
+            onClose={() => setIsCreateRootModalOpen(false)}
+            families={familiesWithoutRoots}
           />
         )}
 

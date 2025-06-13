@@ -42,8 +42,8 @@ type WorkHistory = {
   id: string;
   company: string;
   position: string;
-  startDate: Date;
-  endDate: Date | null;
+  startYear: number;
+  endYear: number | null;
   currentlyWorking: boolean;
   location: string | null;
   description: string | null;
@@ -169,8 +169,8 @@ export async function GET(
           id: work.id,
           company: work.company,
           position: work.position,
-          startDate: work.startDate,
-          endDate: work.endDate,
+          startYear: work.startYear,
+          endYear: work.endYear,
           currentlyWorking: work.currentlyWorking,
           location: work.location,
           description: work.description

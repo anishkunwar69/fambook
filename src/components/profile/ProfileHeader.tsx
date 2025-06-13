@@ -324,18 +324,32 @@ export function ProfileHeader({
                 {profileData.fullName}
                 {isBirthday && <Cake className="w-6 h-6 text-rose-500" />}
               </h1>
-              <p
-                className={`text-gray-600 flex items-center gap-2 justify-center ${
-                  isCurrentUser ? "sm:justify-start" : "md:justify-start"
-                }`}
-              >
-                {profileData.bio}
-                {isCurrentUser && (
-                  <button onClick={() => setBioDialogOpen(true)}>
-                    <PenSquare className="w-4 h-4 text-gray-500 hover:text-rose-500 transition-colors" />
-                  </button>
-                )}
-              </p>
+              {profileData.bio ? (
+                <p
+                  className={`text-gray-600 flex items-center gap-2 justify-center ${
+                    isCurrentUser ? "sm:justify-start" : "md:justify-start"
+                  }`}
+                >
+                  {profileData.bio}
+                  {isCurrentUser && (
+                    <button onClick={() => setBioDialogOpen(true)}>
+                      <PenSquare className="w-4 h-4 text-gray-500 hover:text-rose-500 transition-colors" />
+                    </button>
+                  )}
+                </p>
+              ) : isCurrentUser ? (
+                <button
+                  onClick={() => setBioDialogOpen(true)}
+                  className={`text-gray-400 flex items-center gap-2 justify-center text-sm border border-dashed border-gray-300 rounded-md px-3 py-1.5 hover:bg-gray-50 hover:text-rose-500 transition-all ${
+                    isCurrentUser ? "sm:justify-start" : "md:justify-start"
+                  }`}
+                >
+                  <PenSquare className="w-4 h-4" />
+                  <span>Add a short bio about yourself</span>
+                </button>
+              ) : (
+                <p className="text-gray-400 italic text-sm">No bio added yet</p>
+              )}
             </div>
             {isCurrentUser ? (
               <Link href={`/profile/${userId}/edit/profile-info`}>

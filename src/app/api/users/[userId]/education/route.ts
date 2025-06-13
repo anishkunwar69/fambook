@@ -1,8 +1,7 @@
-import { NextRequest } from "next/server";
-import { currentUser } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
-import { z } from "zod";
 import prisma from "@/lib/prisma";
+import { currentUser } from "@clerk/nextjs/server";
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 // Validation schema for creating/updating education
 const EducationSchema = z.object({
@@ -10,8 +9,12 @@ const EducationSchema = z.object({
   degree: z.string().min(1, "Degree is required"),
   fieldOfStudy: z.string().nullable().optional(),
   startYear: z.number().int().min(1900, "Start year must be at least 1900"),
-  endYear: z.number().int().min(1900, "End year must be at least 1900").nullable().optional(),
-  description: z.string().max(500, "Description must be less than 500 characters").nullable().optional(),
+  endYear: z
+    .number()
+    .int()
+    .min(1900, "End year must be at least 1900")
+    .nullable()
+    .optional(),
 });
 
 // GET endpoint to retrieve user's education history
@@ -34,16 +37,15 @@ export async function GET(
     // Fetch education entries
     const educationEntries = await prisma.education.findMany({
       where: { userId: userId },
-      orderBy: { startYear: 'desc' }
+      orderBy: { startYear: "desc" },
     });
 
     // Return the education data
     return NextResponse.json({
       success: true,
       message: "Education history fetched successfully",
-      data: educationEntries
+      data: educationEntries,
     });
-
   } catch (error) {
     console.error("Error fetching education:", error);
     return NextResponse.json(
@@ -74,7 +76,7 @@ export async function POST(
     // Get the internal user ID from the authenticated user's external ID
     const user = await prisma.user.findUnique({
       where: { externalId: authUser.id },
-      select: { id: true }
+      select: { id: true },
     });
 
     if (!user) {
@@ -105,27 +107,28 @@ export async function POST(
         fieldOfStudy: validatedData.fieldOfStudy,
         startYear: validatedData.startYear,
         endYear: validatedData.endYear,
-        description: validatedData.description,
-      }
+      },
     });
 
     // Return success response with the created education entry
     return NextResponse.json({
       success: true,
       message: "Education entry added successfully",
-      data: newEducation
+      data: newEducation,
     });
-
   } catch (error) {
     console.error("Error adding education:", error);
 
     // Handle validation errors
     if (error instanceof z.ZodError) {
-      return NextResponse.json({
-        success: false,
-        message: "Invalid data provided",
-        errors: error.errors
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Invalid data provided",
+          errors: error.errors,
+        },
+        { status: 400 }
+      );
     }
 
     // Handle other errors
@@ -136,4 +139,4 @@ export async function POST(
   } finally {
     await prisma.$disconnect();
   }
-} 
+}

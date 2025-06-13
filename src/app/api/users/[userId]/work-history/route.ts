@@ -8,15 +8,10 @@ import prisma from "@/lib/prisma";
 const WorkHistorySchema = z.object({
   company: z.string().min(1, "Company name is required"),
   position: z.string().min(1, "Position is required"),
-  startDate: z.string().refine((val) => !isNaN(Date.parse(val)), {
-    message: "Start date must be a valid date",
-  }),
-  endDate: z.string().refine((val) => !isNaN(Date.parse(val)), {
-    message: "End date must be a valid date",
-  }).nullable().optional(),
+  startYear: z.number().int().min(1900, "Start year must be at least 1900"),
+  endYear: z.number().int().min(1900, "End year must be at least 1900").nullable().optional(),
   currentlyWorking: z.boolean().default(false),
   location: z.string().nullable().optional(),
-  description: z.string().max(500, "Description must be less than 500 characters").nullable().optional(),
 });
 
 // GET endpoint to retrieve user's work history
@@ -39,7 +34,7 @@ export async function GET(
     // Fetch work history entries
     const workHistoryEntries = await prisma.workHistory.findMany({
       where: { userId: userId },
-      orderBy: { startDate: 'desc' }
+      orderBy: { startYear: 'desc' }
     });
 
     // Return the work history data
@@ -107,11 +102,10 @@ export async function POST(
         userId: user.id,
         company: validatedData.company,
         position: validatedData.position,
-        startDate: new Date(validatedData.startDate),
-        endDate: validatedData.endDate ? new Date(validatedData.endDate) : null,
+        startYear: validatedData.startYear,
+        endYear: validatedData.endYear,
         currentlyWorking: validatedData.currentlyWorking,
         location: validatedData.location,
-        description: validatedData.description,
       }
     });
 

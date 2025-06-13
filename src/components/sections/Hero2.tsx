@@ -1,40 +1,21 @@
 "use client";
-import { motion, useInView } from "framer-motion";
+import { useInView } from "framer-motion";
 import { Calendar, Heart } from "lucide-react";
 import { useEffect, useRef } from "react";
 import Container from "../Container";
 import Navbar from "../Navbar";
 import { Button } from "../ui/button";
+import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
 
 function Hero2() {
+  const {user} = useUser()
   return (
     <div className="bg-gradient-to-b from-amber-50 via-rose-50/30 to-white min-h-screen relative overflow-hidden">
       {/* Enhanced Decorative Elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-          animate={{
-            scale: [1, 1.2, 1],
-            rotate: [0, 15, 0],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-          className="absolute -top-4 -right-4 w-72 h-72 bg-rose-200 rounded-full blur-3xl opacity-20"
-        />
-        <motion.div
-          animate={{
-            scale: [1, 1.1, 1],
-            rotate: [0, -15, 0],
-          }}
-          transition={{
-            duration: 15,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-          className="absolute top-1/2 -left-4 w-72 h-72 bg-amber-200 rounded-full blur-3xl opacity-20"
-        />
+        <div className="absolute -top-4 -right-4 w-72 h-72 bg-rose-200 rounded-full blur-3xl opacity-20" />
+        <div className="absolute top-1/2 -left-4 w-72 h-72 bg-amber-200 rounded-full blur-3xl opacity-20" />
       </div>
 
       {/* Navbar */}
@@ -53,17 +34,13 @@ function Hero2() {
 }
 
 function HeroSection() {
+  const {user} = useUser()
   return (
     <Container>
       <div className="w-full md:pt-24 pt-[70px] pb-16 flex flex-col items-center gap-8 relative z-10">
         {/* Main Heading */}
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="text-center max-w-5xl mx-auto space-y-8 pt-[50px]"
-        >
-          <h1 className="font-lora text-4xl md:text-6xl lg:text-7xl font-bold text-gray-800 leading-tight">
+        <div className="text-center max-w-5xl mx-auto space-y-8 pt-[50px]">
+          <h1 className="font-lora text-4xl sm:text-5xl lg:text-7xl font-bold text-gray-800 leading-tight">
             Your Family's Digital
             <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-amber-500 inline-block">
@@ -78,25 +55,20 @@ function HeroSection() {
           </p>
 
           {/* CTA Buttons */}
-          <motion.div
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 md:pt-8 pt-[14px]"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:pt-8 pt-[14px]">
             <Button className="bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white font-poppins text-lg px-8 py-6 rounded-xl shadow-lg hover:shadow-rose-200/50 hover:scale-105 transition-all duration-300 w-full sm:w-auto">
-              Start Free Forever
               <Heart className="w-5 h-5 ml-2" />
+              { user ? <Link href="#features">Our Features</Link> : <Link href="/sign-up">Get Started</Link>}
             </Button>
             <Button
               variant="outline"
               className="border-2 border-gray-300 hover:border-rose-300 text-gray-700 hover:text-rose-600 font-poppins text-lg px-8 py-6 rounded-xl hover:bg-rose-50 transition-all duration-300 w-full sm:w-auto"
             >
-              Schedule Demo
+              <Link href="#comparisons">Why Fambook?</Link>
               <Calendar className="w-5 h-5 ml-2" />
             </Button>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </div>
     </Container>
   );
@@ -119,19 +91,9 @@ function DemoVideoSection() {
   return (
     <section ref={ref} className="md:pb-[84px] pb-[70px] relative md:pt-[14px]">
       <Container>
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
-          className="max-w-5xl mx-auto relative"
-        >
+        <div className="max-w-5xl mx-auto relative">
           {/* Floating Testimonial Badge */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8, x: 20 }}
-            animate={isInView ? { opacity: 1, scale: 1, x: 0 } : {}}
-            transition={{ delay: 0.6, type: "spring", stiffness: 200 }}
-            className="absolute -top-8 right-4 z-20 hidden lg:block"
-          >
+          <div className="absolute -top-8 right-4 z-20 hidden lg:block">
             <div className="bg-rose-500 text-white rounded-full px-6 py-3 shadow-xl flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-to-r from-rose-400 to-amber-400 rounded-full flex items-center justify-center">
                 <Heart className="w-5 h-5 text-white" />
@@ -143,15 +105,10 @@ function DemoVideoSection() {
                 </p>
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Demo Video Container */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ delay: 0.3, duration: 0.6 }}
-            className="relative rounded-2xl overflow-hidden shadow-2xl border border-rose-500 p-2"
-          >
+          <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-rose-500 p-2">
             {/* Auto-playing Video */}
             <div className="aspect-video bg-black rounded-2xl overflow-hidden relative">
               <iframe
@@ -163,20 +120,10 @@ function DemoVideoSection() {
                 allowFullScreen
               ></iframe>
 
-              {/* Video Info Overlay */}
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 pointer-events-none">
-                <div className="text-white">
-                  <h3 className="font-lora text-lg font-semibold mb-1">
-                    See Fambook in Action
-                  </h3>
-                  <p className="font-poppins text-sm text-gray-300">
-                    Watch how families connect and share memories
-                  </p>
-                </div>
-              </div>
+             
             </div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </Container>
     </section>
   );
@@ -189,43 +136,24 @@ function SocialProofSection() {
   return (
     <section
       ref={ref}
-      className="py-[65px] bg-gradient-to-b from-white to-gray-100/50 border-t border-gray-100"
+      className="sm:py-[65px] py-[40px] bg-gradient-to-b from-white to-gray-100/50 border-t border-gray-100"
     >
       <Container>
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
-          className="text-center"
-        >
+        <div className="text-center">
           {/* Enhanced Section Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ delay: 0.2 }}
-          >
-            <h3 className="font-lora text-4xl text-rose-500 font-semibold mb-3">
+          <div>
+            <h3 className="font-lora sm:text-4xl text-2xl text-rose-500 font-semibold sm:mb-3 mb-2">
               Trusted By Families Worldwide
             </h3>
             <div className="w-24 h-1 bg-gradient-to-r from-rose-500 to-amber-500 rounded-full mx-auto"></div>
-          </motion.div>
+          </div>
 
           {/* Testimonials Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ delay: 0.7, duration: 0.8 }}
-            className="mt-[50px] mb-7"
-          >
+          <div className="sm:mt-[50px] mt-[30px] mb-7">
             <div className="max-w-6xl mx-auto">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Testimonial 1 */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={isInView ? { opacity: 1, y: 0 } : {}}
-                  transition={{ delay: 0.8 }}
-                  className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 relative hover:shadow-xl transition-all duration-300 group"
-                >
+                <div className="bg-white rounded-2xl sm:p-8 p-4 shadow-lg border border-gray-100 relative hover:shadow-xl transition-all duration-300 group">
                   {/* Quote Icon */}
                   <div className="absolute -top-4 left-8 z-10">
                     <div className="w-8 h-8 bg-gradient-to-r from-rose-500 to-amber-500 rounded-full flex items-center justify-center shadow-lg">
@@ -242,7 +170,7 @@ function SocialProofSection() {
                   {/* Decorative Gradient Line */}
                   <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 to-amber-500 rounded-t-2xl"></div>
 
-                  <blockquote className="font-poppins text-gray-700 text-lg leading-relaxed mb-8 mt-4 italic">
+                  <blockquote className="font-poppins text-gray-700 sm:text-lg text-base leading-relaxed sm:mb-8 mb-4 mt-4 italic">
                     "Our family is scattered across four countries, but this app
                     makes us feel like we're back in the same living room
                     again."
@@ -271,22 +199,17 @@ function SocialProofSection() {
                     </div>
                     <div>
                       <p className="font-lora font-semibold text-gray-800 text-lg">
-                        Prakrit Ojha
+                        Prakrit Jha
                       </p>
                       <p className="font-poppins text-sm text-gray-500 flex items-center gap-1">
                         Kathmandu
                       </p>
                     </div>
                   </div>
-                </motion.div>
+                </div>
 
                 {/* Testimonial 2 */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={isInView ? { opacity: 1, y: 0 } : {}}
-                  transition={{ delay: 0.9 }}
-                  className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 relative hover:shadow-xl transition-all duration-300 group"
-                >
+                <div className="bg-white rounded-2xl sm:p-8 p-4 shadow-lg border border-gray-100 relative hover:shadow-xl transition-all duration-300 group">
                   {/* Quote Icon */}
                   <div className="absolute -top-4 left-8 z-10">
                     <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full flex items-center justify-center shadow-lg">
@@ -303,7 +226,7 @@ function SocialProofSection() {
                   {/* Decorative Gradient Line */}
                   <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-t-2xl"></div>
 
-                  <blockquote className="font-poppins text-gray-700 text-lg leading-relaxed mb-8 mt-4 italic">
+                  <blockquote className="font-poppins text-gray-700 sm:text-lg text-base leading-relaxed sm:mb-8 mb-4 mt-4 italic">
                     "We built our family tree and discovered relatives we never
                     knew we had. My kids now know where they come from."
                   </blockquote>
@@ -311,7 +234,7 @@ function SocialProofSection() {
                   <div className="flex items-center gap-4">
                     <div className="relative">
                       <img
-                        src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face"
+                        src="https://scontent.fktm20-1.fna.fbcdn.net/v/t1.6435-9/202588405_10159358515153252_4826645853232762266_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=a5f93a&_nc_ohc=CRQYnkKn8o4Q7kNvwH5rciJ&_nc_oc=AdnH3dn8fy_XQ3JcPDjNO4Gwksb1v2gZ6VFBnfyfbdnIOnC3DXr8NKiT45-_vSQAqLQ&_nc_zt=23&_nc_ht=scontent.fktm20-1.fna&_nc_gid=QAX3nppcFUwkNUQtIR-NCw&oh=00_AfMNhMSKmIMDnpjiXgxkAOH3gkA3HkoxB3UH16UpXjjfPw&oe=6871D482"
                         alt="Ramesh P."
                         className="w-14 h-14 rounded-full object-cover border-3 border-white shadow-lg group-hover:scale-105 transition-transform duration-300"
                       />
@@ -338,15 +261,10 @@ function SocialProofSection() {
                       </p>
                     </div>
                   </div>
-                </motion.div>
+                </div>
 
                 {/* Testimonial 3 */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={isInView ? { opacity: 1, y: 0 } : {}}
-                  transition={{ delay: 1.0 }}
-                  className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 relative hover:shadow-xl transition-all duration-300 group"
-                >
+                <div className="bg-white rounded-2xl sm:p-8 p-4 shadow-lg border border-gray-100 relative hover:shadow-xl transition-all duration-300 group">
                   {/* Quote Icon */}
                   <div className="absolute -top-4 left-8 z-10">
                     <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
@@ -363,7 +281,7 @@ function SocialProofSection() {
                   {/* Decorative Gradient Line */}
                   <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-t-2xl"></div>
 
-                  <blockquote className="font-poppins text-gray-700 text-lg leading-relaxed mb-8 mt-4 italic">
+                  <blockquote className="font-poppins text-gray-700 sm:text-lg text-base leading-relaxed sm:mb-8 mb-4 mt-4 italic">
                     "This feels so much more private than Facebook. I can safely
                     share old wedding photos with my family, without worrying."
                   </blockquote>
@@ -398,16 +316,11 @@ function SocialProofSection() {
                       </p>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               </div>
 
               {/* Testimonial Footer */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ delay: 1.1 }}
-                className="text-center mt-16"
-              >
+              <div className="text-center sm:mt-16 mt-10 max-sm:-mb-4">
                 <div className="inline-flex items-center gap-2 bg-gray-50 rounded-full px-6 py-3 border">
                   <div className="flex -space-x-2">
                     <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full border-2 border-white flex items-center justify-center">
@@ -435,10 +348,10 @@ function SocialProofSection() {
                     Join 1,200+ families
                   </p>
                 </div>
-              </motion.div>
+              </div>
             </div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </Container>
     </section>
   );

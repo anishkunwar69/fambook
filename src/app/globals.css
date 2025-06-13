@@ -71,14 +71,23 @@ body {
   }
 }
 
-
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Safe area insets for iOS devices */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .safe-area-inset-bottom {
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+  }
+  
+  .bottom-nav-safe-area {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }
 

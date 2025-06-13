@@ -51,6 +51,9 @@ export default {
           "5": "hsl(var(--chart-5))",
         },
       },
+      screens: {
+        xs: "450px",
+      },
       fontFamily: {
         poppins: ["var(--font-poppins)"],
         lora: ["var(--font-lora)"],

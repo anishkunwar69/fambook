@@ -1,5 +1,5 @@
 "use client";
-import { motion, useInView } from "framer-motion";
+import { useInView } from "framer-motion";
 import {
   Check,
   Home,
@@ -37,9 +37,9 @@ export default function Features() {
       description:
         "Create stunning digital albums for birthdays, weddings, holidays, and everyday moments. Organize by events, people, or themes.",
       benefits: [
-        "Unlimited photo & video storage",
-        "Smart auto-organization",
-        "Beautiful templates",
+        "Easy photo & video storage",
+        "Easily accessible",
+        "Preserve memories for lifetime",
         "Easy sharing within family",
       ],
       url: "https://res.cloudinary.com/dmq5tx0bd/video/upload/f_auto:video,q_auto/jqbnidstesn7zvqv5l09",
@@ -66,59 +66,52 @@ export default function Features() {
         "No strangers or ads",
         "Real-time family updates",
         "Comment & react together",
-        "Video calls integration",
+        "Share moments with family",
       ],
       url: "https://res.cloudinary.com/dmq5tx0bd/video/upload/f_auto:video,q_auto/gzuwet0vgeht9usgdsev",
     },
   ];
 
   return (
-    <section ref={ref} className="py-20 bg-white" id="features">
+    <section ref={ref} className="md:py-20 py-12 bg-white" id="features">
       <Container>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
-          <h2 className="font-lora text-4xl md:text-5xl font-bold text-gray-800 mb-6">
-            Everything Your Family Needs
+        <div className="text-center md:mb-16 mb-10">
+          <h2 className="font-lora text-4xl md:text-4xl lg:text-5xl font-bold text-gray-800 mb-6">
+            <span className="hidden md:inline">Everything Your Family Needs</span>
+            <span className="md:hidden">Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-amber-500">Features</span></span>
             <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-amber-500">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-amber-500 md:block hidden">
               In One Beautiful Place
             </span>
           </h2>
-          <p className="font-poppins text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="font-poppins lg:text-xl sm:text-lg text-base text-gray-600 max-w-3xl mx-auto">
             Stop juggling multiple apps and platforms. Bring your entire family
             together in one secure, beautiful space designed specifically for
             families.
           </p>
-        </motion.div>
+        </div>
 
-        <div className="space-y-20">
+        <div className="border- border-red-500 max-[520px]:px-2">
           {features.map((feature, index) => (
             <div key={feature.title}>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ delay: 0.2 + index * 0.1 }}
+              <div
                 className={`grid lg:grid-cols-2 gap-12 items-start ${index % 2 === 1 ? "lg:grid-cols-2" : ""}`}
               >
                 <div className={index % 2 === 1 ? "lg:order-2" : ""}>
                   <div className="bg-rose-50 w-16 h-16 rounded-xl flex items-center justify-center mb-6">
                     {feature.icon}
                   </div>
-                  <h3 className="font-lora text-3xl font-bold text-gray-800 mb-4">
+                  <h3 className="font-lora sm:text-3xl text-2xl font-bold text-rose-500 mb-4">
                     {feature.title}
                   </h3>
-                  <p className="font-poppins text-lg text-gray-600 mb-6">
+                  <p className="font-poppins sm:text-lg text-base text-gray-600 mb-6">
                     {feature.description}
                   </p>
                   <div className="space-y-3">
                     {feature.benefits.map((benefit) => (
                       <div key={benefit} className="flex items-center gap-3">
                         <Check className="w-5 h-5 text-rose-500 flex-shrink-0" />
-                        <span className="font-poppins text-gray-700">
+                        <span className="font-poppins sm:text-lg text-sm text-gray-700 font-medium">
                           {benefit}
                         </span>
                       </div>
@@ -168,16 +161,11 @@ export default function Features() {
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </div>
 
               {/* Subtle separator - only show between features, not after the last one */}
               {index < features.length - 1 && (
-                <motion.div
-                  initial={{ opacity: 0, scaleX: 0 }}
-                  animate={isInView ? { opacity: 1, scaleX: 1 } : {}}
-                  transition={{ delay: 0.4 + index * 0.1, duration: 0.8 }}
-                  className="mt-20 mb-0"
-                >
+                <div className="lg:my-20 my-10">
                   <div className="relative">
                     <div className="absolute inset-0 flex items-center">
                       <div className="w-full border-t border-gray-100"></div>
@@ -188,7 +176,7 @@ export default function Features() {
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               )}
             </div>
           ))}

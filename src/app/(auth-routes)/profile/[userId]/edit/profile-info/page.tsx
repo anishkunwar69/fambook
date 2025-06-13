@@ -357,7 +357,7 @@ export default function ProfileInfoEditPage() {
   }
 
   return (
-    <div className="container max-w-4xl mx-auto py-8 px-4">
+    <div className="container max-w-4xl mx-auto py-8 px-4 max-lg:pb-20">
       {/* Breadcrumb navigation */}
       <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
         <Link
@@ -379,17 +379,17 @@ export default function ProfileInfoEditPage() {
       </div>
 
       <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800">
           Edit Profile Information
         </h1>
-        <p className="text-gray-500 mt-1">
+        <p className="text-gray-500 mt-1 text-xs xs:text-sm md:text-base">
           Update your personal information to help family members connect with
           you.
         </p>
       </div>
 
       {/* Form progress */}
-      <div className="mb-8">
+      <div className="mb-4 sm:mb-8">
         <div className="flex justify-between items-center text-xs mb-1.5">
           <span className="font-medium text-gray-600">Form Completion</span>
           <span className="font-medium text-rose-600">{formProgress}%</span>
@@ -407,10 +407,10 @@ export default function ProfileInfoEditPage() {
           <Card className="shadow-sm">
             <CardHeader className="pb-4">
               <div className="flex items-center gap-2">
-                <User className="h-5 w-5 text-rose-500" />
+                <User className="h-4 sm:h-5 w-4 sm:w-5 text-rose-500" />
                 <CardTitle>Basic Information</CardTitle>
               </div>
-              <CardDescription>
+              <CardDescription className="sm:text-sm text-xs md:text-base">
                 Edit your name, birthday, and other basic details
               </CardDescription>
             </CardHeader>
@@ -473,7 +473,7 @@ export default function ProfileInfoEditPage() {
                         }}
                       />
                     </FormControl>
-                    <FormDescription>
+                    <FormDescription className="sm:text-sm text-xs md:text-base">
                       Your date of birth will be used to calculate your age and
                       remind family members of your birthday.
                     </FormDescription>
@@ -497,7 +497,7 @@ export default function ProfileInfoEditPage() {
                       />
                     </FormControl>
                     <div className="flex justify-between items-center">
-                      <FormDescription>
+                      <FormDescription className="sm:text-sm text-xs md:text-base">
                         A short bio to introduce yourself to your family.
                       </FormDescription>
                       <span className="text-xs text-gray-400">
@@ -514,10 +514,10 @@ export default function ProfileInfoEditPage() {
           <Card className="shadow-sm">
             <CardHeader className="pb-4">
               <div className="flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-rose-500" />
+                <MapPin className="h-4 sm:h-5 w-4 sm:w-5 text-rose-500" />
                 <CardTitle>Location Details</CardTitle>
               </div>
-              <CardDescription>
+              <CardDescription className="sm:text-sm text-xs md:text-base">
                 Where you're from and where you live now
               </CardDescription>
             </CardHeader>
@@ -535,7 +535,9 @@ export default function ProfileInfoEditPage() {
                         {...field}
                       />
                     </FormControl>
-                    <FormDescription>Where you currently live</FormDescription>
+                    <FormDescription className="sm:text-sm text-xs md:text-base">
+                      Where you currently live
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -551,7 +553,9 @@ export default function ProfileInfoEditPage() {
                     <FormControl>
                       <Input placeholder="e.g., Chicago, Illinois" {...field} />
                     </FormControl>
-                    <FormDescription>Where you were born</FormDescription>
+                    <FormDescription className="sm:text-sm text-xs md:text-base">
+                      Where you were born
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -562,10 +566,10 @@ export default function ProfileInfoEditPage() {
           <Card className="shadow-sm">
             <CardHeader className="pb-4">
               <div className="flex items-center gap-2">
-                <Heart className="h-5 w-5 text-rose-500" />
+                <Heart className="h-4 sm:h-5 w-4 sm:w-5 text-rose-500" />
                 <CardTitle>Personal Details</CardTitle>
               </div>
-              <CardDescription>
+              <CardDescription className="sm:text-sm text-xs md:text-base">
                 Additional information about yourself
               </CardDescription>
             </CardHeader>
@@ -620,7 +624,7 @@ export default function ProfileInfoEditPage() {
                         {...field}
                       />
                     </FormControl>
-                    <FormDescription>
+                    <FormDescription className="sm:text-sm text-xs md:text-base">
                       Languages you speak (separate with commas)
                     </FormDescription>
                     <FormMessage />

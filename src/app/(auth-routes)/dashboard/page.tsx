@@ -39,7 +39,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="p-8">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8 max-lg:pb-20">
       {/* Profile Completion Prompt - only show when user data is loaded */}
       {user && !isUserLoading && (
         <ProfileCompletionPrompt
@@ -52,7 +52,7 @@ export default function DashboardPage() {
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-2 text-sm text-gray-600 mb-6"
+        className="flex items-center gap-2 text-sm text-gray-600 mb-6 mt-[8px]"
       >
         <Link
           href="/"
@@ -71,7 +71,7 @@ export default function DashboardPage() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-8"
       >
-        <h1 className="text-3xl font-lora font-bold text-gray-800">
+        <h1 className="text-2xl sm:text-3xl font-lora font-bold text-gray-800">
           Welcome,{" "}
           {isUserLoading ? (
             <span className="inline-flex items-center gap-2">
@@ -82,7 +82,7 @@ export default function DashboardPage() {
           )}
           ! 👋
         </h1>
-        <p className="text-gray-600 mt-2">
+        <p className="text-gray-600 mt-2 max-sm:text-xs">
           Start your family journey by creating or joining a family
         </p>
       </motion.div>
@@ -102,10 +102,10 @@ export default function DashboardPage() {
           <div className="bg-rose-50 w-12 h-12 rounded-xl flex items-center justify-center mb-4">
             <PlusCircle className="w-6 h-6 text-rose-500" />
           </div>
-          <h3 className="font-lora text-xl font-bold text-gray-800 mb-2">
+          <h3 className="font-lora sm:text-xl text-lg font-bold text-gray-800 mb-2">
             Create a Family
           </h3>
-          <p className="text-gray-600 mb-4">
+          <p className="text-gray-600 mb-4 max-sm:text-xs">
             Start your own family space and invite your loved ones
           </p>
           <Link href="/families/create">
@@ -123,10 +123,10 @@ export default function DashboardPage() {
           <div className="bg-amber-50 w-12 h-12 rounded-xl flex items-center justify-center mb-4">
             <Users className="w-6 h-6 text-amber-500" />
           </div>
-          <h3 className="font-lora text-xl font-bold text-gray-800 mb-2">
+          <h3 className="font-lora sm:text-xl text-lg font-bold text-gray-800 mb-2">
             Join a Family
           </h3>
-          <p className="text-gray-600 mb-4">
+          <p className="text-gray-600 mb-4 max-sm:text-xs">
             Enter an invite code to join your family's space
           </p>
           <Link href="/families/join">
@@ -144,16 +144,16 @@ export default function DashboardPage() {
         transition={{ delay: 0.2 }}
         className="bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-lg"
       >
-        <h3 className="font-lora text-xl font-bold text-gray-800 mb-4">
+        <h3 className="font-lora sm:text-xl text-lg font-bold text-gray-800 mb-4">
           Getting Started
         </h3>
         <div className="space-y-4">
-          <div className="flex items-center gap-3 text-gray-600">
-            <PlusCircle className="w-5 h-5 text-rose-500" />
+          <div className="flex items-center gap-3 text-gray-600 max-sm:text-xs">
+            <PlusCircle className="w-5 h-5 text-rose-500 max-sm:w-4 max-sm:h-4" />
             <span>Create your first family space</span>
           </div>
-          <div className="flex items-center gap-3 text-gray-600">
-            <Users className="w-5 h-5 text-rose-500" />
+          <div className="flex items-center gap-3 text-gray-600 max-sm:text-xs">
+            <Users className="w-5 h-5 text-rose-500 max-sm:w-4 max-sm:h-4" />
             <span>Invite family members</span>
           </div>
         </div>

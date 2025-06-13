@@ -132,8 +132,8 @@ interface WorkHistory {
   id: string;
   company: string;
   position: string;
-  startDate: string | Date;
-  endDate: string | Date | null;
+  startYear: number;
+  endYear: number | null;
   currentlyWorking: boolean;
   location: string | null;
   description: string | null;
@@ -336,8 +336,8 @@ export default function ProfilePage() {
       id: work.id,
       company: work.company,
       position: work.position,
-      startDate: work.startDate,
-      endDate: work.endDate,
+      startYear: work.startYear,
+      endYear: work.endYear,
       currentlyWorking: work.currentlyWorking,
       location: work.location,
       description: work.description,
@@ -478,12 +478,12 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-be pb-8 sm:pb-11">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8 pb-8 sm:pb-11 max-lg:pb-20">
+      <div>
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-2 text-sm text-gray-500 mb-6"
+          className="flex items-center gap-2 text-sm text-gray-500 mb-6 mt-[8px]"
         >
           <Link
             href="/"
@@ -505,7 +505,7 @@ export default function ProfilePage() {
         />
       </div>
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 mt-4 sm:mt-6">
+      <div className="mt-4 sm:mt-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <div className="flex flex-col items-center md:flex-row md:items-center justify-between gap-4 mb-2">
             <TabsList className="flex w-full md:justify-start h-10 sm:h-12 bg-transparent rounded-none p-0 md:overflow-x-auto">

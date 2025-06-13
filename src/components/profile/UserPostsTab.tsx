@@ -188,6 +188,12 @@ export function UserPostsTab({ userId, isCurrentUser }: UserPostsTabProps) {
     },
   });
 
+  // Check if user has joined any families
+  const hasJoinedFamilies =
+    families &&
+    families.filter((family) => family.userMembershipStatus === "APPROVED")
+      .length > 0;
+
   // Fetch user posts with pagination
   const {
     data: postsPages,
@@ -482,46 +488,53 @@ export function UserPostsTab({ userId, isCurrentUser }: UserPostsTabProps) {
   });
 
   return (
-    <div className="space-y-6">
+    <div
+      className={`${(allPosts.length as any) > 0 && hasJoinedFamilies ? "space-y-6" : "space-y-4"}`}
+    >
       {isLoading ? (
         <div className="flex justify-between items-center mb-6">
           <div className="h-8 bg-gray-200 rounded w-48 animate-pulse"></div>
         </div>
       ) : (
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-lora font-bold text-gray-800">
+        <div className="flex flex-col md:flex-row justify-between items-center">
+          <h2 className="text-2xl font-lora font-bold text-gray-800 hidden md:block">
             {isCurrentUser ? "Your Posts" : "Posts"}
           </h2>
-          {isCurrentUser && (
-            <div className="flex items-center gap-4">
-              <Select
-                value={selectedFamilyId}
-                onValueChange={setSelectedFamilyId}
-              >
-                <SelectTrigger className="w-[180px] bg-white">
-                  <div className="flex items-center gap-2">
-                    <Filter className="w-4 h-4" />
-                    <SelectValue placeholder="Filter by family" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">
+          {isCurrentUser && hasJoinedFamilies && allPosts.length > 0 && (
+            <div className="flex items-center w-full md:w-auto gap-2 md:gap-4">
+              <div className="w-1/2 md:w-auto">
+                <Select
+                  value={selectedFamilyId}
+                  onValueChange={setSelectedFamilyId}
+                >
+                  <SelectTrigger className="bg-white">
                     <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4" />
-                      <span>All families</span>
+                      <Filter className="w-4 h-4" />
+                      <SelectValue placeholder="Filter by family" />
                     </div>
-                  </SelectItem>
-                  {families
-                    ?.filter((f) => f.userMembershipStatus === "APPROVED")
-                    .map((family) => (
-                      <SelectItem key={family.id} value={family.id}>
-                        {family.name}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4" />
+                        <span>All families</span>
+                      </div>
+                    </SelectItem>
+                    {families
+                      ?.filter((f) => f.userMembershipStatus === "APPROVED")
+                      .map((family) => (
+                        <SelectItem key={family.id} value={family.id}>
+                          {family.name}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-              <Button onClick={() => setIsCreatePostOpen(true)}>
+              <Button
+                onClick={() => setIsCreatePostOpen(true)}
+                className="w-1/2 md:w-auto"
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 Create Post
               </Button>
@@ -562,6 +575,30 @@ export function UserPostsTab({ userId, isCurrentUser }: UserPostsTabProps) {
             Retry
           </Button>
         </motion.div>
+      ) : !hasJoinedFamilies && isCurrentUser ? (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white/80 backdrop-blur-md rounded-2xl p-12 text-center border border-rose-100/50"
+        >
+          <div className="bg-rose-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <Users className="w-8 h-8 text-rose-500" />
+          </div>
+          <h3 className="text-xl font-lora font-bold text-gray-800 mb-2">
+            No Families Joined
+          </h3>
+          <p className="text-gray-600 max-w-md mx-auto mb-6 text-sm md:text-base">
+            Join a family to start sharing and seeing posts here.
+          </p>
+          <div className="flex justify-center">
+            <Link href="/dashboard">
+              <Button className="flex items-center justify-center gap-2 bg-rose-500 hover:bg-rose-600">
+                <Users className="w-4 h-4" />
+                Join or Create a Family
+              </Button>
+            </Link>
+          </div>
+        </motion.div>
       ) : !allPosts.length ? (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -576,15 +613,15 @@ export function UserPostsTab({ userId, isCurrentUser }: UserPostsTabProps) {
               ? "No Posts in This Family"
               : "No Posts Yet"}
           </h3>
-          <p className="text-gray-600 max-w-md mx-auto mb-6">
+          <p className="text-gray-600 max-w-md mx-auto mb-6 text-sm md:text-base">
             {selectedFamilyId && selectedFamilyId !== "all"
               ? "No posts found in the selected family. Try selecting a different family or clear the filter."
               : isCurrentUser
                 ? "Start sharing moments with your family by creating your first post!"
                 : "This user hasn't shared any posts yet."}
           </p>
-          {isCurrentUser &&
-            (!selectedFamilyId || selectedFamilyId === "all") && (
+          {isCurrentUser && hasJoinedFamilies && (
+            <div className="flex justify-center">
               <Button
                 className="bg-rose-500 hover:bg-rose-600 flex items-center gap-2"
                 onClick={() => setIsCreatePostOpen(true)}
@@ -592,7 +629,8 @@ export function UserPostsTab({ userId, isCurrentUser }: UserPostsTabProps) {
                 <Plus className="w-4 h-4" />
                 Create First Post
               </Button>
-            )}
+            </div>
+          )}
         </motion.div>
       ) : (
         <div className="max-w-4xl mx-auto space-y-6">
@@ -636,7 +674,9 @@ export function UserPostsTab({ userId, isCurrentUser }: UserPostsTabProps) {
         <AdvancedCreatePostModal
           isOpen={isCreatePostOpen}
           onClose={() => setIsCreatePostOpen(false)}
-          families={families}
+          families={families?.filter(
+            (family) => family.userMembershipStatus === "APPROVED"
+          )}
         />
       )}
 

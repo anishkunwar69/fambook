@@ -72,12 +72,12 @@ export default function CreateFamilyPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8">
+    <div className="min-h-[90vh] lg:min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8">
       {/* Breadcrumb */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-2 text-sm text-gray-600 mb-6 sm:mb-8 overflow-x-auto whitespace-nowrap"
+        className="flex items-center gap-2 text-sm text-gray-600 overflow-x-auto whitespace-nowrap md:mb-6 sm:mb-4 mt-[8px]"
       >
         <Link href="/" className="hover:text-rose-500 transition-colors flex items-center gap-1 shrink-0">
           <Home className="w-4 h-4" />
@@ -110,20 +110,20 @@ export default function CreateFamilyPage() {
               <h1 className="text-xl sm:text-2xl font-lora font-bold text-gray-800 mb-2">
                 Create Your Family Space
               </h1>
-              <p className="text-gray-600 max-w-md mx-auto text-sm sm:text-base">
+              <p className="text-gray-600 max-w-md mx-auto text-xs sm:text-base">
                 Set up a private space for your family to share memories and stay connected
               </p>
             </div>
 
-            <form onSubmit={handleSubmit((data) => createFamily(data))} className="space-y-6 sm:space-y-8">
-              <div className="space-y-2">
+            <form onSubmit={handleSubmit((data) => createFamily(data))} className="space-y-4 sm:space-y-8">
+              <div className="sm:space-y-2 space-y-1">
                 <label className="text-sm font-medium text-gray-700">
                   Family Name
                 </label>
                 <Input
                   {...register("name")}
                   placeholder="Enter your family name"
-                  className="w-full h-11 sm:h-12 bg-white/50 border-gray-200 focus:border-rose-500 focus:ring-rose-500/20 text-base"
+                  className="w-full h-11 sm:h-12 bg-white/50 border-gray-200 focus:border-rose-500 focus:ring-rose-500/20 sm:text-base text-xs"
                 />
                 {errors.name && (
                   <motion.p
@@ -136,7 +136,7 @@ export default function CreateFamilyPage() {
                 )}
               </div>
 
-              <div className="space-y-2">
+              <div className="sm:space-y-2 space-y-1">
                 <label className="text-sm font-medium text-gray-700 flex items-center justify-between">
                   Description
                   <span className="text-gray-400 text-xs">Optional</span>
@@ -144,7 +144,7 @@ export default function CreateFamilyPage() {
                 <textarea
                   {...register("description")}
                   placeholder="Tell us about your family..."
-                  className="w-full min-h-[100px] sm:min-h-[120px] rounded-lg border border-gray-200 bg-white/50 focus:border-rose-500 focus:ring-rose-500/20 resize-none p-3 text-base"
+                  className="w-full min-h-[100px] sm:min-h-[120px] rounded-lg border border-gray-200 bg-white/50 focus:border-rose-500 focus:ring-rose-500/20 resize-none p-3 sm:text-base text-xs"
                 />
                 {errors.description && (
                   <motion.p

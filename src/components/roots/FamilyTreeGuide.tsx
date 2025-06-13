@@ -1,5 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   ArrowDown,
   ArrowLeftRight,
@@ -10,11 +15,8 @@ import {
   Info,
   LayoutGrid,
   Plus,
+  Shield,
   Users,
-  ZoomIn,
-  ZoomOut,
-  Save,
-  Shield
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -25,7 +27,7 @@ const steps = [
       "Welcome to your family tree! Let's learn how to create and organize your family connections.",
       "The workspace shows your family members as cards that you can connect and arrange.",
       "If you're an admin, look for the '+' button to add your first family member.",
-      "You can view all family relationships in the tree visualization."
+      "You can view all family relationships in the tree visualization.",
     ],
     icon: <Users className="w-6 h-6" />,
   },
@@ -36,7 +38,7 @@ const steps = [
       "Admins: Can create and edit family members, create relationships, and save positions",
       "Regular users: Can view the family tree and member details, but cannot modify the tree structure",
       "The tree will show relationship lines for all users, but only admins can create new connections",
-      "Admin-only features are marked with special indicators throughout this guide"
+      "Admin-only features are marked with special indicators throughout this guide",
     ],
     icon: <Shield className="w-6 h-6" />,
   },
@@ -49,7 +51,7 @@ const steps = [
       "  Optional: Profile picture, occupation, places",
       "  Additional: Biography and custom fields",
       "Click 'Save' to add them to your tree",
-      "Note: Only family tree admins can add new members"
+      "Note: Only family tree admins can add new members",
     ],
     icon: <Plus className="w-6 h-6" />,
   },
@@ -64,7 +66,7 @@ const steps = [
       "To make a connection (admins only), click and drag from one dot to another.",
       "The order of creating relationships is important:",
       "1. Create spouse relationships first",
-      "2. Then create parent-child relationships"
+      "2. Then create parent-child relationships",
     ],
     connectionPoints: [
       {
@@ -82,7 +84,9 @@ const steps = [
   },
   {
     title: "Creating Family Relationships (Admin Only)",
-    content: ["Follow this specific order to create relationships (admin users only):"],
+    content: [
+      "Follow this specific order to create relationships (admin users only):",
+    ],
     relationships: [
       {
         type: "1. Spouse Relationships",
@@ -90,7 +94,7 @@ const steps = [
           "Start from either spouse's bottom dot",
           "Drag to the other spouse's bottom dot",
           "Select 'Spouse' in the popup",
-          "You can add marriage dates if available"
+          "You can add marriage dates if available",
         ],
         icon: <ArrowLeftRight className="w-4 h-4" />,
       },
@@ -100,7 +104,7 @@ const steps = [
           "Start from parent's bottom dot, either father or mother",
           "Drag to child's top dot",
           "Select 'Parent' in the popup",
-          "Recommended: Create parent-child relationships from father"
+          "Recommended: Create parent-child relationships from father",
         ],
         icon: <ArrowDown className="w-4 h-4" />,
       },
@@ -117,9 +121,9 @@ const steps = [
       "  Use the zoom controls to adjust your view",
       "Admin users can additionally:",
       "  Drag nodes to reposition them manually",
-      "  Save positions of nodes after arranging them"
+      "  Save positions of nodes after arranging them",
     ],
-    
+
     icon: <LayoutGrid className="w-6 h-6" />,
   },
   {
@@ -134,7 +138,7 @@ const steps = [
       "  Create spouse relationships first, then parent-child relationships",
       "  Click the edit button (pencil icon) on a member card to edit their details",
       "  Save your layout frequently with 'Save Positions'",
-      "  If a connection isn't working, check if you're using the correct dots"
+      "  If a connection isn't working, check if you're using the correct dots",
     ],
     icon: <GitFork className="w-6 h-6" />,
   },
@@ -144,16 +148,16 @@ export function FamilyTreeGuide() {
   const [isOpen, setIsOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [isPulsing, setIsPulsing] = useState(true);
-  
+
   // Stop pulsing after 5 seconds or when the guide is opened
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsPulsing(false);
     }, 5000);
-    
+
     return () => clearTimeout(timer);
   }, []);
-  
+
   const handleOpenGuide = () => {
     setIsOpen(true);
     setIsPulsing(false);
@@ -279,8 +283,6 @@ export function FamilyTreeGuide() {
                   </div>
                 </div>
               )}
-
-              
             </div>
 
             <div className="flex justify-between items-center">

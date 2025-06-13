@@ -66,8 +66,15 @@ export function EducationFormDialog({
   const [fieldOfStudy, setFieldOfStudy] = useState("");
   const [startYear, setStartYear] = useState<number | undefined>(undefined);
   const [endYear, setEndYear] = useState<number | null | undefined>(undefined);
-  const [description, setDescription] = useState("");
   const [currentlyStudying, setCurrentlyStudying] = useState(false);
+  
+  // Error states
+  const [errors, setErrors] = useState({
+    institution: false,
+    degree: false,
+    startYear: false,
+    endYear: false
+  });
   
   // Year options
   const yearOptions = generateYearOptions();
@@ -81,11 +88,17 @@ export function EducationFormDialog({
         setFieldOfStudy(education.fieldOfStudy || "");
         setStartYear(education.startYear);
         setEndYear(education.endYear);
-        setDescription(education.description || "");
         setCurrentlyStudying(!education.endYear && education.endYear !== 0);
       } else {
         resetForm();
       }
+      // Reset errors when opening dialog
+      setErrors({
+        institution: false,
+        degree: false,
+        startYear: false,
+        endYear: false
+      });
     }
   }, [education, isOpen]);
   
@@ -95,44 +108,20 @@ export function EducationFormDialog({
     setFieldOfStudy("");
     setStartYear(undefined);
     setEndYear(undefined);
-    setDescription("");
     setCurrentlyStudying(false);
   };
   
   const validateForm = () => {
-    if (!institution.trim()) {
-      toast({
-        title: "Missing field",
-        description: "Institution name is required",
-        variant: "destructive",
-      });
-      return false;
-    }
+    const newErrors = {
+      institution: !institution.trim(),
+      degree: !degree.trim(),
+      startYear: !startYear,
+      endYear: !currentlyStudying && !endYear
+    };
     
-    if (!degree.trim()) {
-      toast({
-        title: "Missing field",
-        description: "Degree is required",
-        variant: "destructive",
-      });
-      return false;
-    }
+    setErrors(newErrors);
     
-    if (!startYear) {
-      toast({
-        title: "Missing field",
-        description: "Start year is required",
-        variant: "destructive",
-      });
-      return false;
-    }
-    
-    if (!currentlyStudying && !endYear) {
-      toast({
-        title: "Missing field",
-        description: "End year is required or select 'Currently studying here'",
-        variant: "destructive",
-      });
+    if (newErrors.institution || newErrors.degree || newErrors.startYear || newErrors.endYear) {
       return false;
     }
     
@@ -142,6 +131,7 @@ export function EducationFormDialog({
         description: "End year cannot be before start year",
         variant: "destructive",
       });
+      setErrors({...newErrors, endYear: true});
       return false;
     }
     
@@ -175,7 +165,6 @@ export function EducationFormDialog({
           fieldOfStudy: fieldOfStudy || null,
           startYear,
           endYear: currentlyStudying ? null : endYear,
-          description: description || null,
         }),
       });
       
@@ -209,7 +198,7 @@ export function EducationFormDialog({
       if (!open) onClose();
     }}>
       <DialogContent className="sm:max-w-lg bg-white dark:bg-gray-800 p-6">
-        <DialogHeader className="mb-4">
+        <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-gray-800 dark:text-gray-100">
             {education?.id ? "Edit Education" : "Add Education"}
           </DialogTitle>
@@ -220,10 +209,16 @@ export function EducationFormDialog({
             <Input
               id="institution"
               value={institution}
-              onChange={(e) => setInstitution(e.target.value)}
+              onChange={(e) => {
+                setInstitution(e.target.value);
+                if (e.target.value.trim()) setErrors({...errors, institution: false});
+              }}
               placeholder="e.g., Harvard University"
-              className="w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+              className={`w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 ${errors.institution ? 'border-red-500 focus:ring-red-500' : ''}`}
             />
+            {errors.institution && (
+              <p className="mt-1 text-sm text-red-500">Required</p>
+            )}
           </div>
           
           <div>
@@ -231,10 +226,16 @@ export function EducationFormDialog({
             <Input
               id="degree"
               value={degree}
-              onChange={(e) => setDegree(e.target.value)}
+              onChange={(e) => {
+                setDegree(e.target.value);
+                if (e.target.value.trim()) setErrors({...errors, degree: false});
+              }}
               placeholder="e.g., Bachelor of Science"
-              className="w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+              className={`w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 ${errors.degree ? 'border-red-500 focus:ring-red-500' : ''}`}
             />
+            {errors.degree && (
+              <p className="mt-1 text-sm text-red-500">Required</p>
+            )}
           </div>
           
           <div>
@@ -253,9 +254,15 @@ export function EducationFormDialog({
               <Label htmlFor="startYear" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Year*</Label>
               <Select
                 value={startYear?.toString()}
-                onValueChange={(value) => setStartYear(parseInt(value))}
+                onValueChange={(value) => {
+                  setStartYear(parseInt(value));
+                  setErrors({...errors, startYear: false});
+                }}
               >
-                <SelectTrigger id="startYear" className="w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                <SelectTrigger 
+                  id="startYear" 
+                  className={`w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 ${errors.startYear ? 'border-red-500 focus:ring-red-500' : ''}`}
+                >
                   <SelectValue placeholder="Select year" />
                 </SelectTrigger>
                 <SelectContent className="dark:bg-gray-700 dark:text-gray-100">
@@ -264,6 +271,9 @@ export function EducationFormDialog({
                   ))}
                 </SelectContent>
               </Select>
+              {errors.startYear && (
+                <p className="mt-1 text-sm text-red-500">Required</p>
+              )}
             </div>
             
             <div>
@@ -272,10 +282,16 @@ export function EducationFormDialog({
               </Label>
               <Select
                 value={currentlyStudying ? "" : endYear?.toString() || ""} 
-                onValueChange={(value) => setEndYear(value ? parseInt(value) : null)}
+                onValueChange={(value) => {
+                  setEndYear(value ? parseInt(value) : null);
+                  setErrors({...errors, endYear: false});
+                }}
                 disabled={currentlyStudying}
               >
-                <SelectTrigger id="endYear" className="w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                <SelectTrigger 
+                  id="endYear" 
+                  className={`w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 ${errors.endYear ? 'border-red-500 focus:ring-red-500' : ''}`}
+                >
                   <SelectValue placeholder="Select year" />
                 </SelectTrigger>
                 <SelectContent className="dark:bg-gray-700 dark:text-gray-100">
@@ -284,6 +300,9 @@ export function EducationFormDialog({
                   ))}
                 </SelectContent>
               </Select>
+              {errors.endYear && !currentlyStudying && (
+                <p className="mt-1 text-sm text-red-500">Required</p>
+              )}
             </div>
           </div>
 
@@ -292,9 +311,11 @@ export function EducationFormDialog({
               id="currentlyStudying"
               checked={currentlyStudying}
               onCheckedChange={(checked) => {
-                setCurrentlyStudying(Boolean(checked));
-                if (Boolean(checked)) {
-                  setEndYear(null); 
+                const isChecked = Boolean(checked);
+                setCurrentlyStudying(isChecked);
+                if (isChecked) {
+                  setEndYear(null);
+                  setErrors({...errors, endYear: false});
                 }
               }}
               className="dark:border-gray-600 data-[state=checked]:dark:bg-rose-500 data-[state=checked]:dark:text-gray-100"
@@ -304,18 +325,7 @@ export function EducationFormDialog({
             </Label>
           </div>
           
-          <div>
-            <Label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Optional: Add activities, societies, or a brief description"
-              className="min-h-[80px] w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-            />
-          </div>
-          
-          <DialogFooter className="pt-6">
+          <DialogFooter className="">
             <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting} className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
               Cancel
             </Button>

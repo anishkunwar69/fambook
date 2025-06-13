@@ -5,12 +5,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 import {
+  AlertTriangle,
   Check,
   ChevronRight,
   Clock,
   Home,
   Loader2,
-  AlertTriangle,
   Shield,
   Users,
   X,
@@ -36,71 +36,61 @@ type JoinRequest = {
 // Header Skeleton Component
 function HeaderSkeleton() {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-white/80 backdrop-blur-md rounded-2xl p-4 md:p-6 border border-rose-100/50 mb-8"
-    >
-      <div className="flex flex-col items-center text-center gap-4 sm:flex-row sm:text-left sm:justify-between">
-        <div>
-          <div className="h-7 md:h-8 bg-gray-200 rounded animate-pulse w-48 mb-2 mx-auto sm:mx-0" />
-          <div className="h-4 bg-gray-200 rounded animate-pulse w-64 md:w-80 mx-auto sm:mx-0" />
+    <div className="bg-white/80 backdrop-blur-md rounded-2xl p-4 md:p-6 border border-rose-100/50 mb-6 md:mb-8">
+      <div className="flex flex-col md:flex-row items-center gap-4">
+        <div className="w-full text-center md:text-left">
+          <div className="h-7 md:h-9 bg-gray-200 rounded animate-pulse w-48 max-w-[80%] mx-auto md:mx-0 mb-2" />
+          <div className="h-4 bg-gray-200 rounded animate-pulse w-64 max-w-[90%] mx-auto md:mx-0" />
         </div>
-        <div className="bg-gray-200 w-12 h-12 rounded-lg animate-pulse mx-auto sm:mx-0" />
+        <div className="hidden md:block bg-gray-200 w-12 h-12 rounded-lg animate-pulse shrink-0" />
       </div>
-    </motion.div>
+    </div>
   );
 }
 
 // Request Card Skeleton Component
-function RequestCardSkeleton({ index }: { index: number }) {
+function RequestCardSkeleton() {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1 }}
-      className="bg-white/80 backdrop-blur-md rounded-xl p-4 md:p-6 border border-rose-100/50"
-    >
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
+    <div className="bg-white/80 backdrop-blur-md rounded-xl p-4 md:p-6 border border-rose-100/50">
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
           <div className="relative shrink-0">
             <div className="w-12 h-12 bg-gray-200 rounded-full animate-pulse" />
             <div className="absolute -top-1 -right-1 bg-gray-200 w-4 h-4 rounded-full animate-pulse" />
           </div>
-          <div className="w-full">
-            <div className="h-4 bg-gray-200 rounded animate-pulse w-32 mb-2 mx-auto sm:mx-0" />
-            <div className="h-3 bg-gray-200 rounded animate-pulse w-48 mb-2 mx-auto sm:mx-0" />
-            <div className="h-3 bg-gray-200 rounded animate-pulse w-40 mx-auto sm:mx-0" />
+          <div className="w-full text-center sm:text-left">
+            <div className="h-4 bg-gray-200 rounded animate-pulse w-32 max-w-[80%] mx-auto sm:mx-0 mb-2" />
+            <div className="h-3 bg-gray-200 rounded animate-pulse w-48 max-w-[90%] mx-auto sm:mx-0 mb-2" />
+            <div className="h-3 bg-gray-200 rounded animate-pulse w-40 max-w-[70%] mx-auto sm:mx-0" />
           </div>
         </div>
-
-        <div className="flex items-center justify-center md:justify-end gap-2 w-full md:w-auto pt-4 border-t border-gray-200 md:border-0 md:pt-0">
+        
+        <div className="flex justify-center sm:justify-end gap-2 pt-4 border-t border-gray-200 md:border-0 md:pt-0 shrink-0 w-full md:w-auto">
           <div className="h-8 bg-gray-200 rounded animate-pulse w-20" />
           <div className="h-8 bg-gray-200 rounded animate-pulse w-24" />
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
 // Full Page Skeleton Component
 function JoinRequestsPageSkeleton() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 md:p-8 max-lg:pb-20">
       {/* Breadcrumb Skeleton */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-2 text-sm text-gray-600 mb-8"
-      >
-        <div className="h-4 bg-gray-200 rounded animate-pulse w-12" />
-        <div className="w-4 h-4 bg-gray-200 rounded animate-pulse" />
-        <div className="h-4 bg-gray-200 rounded animate-pulse w-16" />
-        <div className="w-4 h-4 bg-gray-200 rounded animate-pulse" />
-        <div className="h-4 bg-gray-200 rounded animate-pulse w-16" />
-        <div className="w-4 h-4 bg-gray-200 rounded animate-pulse" />
-        <div className="h-4 bg-gray-200 rounded animate-pulse w-24" />
-      </motion.div>
+      <div className="flex items-center gap-2 mb-6 sm:mb-8 mt-[14px] overflow-hidden">
+        <div className="flex items-center gap-1 shrink-0">
+          <div className="w-4 h-4 bg-gray-200 rounded-full animate-pulse" />
+          <div className="w-12 h-4 bg-gray-200 rounded animate-pulse" />
+        </div>
+        <div className="w-4 h-4 bg-gray-200 rounded-full animate-pulse shrink-0" />
+        <div className="w-16 h-4 bg-gray-200 rounded animate-pulse shrink-0" />
+        <div className="w-4 h-4 bg-gray-200 rounded-full animate-pulse shrink-0" />
+        <div className="w-14 h-4 bg-gray-200 rounded animate-pulse shrink-0" />
+        <div className="w-4 h-4 bg-gray-200 rounded-full animate-pulse shrink-0" />
+        <div className="w-24 h-4 bg-gray-200 rounded animate-pulse shrink-0" />
+      </div>
 
       {/* Header Skeleton */}
       <HeaderSkeleton />
@@ -108,7 +98,7 @@ function JoinRequestsPageSkeleton() {
       {/* Request Cards Skeleton */}
       <div className="space-y-4">
         {[...Array(3)].map((_, index) => (
-          <RequestCardSkeleton key={index} index={index} />
+          <RequestCardSkeleton key={index} />
         ))}
       </div>
     </div>
@@ -121,22 +111,26 @@ export default function JoinRequestsPage() {
   const [fetchRequestsError, setFetchRequestsError] = useState<boolean>(false);
 
   // Fetch pending requests
-  const { data: requests, isLoading, refetch } = useQuery({
+  const {
+    data: requests,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["join-requests", familyId],
     queryFn: async () => {
       try {
         const response = await fetch(`/api/families/${familyId}/requests`);
-  
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-  
+
         const result = await response.json();
-  
+
         if (!result.success) {
           throw new Error(result.message);
         }
-  
+
         return result.data as JoinRequest[];
       } catch (err: any) {
         setFetchRequestsError(true);
@@ -188,12 +182,12 @@ export default function JoinRequestsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 md:p-8 max-lg:pb-20">
       {/* Breadcrumb */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-2 text-sm text-gray-600 mb-8 overflow-x-auto whitespace-nowrap"
+        className="flex items-center gap-2 text-sm text-gray-600 mb-8 overflow-x-auto whitespace-nowrap mt-[14px]"
       >
         <Link
           href="/"
@@ -226,16 +220,16 @@ export default function JoinRequestsPage() {
         animate={{ opacity: 1, y: 0 }}
         className="bg-white/80 backdrop-blur-md rounded-2xl p-4 md:p-6 border border-rose-100/50 mb-8"
       >
-        <div className="flex flex-col text-center gap-4 sm:flex-row sm:text-left sm:items-center sm:justify-between">
+        <div className="flex flex-col items-center text-center gap-4 md:flex-row md:text-left md:items-center md:justify-between">
           <div>
-            <h1 className="text-2xl md:text-3xl font-lora font-bold text-gray-800 mb-2">
-              Join Requests
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-lora font-bold text-gray-800 mb-2">
+              Join Requests <span className="text-2xl sm:text-3xl">🤝</span>
             </h1>
-            <p className="text-gray-600">
-              Review and manage pending join requests for your family
+            <p className="text-gray-600 text-xs sm:text-base">
+              Review and manage join requests for your family
             </p>
           </div>
-          <div className="bg-rose-50 w-12 h-12 rounded-lg flex items-center justify-center shrink-0 mx-auto sm:mx-0">
+          <div className="bg-rose-50 w-12 h-12 rounded-lg flex items-center justify-center shrink-0 mx-auto md:mx-0 hidden md:flex">
             <Shield className="w-6 h-6 text-rose-500" />
           </div>
         </div>
@@ -243,43 +237,42 @@ export default function JoinRequestsPage() {
 
       {/* Requests List */}
 
-      
       {fetchRequestsError ? (
         <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-red-50/50 backdrop-blur-md rounded-2xl p-6 sm:p-12 text-center border border-red-100/50 text-red-700"
-      >
-        <div className="bg-red-100 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
-          <AlertTriangle className="w-6 h-6 sm:w-8 sm:h-8 text-red-500" />
-        </div>
-        <h3 className="text-lg sm:text-xl font-lora font-bold text-red-800 mb-2">
-          Failed to Load Families
-        </h3>
-        <p className="text-red-600 max-w-md mx-auto mb-4 sm:mb-6 text-sm sm:text-base">
-          An unknown error occurred.
-        </p>
-        <Button
-          onClick={() => refetch()}
-          variant="destructive"
-          className="bg-red-500 hover:bg-red-600 text-white w-full sm:w-auto"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-red-50/50 backdrop-blur-md rounded-2xl p-6 sm:p-12 text-center border border-red-100/50 text-red-700"
         >
-          Retry
-        </Button>
-      </motion.div>
+          <div className="bg-red-100 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
+            <AlertTriangle className="w-6 h-6 sm:w-8 sm:h-8 text-red-500" />
+          </div>
+          <h3 className="text-lg sm:text-xl font-lora font-bold text-red-800 mb-2">
+            Failed to Load Families
+          </h3>
+          <p className="text-red-600 max-w-md mx-auto mb-4 sm:mb-6 text-xs sm:text-base">
+            An unknown error occurred.
+          </p>
+          <Button
+            onClick={() => refetch()}
+            variant="destructive"
+            className="bg-red-500 hover:bg-red-600 text-white w-full sm:w-auto"
+          >
+            Retry
+          </Button>
+        </motion.div>
       ) : !requests?.length ? (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-white/80 backdrop-blur-md rounded-2xl p-12 text-center border border-rose-100/50"
         >
-          <div className="bg-rose-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <Users className="w-8 h-8 text-rose-500" />
+          <div className="bg-rose-50 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <Users className="w-6 h-6 sm:w-8 sm:h-8 text-rose-500" />
           </div>
-          <h3 className="text-xl font-lora font-bold text-gray-800 mb-2">
+          <h3 className="text-lg sm:text-xl font-lora font-bold text-gray-800 mb-2">
             No Pending Requests
           </h3>
-          <p className="text-gray-600 max-w-md mx-auto">
+          <p className="text-gray-600 max-w-md mx-auto text-xs sm:text-base">
             There are currently no pending join requests for your family.
           </p>
         </motion.div>

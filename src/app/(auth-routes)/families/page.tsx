@@ -546,7 +546,7 @@ export default function FamiliesPage() {
 
         {/* Family Card Header */}
         <div className="mb-3 sm:mb-4">
-          <h3 className="font-lora text-lg sm:text-xl font-bold text-gray-800 mb-1 group-hover:text-rose-600 transition-colors line-clamp-1">
+          <h3 className="font-lora text-base sm:text-lg md:text-xl font-bold text-gray-800 mb-1 group-hover:text-rose-600 transition-colors line-clamp-1">
             {family.name}
           </h3>
           <p className="text-gray-600 text-xs sm:text-sm line-clamp-2">
@@ -714,12 +714,12 @@ export default function FamiliesPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8 max-lg:pb-20">
       {/* Breadcrumb */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-2 text-sm text-gray-600 mb-6 sm:mb-8 overflow-x-auto whitespace-nowrap"
+        className="flex items-center gap-2 text-sm text-gray-600 mb-6 sm:mb-8 overflow-x-auto whitespace-nowrap mt-[8px]"
       >
         <Link
           href="/"
@@ -743,41 +743,44 @@ export default function FamiliesPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white/80 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-rose-100/50 mb-6 sm:mb-8"
+        className="bg-white/80 backdrop-blur-md rounded-2xl p-4 md:p-6 border border-rose-100/50 mb-6 md:mb-8"
       >
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 mb-4 sm:mb-6">
-          <div className="text-center sm:text-left">
-            <h1 className="text-2xl sm:text-3xl font-lora font-bold text-gray-800 mb-2">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 mb-4 md:mb-6">
+          <div className="text-center md:text-left">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-lora font-bold text-gray-800 mb-2">
               My Families ❤️
             </h1>
-            <p className="text-gray-600 text-sm sm:text-base">
+            <p className="text-gray-600 text-xs sm:text-sm lg:text-base">
               Manage your family spaces and connections
             </p>
           </div>
-          <Link href="/families/create" className="w-full sm:w-auto">
-            <Button className="bg-rose-500 hover:bg-rose-600 flex items-center justify-center gap-2 w-full sm:w-auto">
+          <Link href="/families/create" className="w-full md:w-auto">
+            <Button className="bg-rose-500 hover:bg-rose-600 flex items-center justify-center gap-2 w-full md:w-auto">
               <PlusCircle className="w-4 h-4" />
-              <span className="sm:inline">Create Family</span>
+              <span>Create Family</span>
             </Button>
           </Link>
         </div>
 
         {/* Search Section */}
-        <div className="flex flex-col gap-4">
-          <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              placeholder="Search families by name..."
-              value={search}
-              onChange={handleSearchChange}
-              className="pl-10 bg-white w-full h-10 sm:h-auto"
-            />
+        {/* Only show search when there are families */}
+        {families && families.length > 0 && (
+          <div className="flex flex-col gap-4">
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                placeholder="Search families by name..."
+                value={search}
+                onChange={handleSearchChange}
+                className="pl-10 bg-white w-full h-10 md:h-auto"
+              />
+            </div>
           </div>
-        </div>
+        )}
       </motion.div>
 
       {/* Tabs Navigation */}
-      {renderTabs()}
+      {families && families.length > 0 && renderTabs()}
 
       {/* Families Grid */}
       {isLoading ? (
@@ -827,7 +830,7 @@ export default function FamiliesPage() {
                 ? "No Families Yet"
                 : "No Pending Requests"}
           </h3>
-          <p className="text-gray-600 max-w-md mx-auto mb-4 sm:mb-6 text-sm sm:text-base">
+          <p className="text-gray-600 max-w-md mx-auto mb-4 sm:mb-6 text-xs sm:text-base">
             {search
               ? `No families found matching "${search}". Try a different search term.`
               : activeTab === "approved"

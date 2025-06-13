@@ -35,10 +35,10 @@ const NoFamilyForRootModal: React.FC<NoFamilyForRootModalProps> = ({ isOpen, onC
           <div className="bg-amber-100 p-4 rounded-full mb-6">
             <AlertTriangle className="w-12 h-12 text-amber-500" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-3">
+          <h2 className="sm:text-2xl text-xl font-bold text-gray-800 mb-3">
             {title}
           </h2>
-          <p className="text-gray-600 mb-8 max-w-sm">
+          <p className="text-gray-600 max-w-sm sm:text-base text-sm">
             {description}
           </p>
           {!allFamiliesHaveRoots && (

@@ -33,7 +33,6 @@ import { RelationshipDialog } from "@/components/roots/RelationshipDialog";
 import { RelationshipEdge } from "@/components/roots/RelationshipEdge";
 import { useQueryClient } from "@tanstack/react-query";
 import dagre from "dagre";
-import { z } from "zod";
 
 const nodeTypes = {
   familyMember: FamilyMemberNode,
@@ -93,26 +92,7 @@ type DialogState = {
   targetNode?: any;
 } | null;
 
-// Update the validation schema
-const rootNodeSchema = z.object({
-  id: z.string(),
-  rootId: z.string(),
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  dateOfBirth: z.string().transform((str) => new Date(str)), // Transform string to Date
-  dateOfDeath: z
-    .string()
-    .nullable()
-    .transform((str) => (str ? new Date(str) : null)),
-  gender: z.enum(["MALE", "FEMALE", "OTHER"]),
-  isAlive: z.boolean(),
-  birthPlace: z.string().min(1, "Birth place is required"),
-  currentPlace: z.string().min(1, "Current place is required"),
-  profileImage: z.string().nullable(),
-  biography: z.string().nullable(),
-  customFields: z.record(z.any()).nullable(),
-  userId: z.string().nullable().optional(), // Make userId optional and nullable
-});
+
 
 export default function RootEditorPage() {
   const params = useParams();
@@ -864,7 +844,7 @@ export default function RootEditorPage() {
   }
 
   return (
-    <div className="h-screen w-full relative" ref={reactFlowWrapper}>
+    <div className="h-screen w-full relative max-lg:pb-20" ref={reactFlowWrapper}>
       <ReactFlow
         nodes={nodes}
         edges={edges}

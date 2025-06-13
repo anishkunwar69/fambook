@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useClerk, useUser } from "@clerk/nextjs";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { Heart, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -28,11 +28,7 @@ function Navbar() {
   return (
     <nav className="border-b bg-white/50 backdrop-blur-md fixed w-full z-50">
       <Container>
-        <motion.div
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="flex items-center justify-between py-4"
-        >
+        <div className="flex items-center justify-between py-4">
           <Link href="/" className="flex items-center gap-2 group">
             <div className="relative">
               <Heart className="w-8 h-8 text-rose-500 transition-transform group-hover:scale-110" />
@@ -149,18 +145,12 @@ function Navbar() {
               </Button>
             )}
           </div>
-        </motion.div>
+        </div>
 
         {/* Mobile Menu */}
         <AnimatePresence>
           {isMobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
-              className="lg:hidden border-t border-gray-200 bg-white/95 backdrop-blur-md"
-            >
+            <div className="lg:hidden border-t border-gray-200 bg-white/95 backdrop-blur-md">
               <div className="py-4 space-y-2">
                 {isSignedIn ? (
                   // Authenticated Mobile Navigation
@@ -187,7 +177,7 @@ function Navbar() {
                     >
                       Dashboard
                     </Link>
-                    
+
                     <button
                       onClick={() => {
                         signOut();
@@ -201,13 +191,15 @@ function Navbar() {
                 ) : (
                   // Public Mobile Navigation
                   <>
-                    
                     <div className="px-4 py-2 space-y-2 flex flex-col gap-2">
-                    <Link
+                      <Link
                         href="/sign-up"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
-                        <Button className="w-full text-rose-500 border border-rose-500 font-poppins" variant="outline">
+                        <Button
+                          className="w-full text-rose-500 border border-rose-500 font-poppins"
+                          variant="outline"
+                        >
                           Sign In
                         </Button>
                       </Link>
@@ -223,7 +215,7 @@ function Navbar() {
                   </>
                 )}
               </div>
-            </motion.div>
+            </div>
           )}
         </AnimatePresence>
       </Container>

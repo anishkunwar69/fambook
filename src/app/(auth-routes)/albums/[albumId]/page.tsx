@@ -60,30 +60,40 @@ type Album = {
 
 function AlbumSkeleton() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-8">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8">
       {/* Breadcrumb Skeleton */}
-      <div className="flex items-center gap-2 mb-8">
-        <div className="w-24 h-5 bg-gray-200 rounded animate-pulse" />
-        <div className="w-4 h-4" />
-        <div className="w-16 h-5 bg-gray-200 rounded animate-pulse" />
-        <div className="w-4 h-4" />
-        <div className="w-32 h-5 bg-gray-200 rounded animate-pulse" />
+      <div className="flex items-center gap-2 text-sm text-gray-600 mb-6 sm:mb-8 overflow-x-auto whitespace-nowrap mt-[8px]">
+        <div className="flex items-center gap-1 shrink-0">
+          <div className="w-4 h-4 bg-gray-200 rounded animate-pulse" />
+          <div className="w-12 h-4 bg-gray-200 rounded animate-pulse" />
+        </div>
+        <div className="w-4 h-4 bg-gray-200 rounded animate-pulse shrink-0" />
+        <div className="w-16 h-4 bg-gray-200 rounded animate-pulse shrink-0" />
+        <div className="w-4 h-4 bg-gray-200 rounded animate-pulse shrink-0" />
+        <div className="w-24 h-4 bg-gray-200 rounded animate-pulse shrink-0" />
       </div>
 
       {/* Header Section Skeleton */}
-      <div className="bg-white/80 backdrop-blur-md rounded-2xl p-6 border border-rose-100/50 mb-8">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <div className="w-64 h-8 bg-gray-200 rounded animate-pulse mb-2" />
-            <div className="w-48 h-5 bg-gray-200 rounded animate-pulse" />
+      <div className="bg-white/80 backdrop-blur-md rounded-2xl p-4 md:p-6 border border-rose-100/50 mb-6 md:mb-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-0">
+          <div className="text-center md:text-left">
+            <div className="h-7 md:h-9 bg-gray-200 rounded w-48 md:w-64 mb-2 mx-auto md:mx-0"></div>
+            <div className="h-4 bg-gray-200 rounded w-36 md:w-48 mx-auto md:mx-0"></div>
           </div>
-          <div className="w-32 h-10 bg-gray-200 rounded animate-pulse" />
+          <div className="flex flex-row items-center gap-2 w-full md:w-auto">
+            <div className="flex-1 md:flex-initial">
+              <div className="h-10 bg-gray-200 rounded w-full md:w-32"></div>
+            </div>
+            <div className="flex-1 md:flex-initial">
+              <div className="h-10 bg-gray-200 rounded w-full md:w-32"></div>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Media Grid Skeleton */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        {[...Array(18)].map((_, i) => (
+        {[...Array(12)].map((_, i) => (
           <div
             key={i}
             className="aspect-square rounded-lg bg-gray-200 animate-pulse"
@@ -411,7 +421,7 @@ export default function AlbumPage() {
   const [mediaToDelete, setMediaToDelete] = useState<Media | null>(null);
 
   // Fetch album
-  const { data: album, isLoading } = useQuery<Album>({
+  const { data: album, isLoading, isError, error, refetch } = useQuery<Album>({
     queryKey: ["album", params.albumId],
     queryFn: async () => {
       const response = await fetch(`/api/albums/${params.albumId}`);
@@ -554,9 +564,83 @@ export default function AlbumPage() {
     return <AlbumSkeleton />;
   }
 
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8">
+        {/* Breadcrumb */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-2 text-sm text-gray-600 mb-6 sm:mb-8 overflow-x-auto whitespace-nowrap mt-[8px]"
+        >
+          <Link
+            href="/"
+            className="hover:text-rose-500 transition-colors flex items-center gap-1 shrink-0"
+          >
+            <Home className="w-4 h-4" />
+            <span>Home</span>
+          </Link>
+          <ChevronRight className="w-4 h-4 shrink-0" />
+          <Link
+            href="/albums"
+            className="hover:text-rose-500 transition-colors shrink-0"
+          >
+            <span>Albums</span>
+          </Link>
+          <ChevronRight className="w-4 h-4 shrink-0" />
+          <span className="text-rose-500 font-medium shrink-0">Album Details</span>
+        </motion.div>
+
+        {/* Header Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white/80 backdrop-blur-md rounded-2xl p-4 md:p-6 border border-rose-100/50 mb-6 md:mb-8"
+        >
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 mb-4 md:mb-6">
+            <div className="text-center md:text-left">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-lora font-bold text-gray-800 mb-2">
+                Album Details
+              </h1>
+              <p className="text-gray-600 text-xs sm:text-sm lg:text-base">
+                View and manage your album content
+              </p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Error Message */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-red-50/50 backdrop-blur-md rounded-2xl p-6 sm:p-12 text-center border border-red-100/50 text-red-700"
+        >
+          <div className="bg-red-100 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
+            <AlertTriangle className="w-6 h-6 sm:w-8 sm:h-8 text-red-500" />
+          </div>
+          <h3 className="text-lg sm:text-xl font-lora font-bold text-red-800 mb-2">
+            Failed to Load Album
+          </h3>
+          <p className="text-red-600 max-w-md mx-auto mb-4 sm:mb-6 text-sm sm:text-base">
+            {error instanceof Error
+              ? error.message
+              : "An unknown error occurred."}
+          </p>
+          <Button
+            onClick={() => refetch()}
+            variant="destructive"
+            className="bg-red-500 hover:bg-red-600 text-white w-full sm:w-auto"
+          >
+            Retry
+          </Button>
+        </motion.div>
+      </div>
+    );
+  }
+
   if (!album) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-8">
+      <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8">
         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
           <div className="bg-rose-50 w-20 h-20 rounded-full flex items-center justify-center mb-6">
             <ImageIcon className="w-10 h-10 text-rose-500" />
@@ -578,12 +662,12 @@ export default function AlbumPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-8">
-      {/* Breadcrumb */}
+      <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8 max-lg:pb-20">
+        {/* Breadcrumb */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-2 text-sm text-gray-600 mb-8"
+        className="flex items-center gap-2 text-sm text-gray-600 mb-6 sm:mb-8 overflow-x-auto whitespace-nowrap mt-[8px]"
       >
         <Link
           href="/"
@@ -604,30 +688,35 @@ export default function AlbumPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white/80 backdrop-blur-md rounded-2xl p-6 border border-rose-100/50 mb-8"
+        className="bg-white/80 backdrop-blur-md rounded-2xl p-4 md:p-6 border border-rose-100/50 mb-6 md:mb-8"
       >
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-lora font-bold text-gray-800 mb-2">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-0">
+          <div className="text-center md:text-left">
+            <h1 className="text-xl md:text-3xl font-lora font-bold text-gray-800">
               {album.name}
             </h1>
             <p className="text-gray-600">
               {album.description || "No description"}
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <AddToMemoryButton
-              itemId={album.id}
-              itemType="album"
-              initialIsInMemory={album.isInMemory}
-            />
-            <Button
-              onClick={() => setIsAddMediaDialogOpen(true)}
-              className="bg-rose-500 hover:bg-rose-600 flex items-center gap-2"
-            >
-              <Upload className="w-4 h-4" />
-              Add Media
-            </Button>
+          <div className="flex flex-row items-center gap-2 w-full md:w-auto">
+            <div className="flex-1 md:flex-initial">
+              <AddToMemoryButton
+                itemId={album.id}
+                itemType="album"
+                initialIsInMemory={album.isInMemory}
+                className="w-full md:w-auto"
+              />
+            </div>
+            <div className="flex-1 md:flex-initial">
+              <Button
+                onClick={() => setIsAddMediaDialogOpen(true)}
+                className="bg-rose-500 hover:bg-rose-600 flex items-center gap-2 w-full md:w-auto justify-center py-4"
+              >
+                <Upload className="w-4 h-4" />
+                Add Media
+              </Button>
+            </div>
           </div>
         </div>
       </motion.div>
@@ -646,7 +735,7 @@ export default function AlbumPage() {
             No Media Yet
           </h3>
           <p className="text-gray-600 max-w-md mx-auto mb-6">
-            Start adding photos and videos to create beautiful memories in this
+            Add photos and videos to create beautiful memories in this
             album!
           </p>
           <Button

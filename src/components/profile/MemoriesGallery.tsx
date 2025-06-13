@@ -290,15 +290,21 @@ export function MemoriesGallery({
     },
     onMutate: async (postId: string) => {
       // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ["memories", userId, activeTab] });
+      await queryClient.cancelQueries({
+        queryKey: ["memories", userId, activeTab],
+      });
 
       // Snapshot previous value
-      const previousMemories = queryClient.getQueryData(["memories", userId, activeTab]);
+      const previousMemories = queryClient.getQueryData([
+        "memories",
+        userId,
+        activeTab,
+      ]);
 
       // Optimistically update memories
       queryClient.setQueryData(["memories", userId, activeTab], (old: any) => {
         if (!old) return old;
-        
+
         return {
           ...old,
           pages: old.pages.map((page: any[]) =>
@@ -311,8 +317,8 @@ export function MemoriesGallery({
                       isLiked: !memory.post.isLiked,
                       _count: {
                         ...memory.post._count,
-                        likes: memory.post.isLiked 
-                          ? memory.post._count.likes - 1 
+                        likes: memory.post.isLiked
+                          ? memory.post._count.likes - 1
                           : memory.post._count.likes + 1,
                       },
                     },
@@ -325,18 +331,20 @@ export function MemoriesGallery({
 
       // Update photo viewer state if it's open and shows this post
       if (photoViewerState.isOpen && photoViewerState.post?.id === postId) {
-        setPhotoViewerState(prev => ({
+        setPhotoViewerState((prev) => ({
           ...prev,
-          post: prev.post ? {
-            ...prev.post,
-            isLiked: !prev.post.isLiked,
-            _count: {
-              ...prev.post._count,
-              likes: prev.post.isLiked 
-                ? prev.post._count.likes - 1 
-                : prev.post._count.likes + 1,
-            },
-          } : null,
+          post: prev.post
+            ? {
+                ...prev.post,
+                isLiked: !prev.post.isLiked,
+                _count: {
+                  ...prev.post._count,
+                  likes: prev.post.isLiked
+                    ? prev.post._count.likes - 1
+                    : prev.post._count.likes + 1,
+                },
+              }
+            : null,
         }));
       }
 
@@ -345,26 +353,31 @@ export function MemoriesGallery({
     onError: (error: Error, postId: string, context: any) => {
       // Revert optimistic update on error
       if (context?.previousMemories) {
-        queryClient.setQueryData(["memories", userId, activeTab], context.previousMemories);
+        queryClient.setQueryData(
+          ["memories", userId, activeTab],
+          context.previousMemories
+        );
       }
-      
+
       // Revert photo viewer state if needed
       if (photoViewerState.isOpen && photoViewerState.post?.id === postId) {
-        setPhotoViewerState(prev => ({
+        setPhotoViewerState((prev) => ({
           ...prev,
-          post: prev.post ? {
-            ...prev.post,
-            isLiked: !prev.post.isLiked,
-            _count: {
-              ...prev.post._count,
-              likes: prev.post.isLiked 
-                ? prev.post._count.likes - 1 
-                : prev.post._count.likes + 1,
-            },
-          } : null,
+          post: prev.post
+            ? {
+                ...prev.post,
+                isLiked: !prev.post.isLiked,
+                _count: {
+                  ...prev.post._count,
+                  likes: prev.post.isLiked
+                    ? prev.post._count.likes - 1
+                    : prev.post._count.likes + 1,
+                },
+              }
+            : null,
         }));
       }
-      
+
       toast.error("Failed to like post. Please try again.");
     },
     onSuccess: () => {
@@ -494,7 +507,7 @@ export function MemoriesGallery({
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-semibold mb-6 font-lora">
+        <h1 className="text-2xl font-semibold mb-6 font-lora text-rose-500 hidden sm:block">
           Memories & Photos
         </h1>
 
@@ -519,15 +532,15 @@ export function MemoriesGallery({
   if (isError) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-semibold mb-6 font-lora">
+        <h1 className="text-2xl font-semibold mb-6 font-lora text-rose-500 hidden sm:block">
           Memories & Photos
         </h1>
-      <div className="text-center p-12">
+        <div className="text-center p-12">
           <p className="text-gray-500 mb-4">
             {error instanceof Error
               ? error.message
               : "Failed to load memories. Please try again later."}
-        </p>
+          </p>
           <Button
             onClick={() => refetch()}
             className="bg-rose-500 hover:bg-rose-600"
@@ -541,7 +554,7 @@ export function MemoriesGallery({
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold mb-6 font-lora">
+      <h1 className="text-2xl font-semibold mb-6 font-lora text-rose-500 hidden sm:block">
         Memories & Photos
       </h1>
 
@@ -554,59 +567,68 @@ export function MemoriesGallery({
         <TabsContent value="albums" className="mt-6">
           {memories.length > 0 ? (
             <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-4 sm:gap-6">
-              {memories.map((memory: MemoryType) => (
-                <Card key={memory.id} className="overflow-hidden group relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all rounded-lg">
-                  {memory.album && (
-                    <div className="relative">
-                      {isActuallyCurrentUser && (
-                        <Button
-                          variant="destructive"
-                          size="icon"
-                          className="absolute top-2 right-2 h-8 w-8 rounded-full bg-black/60 hover:bg-black/80 z-10"
-                          onClick={() => handleDeleteMemory(memory)}
+              <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-4 sm:gap-6">
+                {memories.map((memory: MemoryType) => (
+                  <Card
+                    key={memory.id}
+                    className="overflow-hidden group relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all rounded-lg"
+                  >
+                    {memory.album && (
+                      <div className="relative">
+                        {isActuallyCurrentUser && (
+                          <Button
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-2 right-2 h-8 w-8 rounded-full bg-black/60 hover:bg-black/80 z-10"
+                            onClick={() => handleDeleteMemory(memory)}
+                          >
+                            <Trash2 className="h-4 w-4 text-white" />
+                          </Button>
+                        )}
+                        <Link
+                          href={`/albums/${memory.album?.id}`}
+                          className="block"
                         >
-                          <Trash2 className="h-4 w-4 text-white" />
-                        </Button>
-                      )}
-                      <Link href={`/albums/${memory.album?.id}`} className="block">
-                        <div
-                          className="aspect-[4/3] bg-cover bg-center relative"
-                          style={{
-                            backgroundImage: memory.album.coverImage
-                              ? `url(${memory.album.coverImage})`
-                              : "none",
-                          }}
-                        >
-                          {!memory.album.coverImage && (
-                            <div className="h-full flex items-center justify-center bg-gray-100 dark:bg-gray-700">
-                              <Album className="h-12 w-12 text-gray-400 dark:text-gray-500" />
-                            </div>
-                          )}
-                          {/* Gradient overlay for text visibility */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent opacity-70 group-hover:opacity-80 transition-opacity"></div>
-                          
-                          {/* Content positioned above gradient */}
-                          <div className="absolute bottom-3 left-3 right-3 z-10">
+                          <div
+                            className="aspect-[4/3] bg-cover bg-center relative"
+                            style={{
+                              backgroundImage: memory.album.coverImage
+                                ? `url(${memory.album.coverImage})`
+                                : "none",
+                            }}
+                          >
+                            {!memory.album.coverImage && (
+                              <div className="h-full flex items-center justify-center bg-gray-100 dark:bg-gray-700">
+                                <Album className="h-12 w-12 text-gray-400 dark:text-gray-500" />
+                              </div>
+                            )}
+                            {/* Gradient overlay for text visibility */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent opacity-70 group-hover:opacity-80 transition-opacity"></div>
+
+                            {/* Content positioned above gradient */}
+                            <div className="absolute bottom-3 left-3 right-3 z-10">
                               <h3 className="font-semibold text-lg text-white truncate group-hover:text-rose-100 transition-colors">
                                 {memory.album.name}
                               </h3>
                               <p className="text-sm text-gray-200 group-hover:text-rose-200 transition-colors">
                                 {memory.album.mediaCount}{" "}
-                                {memory.album.mediaCount === 1 ? "item" : "items"} •{" "}
+                                {memory.album.mediaCount === 1
+                                  ? "item"
+                                  : "items"}{" "}
+                                •{" "}
                                 {format(
                                   new Date(memory.album.createdAt),
                                   "MMM d, yyyy"
                                 )}
                               </p>
+                            </div>
                           </div>
-                        </div>
-                      </Link>
-                    </div>
-                  )}
-                </Card>
-              ))}
-            </div>
+                        </Link>
+                      </div>
+                    )}
+                  </Card>
+                ))}
+              </div>
 
               {/* Load More Trigger for Albums */}
               <div ref={loadMoreRef} className="pt-8 flex justify-center">
@@ -671,7 +693,7 @@ export function MemoriesGallery({
                     No more posts to load
                   </span>
                 ) : null}
-            </div>
+              </div>
             </>
           ) : (
             <div className="text-center py-12 bg-gray-50 rounded-lg border border-gray-100">

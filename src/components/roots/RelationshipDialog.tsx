@@ -109,9 +109,9 @@ export function RelationshipDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Define Relationship</DialogTitle>
+          <DialogTitle className="sm:text-2xl text-xl">Define Relationship</DialogTitle>
         </DialogHeader>
-        <div className="text-sm text-gray-500 mb-4">
+        <div className="sm:text-sm text-xs text-gray-500 mb-4">
           Defining relationship between{" "}
           <span className="font-medium text-gray-700">
             {sourceNode.data.firstName} {sourceNode.data.lastName}
@@ -150,7 +150,7 @@ export function RelationshipDialog({
               control={form.control}
               name="relationType"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="space-y-0">
                   <FormLabel>Relationship Type</FormLabel>
                   <Select
                     onValueChange={field.onChange}
@@ -177,7 +177,7 @@ export function RelationshipDialog({
                   control={form.control}
                   name="marriageDate"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="space-y-0">
                       <FormLabel className="text-gray-700">Marriage Date *</FormLabel>
                       <FormControl>
                         <Input
@@ -199,7 +199,7 @@ export function RelationshipDialog({
                     control={form.control}
                     name="divorceDate"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="space-y-0">
                         <FormLabel className="text-gray-700">Divorce Date *</FormLabel>
                         <FormControl>
                           <Input
@@ -247,6 +247,7 @@ export function RelationshipDialog({
               <Button 
                 type="submit" 
                 disabled={isSubmitting || !!validationMessage}
+                className="bg-rose-500 hover:bg-rose-600"
               >
                 {isSubmitting ? (
                   <>
