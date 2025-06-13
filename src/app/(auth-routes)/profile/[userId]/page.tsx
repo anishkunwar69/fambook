@@ -465,6 +465,16 @@ export default function ProfilePage() {
     }
   }, [visibilityData, tabVisibility, isSelf, viewerFamilyIds]);
 
+  // Reset viewport scale on mobile
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Force layout recalculation to prevent zoom issues
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+      }, 100);
+    }
+  }, []);
+
   // NOW WE CAN DO CONDITIONAL RETURNS AFTER ALL HOOKS ARE CALLED
 
   // Check if user not found
@@ -478,12 +488,12 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8 pb-8 sm:pb-11 max-lg:pb-20 overflow-x-hidden">
-      <div>
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8 pb-8 sm:pb-11 max-lg:pb-20 overflow-x-hidden max-w-[100vw]">
+      <div className="max-w-full">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-2 text-sm text-gray-500 mb-6 mt-[8px]"
+          className="flex items-center gap-2 text-sm text-gray-500 mb-6 mt-[8px] flex-wrap"
         >
           <Link
             href="/"
@@ -505,9 +515,9 @@ export default function ProfilePage() {
         />
       </div>
 
-      <div className="mt-4 sm:mt-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <div className="flex flex-col items-center md:flex-row md:items-center justify-between gap-4 mb-2">
+      <div className="mt-4 sm:mt-6 w-full max-w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-full">
+          <div className="flex flex-col items-center md:flex-row md:items-center justify-between gap-4 mb-2 w-full">
             <TabsList className="flex w-full md:justify-start h-10 sm:h-12 bg-transparent rounded-none p-0 md:overflow-x-auto max-w-full">
               <TabsTrigger
                 value="details"
@@ -515,17 +525,15 @@ export default function ProfilePage() {
               >
                 <span className="flex items-center gap-1 sm:gap-2">
                   <span className="hidden sm:inline">Personal Details</span>
-                  <span className="sm:hidden">Details</span>
-                  {renderTabPrivacyIndicator("details")}
+                  <span className="sm:hidden text-xs">Details</span>
                 </span>
               </TabsTrigger>
               <TabsTrigger
                 value="memories"
                 className="flex flex-1 md:flex-none justify-center items-center data-[state=active]:border-rose-500 rounded-none border-b-2 border-transparent text-sm sm:text-base md:whitespace-nowrap px-3 sm:px-4"
               >
-                <span className="flex items-center gap-1 sm:gap-2">
+                <span className="flex items-center gap-1 sm:gap-2 sm:text-base text-xs">
                   Memories
-                  {renderTabPrivacyIndicator("memories")}
                 </span>
               </TabsTrigger>
               <TabsTrigger
@@ -534,17 +542,15 @@ export default function ProfilePage() {
               >
                 <span className="flex items-center gap-1 sm:gap-2">
                   <span className="hidden sm:inline">Life Timeline</span>
-                  <span className="sm:hidden">Timeline</span>
-                  {renderTabPrivacyIndicator("timeline")}
+                  <span className="sm:hidden text-xs">Timeline</span>
                 </span>
               </TabsTrigger>
               <TabsTrigger
                 value="posts"
                 className="flex flex-1 md:flex-none justify-center items-center data-[state=active]:border-rose-500 rounded-none border-b-2 border-transparent text-sm sm:text-base md:whitespace-nowrap px-3 sm:px-4"
               >
-                <span className="flex items-center gap-1 sm:gap-2">
+                <span className="flex items-center gap-1 sm:gap-2 sm:text-base text-xs">
                   Posts
-                  {renderTabPrivacyIndicator("posts")}
                 </span>
               </TabsTrigger>
             </TabsList>

@@ -10,6 +10,7 @@ body {
 @layer base {
   html {
     touch-action: manipulation; /* Prevent double-tap zoom */
+    
   }
   
   input, select, textarea, button {
@@ -31,6 +32,14 @@ body {
       -moz-appearance: none;
       appearance: none;
     }
+  }
+  
+  /* Remove blue focus outline on mobile */
+  input:focus, select:focus, textarea:focus, button:focus {
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent;
+    box-shadow: none !important;
+    border-color: rgba(var(--input), 0.5) !important;
   }
 }
 

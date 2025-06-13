@@ -272,14 +272,14 @@ export function ProfileHeader({
   };
 
   return (
-    <div className="bg-rose-100 rounded-xl shadow-sm p-4 sm:p-6 lg:p-8 relative overflow-hidden">
+    <div className="bg-rose-100 rounded-xl shadow-sm p-4 sm:p-6 lg:p-8 relative overflow-hidden max-w-full">
       {/* Background decorative blobs */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-rose-100/30 to-amber-100/30 rounded-full blur-3xl -z-10 -translate-y-1/2 translate-x-1/2" />
       <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-rose-100/30 to-purple-100/30 rounded-full blur-3xl -z-10 translate-y-1/2 -translate-x-1/2" />
 
       {/* Main Content */}
       <div
-        className={`relative flex flex-col items-center gap-6 z-10 ${
+        className={`relative flex flex-col items-center gap-6 z-10 w-full ${
           isCurrentUser ? "md:flex-row" : "md:flex-row items-center"
         }`}
       >
@@ -290,7 +290,7 @@ export function ProfileHeader({
             alt={`${profileData.fullName}'s profile picture`}
             width={168}
             height={168}
-            className="rounded-full object-cover border-4 border-white shadow-lg"
+            className="rounded-full object-cover border-4 border-white shadow-lg max-w-[140px] sm:max-w-[168px] h-auto"
           />
           {isCurrentUser && (
             <button
@@ -303,7 +303,7 @@ export function ProfileHeader({
         </div>
 
         {/* Profile Info */}
-        <div className="flex-1 w-full space-y-4">
+        <div className="flex-1 w-full space-y-4 max-w-full overflow-hidden">
           <div
             className={`flex flex-col gap-2 items-center ${
               isCurrentUser
@@ -326,14 +326,14 @@ export function ProfileHeader({
               </h1>
               {profileData.bio ? (
                 <p
-                  className={`text-gray-600 flex items-center gap-2 justify-center ${
+                  className={`text-gray-600 flex items-center gap-2 justify-center break-words w-full ${
                     isCurrentUser ? "sm:justify-start" : "md:justify-start"
                   }`}
                 >
-                  {profileData.bio}
+                  <span className="break-words max-w-[90%]">{profileData.bio}</span>
                   {isCurrentUser && (
                     <button onClick={() => setBioDialogOpen(true)}>
-                      <PenSquare className="w-4 h-4 text-gray-500 hover:text-rose-500 transition-colors" />
+                      <PenSquare className="w-4 h-4 text-gray-500 hover:text-rose-500 transition-colors flex-shrink-0" />
                     </button>
                   )}
                 </p>
@@ -359,7 +359,7 @@ export function ProfileHeader({
                 </Button>
               </Link>
             ) : (
-              <div className="flex items-center gap-2 pt-2">
+              <div className="flex flex-wrap items-center gap-2 pt-2">
                 <Button className="bg-rose-500 hover:bg-rose-600 text-white">
                   <Mail className="w-4 h-4 mr-2" />
                   Message
