@@ -210,14 +210,14 @@ export default function NotificationsPage() {
           animate={{ opacity: 1, y: 0 }}
           className="bg-white/80 backdrop-blur-md rounded-2xl p-12 text-center border border-rose-100/50"
         >
-          <div className="bg-rose-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <Bell className="w-8 h-8 text-rose-500" />
+          <div className="bg-rose-50 sm:w-16 w-12 sm:h-16 h-12 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <Bell className="sm:w-8 w-6 sm:h-8 h-6 text-rose-500" />
           </div>
-          <h3 className="text-xl font-lora font-bold text-gray-800 mb-2">
+          <h3 className="sm:text-xl text-lg font-lora font-bold text-gray-800 mb-2">
             All Caught Up!
           </h3>
-          <p className="text-gray-600 max-w-md mx-auto">
-            You have no new notifications. When you receive notifications, click on them to mark as read.
+          <p className="text-gray-600 max-w-md mx-auto sm:text-base text-xs">
+            No new notifications. When you receive notifications, click on them to mark as read.
           </p>
         </motion.div>
       )}

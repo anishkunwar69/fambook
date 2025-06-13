@@ -476,9 +476,9 @@ export default function AllFamilyRootsPage() {
                   <Trees className="w-6 h-6 sm:w-8 sm:h-8 text-rose-500" />
                 </div>
                 <h3 className="text-lg sm:text-xl font-lora font-bold text-gray-800 mb-2">
-                Join a Family to Manage Family Trees
+                No Family Trees Yet
                 </h3>
-                <p className="text-gray-500 max-w-md mx-auto mb-4 sm:mb-6 text-sm sm:text-base">
+                <p className="text-gray-500 max-w-md mx-auto mb-4 sm:mb-6 text-xs sm:text-base">
                 Join or create a family to manage family trees.
                 </p>
                 <Link href="/dashboard">
