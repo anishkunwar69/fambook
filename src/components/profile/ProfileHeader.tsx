@@ -436,7 +436,7 @@ export function ProfileHeader({
             placeholder="Tell your family a little about yourself..."
             rows={5}
           />
-          <DialogFooter>
+          <DialogFooter className="mt-6">
             <Button
               variant="outline"
               onClick={() => setBioDialogOpen(false)}
