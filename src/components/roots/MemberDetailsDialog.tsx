@@ -305,7 +305,9 @@ export function MemberDetailsDialog({
     }
 
     try {
+      // Set uploading state to show overlay and disable interactions
       setIsUploading(true);
+      
       const formData = new FormData();
       formData.append("file", file);
 
@@ -314,23 +316,35 @@ export function MemberDetailsDialog({
         body: formData,
       });
 
-      const result = await response.json();
-      if (!result.success) throw new Error(result.message);
+      if (!response.ok) {
+        throw new Error(`Upload failed with status: ${response.status}`);
+      }
 
+      const result = await response.json();
+      if (!result.success) throw new Error("Upload failed");
+
+      // Update the form with the new image URL
       form.setValue("profileImage", result.url);
       toast.success("Image uploaded successfully");
     } catch (error) {
-      console.error("Failed to upload image:", error);
-      toast.error("Failed to upload image. Please try again.");
+      toast.error("Failed to upload image.");
     } finally {
+      // Always ensure uploading state is reset
       setIsUploading(false);
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl bg-white max-h-[90vh] flex flex-col">
-        <DialogHeader className="mb-4">
+    <Dialog 
+      open={isOpen} 
+      onOpenChange={(open) => {
+        // Prevent closing the dialog if an image is being uploaded
+        if (isUploading) return;
+        if (!open) onClose();
+      }}
+    >
+      <DialogContent className="max-w-2xl bg-white max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogHeader className="mb-2">
           <DialogTitle className="font-lora text-2xl text-gray-800 text-center w-full">
               {mode === "add"
                 ? "Add Family Member"
@@ -343,10 +357,19 @@ export function MemberDetailsDialog({
             marked with (*).
           </DialogDescription>
         </DialogHeader>
+        
+        {/* Loading overlay during image upload */}
+        {isUploading && (
+          <div className="absolute inset-0 bg-white/80 flex flex-col items-center justify-center z-50 cursor-not-allowed">
+            <Loader2 className="w-10 h-10 text-rose-500 animate-spin" />
+            <span className="mt-4 text-lg font-semibold text-rose-500">Uploading image...</span>
+            <p className="text-sm text-gray-500 mt-2">Please wait until the upload completes</p>
+          </div>
+        )}
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-6 overflow-y-auto pr-2 pb-4"
+            className="space-y-4 overflow-y-auto pr-2 flex-1"
           >
             {/* Essential Information */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -550,9 +573,9 @@ export function MemberDetailsDialog({
             </div>
 
             {/* Optional Information */}
-            <div className="space-y-6">
-              <div className="bg-amber-50/50 border border-amber-200/50 rounded-lg p-4 mb-6">
-                <h3 className="font-semibold text-amber-800 flex items-center gap-2 mb-2 sm:text-base text-sm">
+            <div className="space-y-4">
+              <div className="bg-amber-50/50 border border-amber-200/50 rounded-lg p-3 mb-4">
+                <h3 className="font-semibold text-amber-800 flex items-center gap-2 mb-1 sm:text-base text-sm">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="20"
@@ -586,7 +609,7 @@ export function MemberDetailsDialog({
                   <div className="w-full border-t border-gray-200" />
                 </div>
                 <div className="relative flex justify-center text-sm font-semibold leading-6">
-                  <span className="bg-white px-6 text-rose-500">
+                  <span className="bg-white px-4 text-rose-500">
                     Optional Details
                   </span>
                 </div>
@@ -641,7 +664,8 @@ export function MemberDetailsDialog({
                           variant="outline"
                           className={cn(
                             "w-full bg-white border-gray-200",
-                            !field.value && "border-dashed border-2"
+                            !field.value && "border-dashed border-2",
+                            isUploading && "opacity-70"
                           )}
                           onClick={() => fileInputRef.current?.click()}
                           disabled={isUploading || isViewMode || !canEdit}
@@ -774,7 +798,7 @@ export function MemberDetailsDialog({
               )}
             />
 
-            <div className="flex justify-between items-center gap-2">
+            <div className="flex justify-between items-center gap-2 mt-4 pt-2 border-t border-gray-100">
               <div className="flex items-center gap-2">
                 <div
                   className={cn(
@@ -793,7 +817,10 @@ export function MemberDetailsDialog({
                   <Button
                     type="submit"
                     disabled={isSubmitting || isUploading}
-                    className="bg-rose-500 hover:bg-rose-600 text-white"
+                    className={cn(
+                      "bg-rose-500 hover:bg-rose-600 text-white",
+                      (isSubmitting || isUploading) && "opacity-70 cursor-not-allowed"
+                    )}
                   >
                     {isSubmitting ? (
                       <>

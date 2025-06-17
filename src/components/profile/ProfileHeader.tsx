@@ -165,7 +165,7 @@ export function ProfileHeader({
       } else {
         toast({
           title: "Error",
-          description: data.message || "Failed to update bio",
+          description:"Failed to update bio",
           variant: "destructive",
         });
       }
@@ -250,7 +250,7 @@ export function ProfileHeader({
       } else {
         toast({
           title: "Error",
-          description: data.message || "Failed to update profile picture",
+          description: "Failed to update profile picture",
           variant: "destructive",
         });
       }
@@ -457,7 +457,11 @@ export function ProfileHeader({
       {/* Profile Picture Upload Dialog */}
       <Dialog
         open={profilePictureDialogOpen}
-        onOpenChange={setProfilePictureDialogOpen}
+        onOpenChange={(open) => {
+          // Prevent closing the dialog if an image is being uploaded
+          if (isUploadingPicture) return;
+          if (!open) handleCancelPictureUpdate();
+        }}
       >
         <DialogContent>
           <DialogHeader>
@@ -483,10 +487,12 @@ export function ProfileHeader({
               ref={fileInputRef}
               onChange={handleFileSelect}
               className="hidden"
+              disabled={isUploadingPicture}
             />
             <Button
               variant="outline"
               onClick={() => fileInputRef.current?.click()}
+              disabled={isUploadingPicture}
             >
               <Upload className="w-4 h-4 mr-2" />
               Choose Image
@@ -513,6 +519,15 @@ export function ProfileHeader({
               Upload
             </Button>
           </DialogFooter>
+
+          {/* Loading overlay during image upload */}
+          {isUploadingPicture && (
+            <div className="absolute inset-0 bg-white/80 flex flex-col items-center justify-center z-50 cursor-not-allowed">
+              <Loader2 className="w-10 h-10 text-rose-500 animate-spin" />
+              <span className="mt-4 text-lg font-semibold text-rose-500">Uploading image...</span>
+              <p className="text-sm text-gray-500 mt-2">Please wait until the upload completes</p>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
