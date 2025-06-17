@@ -98,16 +98,6 @@ function FamilySkeletonCard() {
         </div>
       </div>
 
-      {/* Skeleton Family Stats */}
-      <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-4 sm:mb-6">
-        {[...Array(3)].map((_, i) => (
-          <div key={i} className="text-center">
-            <div className="bg-gray-200 w-8 h-8 sm:w-10 sm:h-10 rounded-lg mx-auto mb-1 sm:mb-2"></div>
-            <div className="h-3 bg-gray-200 rounded w-8 sm:w-12 mx-auto"></div>
-          </div>
-        ))}
-      </div>
-
       {/* Skeleton Action Button */}
       <div className="h-9 sm:h-10 bg-gray-200 rounded w-full"></div>
     </div>
@@ -588,35 +578,6 @@ export default function FamiliesPage() {
                   </>
                 )}
               </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Family Stats */}
-        {!isPending && (
-          <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-4 sm:mb-6">
-            <div className="text-center">
-              <div className="bg-rose-50 w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center mx-auto mb-1 sm:mb-2 group-hover:scale-110 transition-transform">
-                <Users className="w-4 h-4 sm:w-5 sm:h-5 text-rose-500" />
-              </div>
-              <p className="text-xs text-gray-600">
-                <span className="sm:hidden">{family.members.length}</span>
-                <span className="hidden sm:inline">
-                  {family.members.length} Members
-                </span>
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="bg-amber-50 w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center mx-auto mb-1 sm:mb-2 group-hover:scale-110 transition-transform">
-                <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" />
-              </div>
-              <p className="text-xs text-gray-600">Albums</p>
-            </div>
-            <div className="text-center">
-              <div className="bg-rose-50 w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center mx-auto mb-1 sm:mb-2 group-hover:scale-110 transition-transform">
-                <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-rose-500" />
-              </div>
-              <p className="text-xs text-gray-600">Events</p>
             </div>
           </div>
         )}
