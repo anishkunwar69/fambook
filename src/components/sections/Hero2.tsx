@@ -113,7 +113,7 @@ function DemoVideoSection() {
             <div className="aspect-video bg-black rounded-2xl overflow-hidden relative">
               <iframe
                 className="w-full h-full"
-                src="https://www.youtube.com/embed/2JAVG0VSJDU"
+                src="https://www.youtube.com/embed/jp6SddpJeTE"
                 title="Fambook Demo"
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
