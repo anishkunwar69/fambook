@@ -10,6 +10,7 @@ import {
   Image as ImageIcon,
   LayoutDashboard,
   MessageSquare,
+  TreePine,
   User,
   Users,
 } from "lucide-react";

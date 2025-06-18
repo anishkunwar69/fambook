@@ -126,6 +126,35 @@ body {
   .bottom-nav-safe-area {
     padding-bottom: env(safe-area-inset-bottom);
   }
+  
+  /* Added for PhotoViewerModal */
+  .safe-area-inset-top {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+  
+  .top-safe {
+    top: max(1rem, env(safe-area-inset-top));
+  }
+  
+  .right-safe {
+    right: max(1rem, env(safe-area-inset-right));
+  }
+  
+  .left-safe {
+    left: max(1rem, env(safe-area-inset-left));
+  }
+}
+
+/* For iOS modal fixes */
+@supports (-webkit-touch-callout: none) {
+  .ios-modal-fix {
+    height: -webkit-fill-available;
+  }
+  
+  /* Use dynamic viewport height for modals on iOS */
+  .ios-full-height {
+    height: 100dvh;
+  }
 }
 
 /* Add onboarding guide styles at the end of the file */

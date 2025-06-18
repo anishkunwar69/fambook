@@ -424,7 +424,7 @@ export function PhotoViewerModal({
   const currentMedia = post.media[currentIndex];
 
   const imageDisplayArea = (
-    <div className="flex items-center justify-center relative h-[60vh] w-full lg:h-full lg:flex-1 lg:w-auto bg-black">
+    <div className="flex items-center justify-center relative h-[45vh] w-full lg:h-full lg:flex-1 lg:w-auto bg-black pt-0 pb-0 px-0 safe-area-inset-top">
       {currentMedia.type === "PHOTO" ? (
         <Image
           src={currentMedia.url}
@@ -435,7 +435,9 @@ export function PhotoViewerModal({
           sizes="100vw"
           style={{ 
             objectFit: "contain",
-            margin: "auto"
+            margin: "auto",
+            maxHeight: "100%",
+            maxWidth: "100%"
           }}
         />
       ) : (
@@ -655,25 +657,30 @@ export function PhotoViewerModal({
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent 
-        className="bg-white dark:bg-slate-900 flex flex-col rounded-none" 
+        className="bg-white dark:bg-slate-900 flex flex-col rounded-none max-h-[100dvh] p-0 overflow-hidden" 
         fullWidth={true}
         hideCloseButton={true}
       >
         <VisuallyHidden>
           <DialogTitle>Media Viewer</DialogTitle>
         </VisuallyHidden>
+        
+        {/* Close button as a separate element outside the main content */}
+        <div className="fixed top-0 left-0 right-0 z-[9999] pointer-events-none w-full">
+          <div className="absolute sm:top-4 top-2 right-4 pointer-events-auto">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:bg-black/70 text-white rounded-full h-10 w-10 shadow-lg"
+              onClick={handleClose}
+              aria-label="Close viewer"
+            >
+              <X className="h-6 w-6" />
+            </Button>
+          </div>
+        </div>
+        
         <div className="flex-1 flex flex-col lg:flex-row min-h-0 relative h-full w-full">
-          {/* Close Button - visible on all screen sizes */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-3 right-3 z-50 bg-black/30 text-white rounded-full h-9 w-9 hover:bg-black/50"
-            onClick={handleClose}
-            aria-label="Close viewer"
-          >
-            <X className="h-5 w-5" />
-          </Button>
-
           {/* Image/Video view */}
           <div className="flex-1 lg:w-[calc(100%-420px)] bg-black/95 dark:bg-black/90 flex items-center justify-center relative overflow-hidden">
             <AnimatePresence mode="wait">

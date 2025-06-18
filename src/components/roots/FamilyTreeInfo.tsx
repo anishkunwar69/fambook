@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 
 export function FamilyTreeInfo() {
   return (
-    <div className="fixed lg:bottom-6 lg:right-6 z-50 bottom-[100px] right-[6px]">
+    <div className="fixed lg:bottom-6 lg:right-6 z-50 bottom-[62px] right-[6px]">
       <HoverCard openDelay={0} closeDelay={200}>
         <HoverCardTrigger asChild>
           <Button

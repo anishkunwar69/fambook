@@ -15,6 +15,7 @@ import {
   Loader2,
   Menu,
   MessageSquare,
+  TreePine,
   User,
   Users,
   X,
@@ -62,7 +63,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       hasNotification: hasUpcomingEvents,
       count: upcomingEventsCount,
     },
-    { icon: MessageSquare, label: "Tree", href: `/roots` },
+    { icon: TreePine, label: "Tree", href: `/roots` },
     {
       icon: User,
       label: "Profile",
