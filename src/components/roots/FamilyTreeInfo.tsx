@@ -8,15 +8,15 @@ import { Button } from "@/components/ui/button";
 
 export function FamilyTreeInfo() {
   return (
-    <div className="fixed lg:bottom-6 lg:right-6 z-50 bottom-[105px] right-2">
+    <div className="fixed lg:bottom-6 lg:right-6 z-50 bottom-[100px] right-[6px]">
       <HoverCard openDelay={0} closeDelay={200}>
         <HoverCardTrigger asChild>
           <Button
             variant="outline"
             size="icon"
-            className="h-12 w-12 rounded-full bg-white shadow-lg border-rose-100 hover:border-rose-200 hover:bg-rose-50 transition-all duration-200"
+            className="sm:h-12 sm:w-12 h-10 w-10 rounded-full bg-white shadow-lg border-rose-100 hover:border-rose-200 hover:bg-rose-50 transition-all duration-200"
           >
-            <Info className="h-5 w-5 text-rose-500" />
+            <Info className="sm:h-5 sm:w-5 h-3 w-3 text-rose-500" />
           </Button>
         </HoverCardTrigger>
         <HoverCardContent align="end" className="w-80 p-6" sideOffset={16}>

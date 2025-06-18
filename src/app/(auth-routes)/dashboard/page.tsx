@@ -5,7 +5,16 @@ import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useUser } from "@clerk/nextjs";
 import { motion } from "framer-motion";
-import { ChevronRight, Home, PlusCircle, Users, ChevronDown, ChevronUp, X, Sparkles } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  ChevronUp,
+  Home,
+  PlusCircle,
+  Sparkles,
+  Users,
+  X,
+} from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -121,10 +130,9 @@ export default function DashboardPage() {
           ! 👋
         </h1>
         <p className="text-gray-600 mt-2 max-sm:text-xs">
-          {hasFamilies 
-            ? "Continue your family journey below" 
-            : "Start your family journey by creating or joining a family"
-          }
+          {hasFamilies
+            ? "Continue your family journey below"
+            : "Start your family journey by creating or joining a family"}
         </p>
       </motion.div>
 
@@ -138,27 +146,30 @@ export default function DashboardPage() {
         <div className="bg-gradient-to-r from-amber-50 to-rose-50 border border-amber-100 rounded-xl p-4 sm:p-5 shadow-sm guide-card-glow">
           <div className="flex justify-between items-start">
             <div className="flex gap-3 items-start">
-              
               <div>
                 <h3 className="font-semibold text-gray-800 mb-1 flex items-center gap-2 sm:text-base text-sm">
                   <span className="flex items-center gap-1.5">
                     <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-amber-500" />
                     Getting Started with Fambook
                   </span>
-                  <button 
+                  <button
                     onClick={toggleGuide}
                     className="text-gray-400 hover:text-gray-600 transition-colors"
                     aria-label={showGuide ? "Hide guide" : "Show guide"}
                   >
-                    {showGuide ? <ChevronUp className="w-3 h-3 sm:w-4 sm:h-4" /> : <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />}
+                    {showGuide ? (
+                      <ChevronUp className="w-3 h-3 sm:w-4 sm:h-4" />
+                    ) : (
+                      <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
+                    )}
                   </button>
                 </h3>
-                
+
                 {showGuide && (
                   <div className="text-gray-600 text-sm space-y-3 mt-2 animate-fadeIn">
                     <p>
-                      Welcome to Fambook! To use all features, you need to be part of a family. 
-                      Here's how to get started:
+                      Welcome to Fambook! To use all features, you need to be
+                      part of a family. Here's how to get started:
                     </p>
                     <ul className="space-y-2 ml-1">
                       <li className="flex items-start gap-2">
@@ -166,7 +177,9 @@ export default function DashboardPage() {
                           <PlusCircle className="w-3 h-3 sm:w-4 sm:h-4 text-rose-500" />
                         </div>
                         <span>
-                          <strong>Create a Family:</strong> Start your own family space where you can invite your loved ones and build your family tree.
+                          <strong>Create a Family:</strong> Start your own
+                          family space where you can invite your loved ones and
+                          build your family tree.
                         </span>
                       </li>
                       <li className="flex items-start gap-2">
@@ -174,18 +187,22 @@ export default function DashboardPage() {
                           <Users className="w-3 h-3 sm:w-4 sm:h-4 text-amber-500" />
                         </div>
                         <span>
-                          <strong>Join a Family:</strong> If someone has invited you, you can join their family by entering the invite code they shared with you.
+                          <strong>Join a Family:</strong> If someone has invited
+                          you, you can join their family by entering the invite
+                          code they shared with you.
                         </span>
                       </li>
                     </ul>
                     <p>
-                      Once you create or join a family, you'll unlock all features of Fambook including family trees, shared albums, and more!
+                      Once you create or join a family, you'll unlock all
+                      features of Fambook including family trees, shared albums,
+                      and more!
                     </p>
                   </div>
                 )}
               </div>
             </div>
-            <button 
+            <button
               onClick={() => {
                 setShowGuide(false);
                 localStorage.setItem("dashboard_guide_hidden", "true");

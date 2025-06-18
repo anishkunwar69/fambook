@@ -19,13 +19,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   AlertTriangle,
-  Calendar,
   Check,
   ChevronRight,
   Clock,
   Copy,
   Home,
-  ImageIcon,
   Loader2,
   Pencil,
   PlusCircle,

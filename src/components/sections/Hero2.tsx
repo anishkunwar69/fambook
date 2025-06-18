@@ -1,15 +1,15 @@
 "use client";
+import { useUser } from "@clerk/nextjs";
 import { useInView } from "framer-motion";
 import { Calendar, Heart } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useRef } from "react";
 import Container from "../Container";
 import Navbar from "../Navbar";
 import { Button } from "../ui/button";
-import Link from "next/link";
-import { useUser } from "@clerk/nextjs";
 
 function Hero2() {
-  const {user} = useUser()
+  const { user } = useUser();
   return (
     <div className="bg-gradient-to-b from-amber-50 via-rose-50/30 to-white min-h-screen relative overflow-hidden">
       {/* Enhanced Decorative Elements */}
@@ -34,7 +34,7 @@ function Hero2() {
 }
 
 function HeroSection() {
-  const {user} = useUser()
+  const { user } = useUser();
   return (
     <Container>
       <div className="w-full md:pt-24 pt-[70px] pb-16 flex flex-col items-center gap-8 relative z-10">
@@ -58,7 +58,11 @@ function HeroSection() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:pt-8 pt-[14px]">
             <Button className="bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white font-poppins text-lg px-8 py-6 rounded-xl shadow-lg hover:shadow-rose-200/50 hover:scale-105 transition-all duration-300 w-full sm:w-auto">
               <Heart className="w-5 h-5 ml-2" />
-              { user ? <Link href="#features">Our Features</Link> : <Link href="/sign-up">Get Started</Link>}
+              {user ? (
+                <Link href="#features">Our Features</Link>
+              ) : (
+                <Link href="/sign-up">Get Started</Link>
+              )}
             </Button>
             <Button
               variant="outline"
@@ -119,8 +123,6 @@ function DemoVideoSection() {
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               ></iframe>
-
-             
             </div>
           </div>
         </div>

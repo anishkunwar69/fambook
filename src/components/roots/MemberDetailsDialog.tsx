@@ -307,7 +307,7 @@ export function MemberDetailsDialog({
     try {
       // Set uploading state to show overlay and disable interactions
       setIsUploading(true);
-      
+
       const formData = new FormData();
       formData.append("file", file);
 
@@ -335,8 +335,8 @@ export function MemberDetailsDialog({
   };
 
   return (
-    <Dialog 
-      open={isOpen} 
+    <Dialog
+      open={isOpen}
       onOpenChange={(open) => {
         // Prevent closing the dialog if an image is being uploaded
         if (isUploading) return;
@@ -346,24 +346,28 @@ export function MemberDetailsDialog({
       <DialogContent className="max-w-2xl bg-white max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader className="mb-2">
           <DialogTitle className="font-lora text-2xl text-gray-800 text-center w-full">
-              {mode === "add"
-                ? "Add Family Member"
-                : mode === "edit"
-                  ? "Edit Family Member"
-                  : "View Family Member"}
-            </DialogTitle>
+            {mode === "add"
+              ? "Add Family Member"
+              : mode === "edit"
+                ? "Edit Family Member"
+                : "View Family Member"}
+          </DialogTitle>
           <DialogDescription className="text-gray-600 md:text-sm text-xs text-center">
             Fill in the details of your family member. Required fields are
             marked with (*).
           </DialogDescription>
         </DialogHeader>
-        
+
         {/* Loading overlay during image upload */}
         {isUploading && (
           <div className="absolute inset-0 bg-white/80 flex flex-col items-center justify-center z-50 cursor-not-allowed">
             <Loader2 className="w-10 h-10 text-rose-500 animate-spin" />
-            <span className="mt-4 text-lg font-semibold text-rose-500">Uploading image...</span>
-            <p className="text-sm text-gray-500 mt-2">Please wait until the upload completes</p>
+            <span className="mt-4 text-lg font-semibold text-rose-500">
+              Uploading image...
+            </span>
+            <p className="text-sm text-gray-500 mt-2">
+              Please wait until the upload completes
+            </p>
           </div>
         )}
         <Form {...form}>
@@ -683,11 +687,12 @@ export function MemberDetailsDialog({
                           ) : (
                             <>
                               <Upload className="w-4 h-4 mr-2" />
-                              <span className="sm:text-base text-sm">Add a Photo</span>
+                              <span className="sm:text-base text-sm">
+                                Add a Photo
+                              </span>
                             </>
                           )}
                         </Button>
-                       
                       </div>
                     </div>
                     <FormMessage />
@@ -700,7 +705,7 @@ export function MemberDetailsDialog({
                 control={form.control}
                 name="biography"
                 render={({ field }) => (
-                      <FormItem className="space-y-0 md:space-y-2">
+                  <FormItem className="space-y-0 md:space-y-2">
                     <div className="flex items-start justify-between mb-2">
                       <FormLabel className="text-gray-700">
                         Introduction
@@ -790,8 +795,10 @@ export function MemberDetailsDialog({
                     </SelectContent>
                   </Select>
                   <FormDescription className="flex items-center text-gray-600 sm:text-base text-xs">
-                    <i>Link this node to an existing family member who is not yet
-                    linked to any other node</i>
+                    <i>
+                      Link this node to an existing family member who is not yet
+                      linked to any other node
+                    </i>
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -819,7 +826,8 @@ export function MemberDetailsDialog({
                     disabled={isSubmitting || isUploading}
                     className={cn(
                       "bg-rose-500 hover:bg-rose-600 text-white",
-                      (isSubmitting || isUploading) && "opacity-70 cursor-not-allowed"
+                      (isSubmitting || isUploading) &&
+                        "opacity-70 cursor-not-allowed"
                     )}
                   >
                     {isSubmitting ? (

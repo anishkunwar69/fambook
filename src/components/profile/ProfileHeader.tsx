@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -165,7 +164,7 @@ export function ProfileHeader({
       } else {
         toast({
           title: "Error",
-          description:"Failed to update bio",
+          description: "Failed to update bio",
           variant: "destructive",
         });
       }
@@ -306,9 +305,7 @@ export function ProfileHeader({
         <div className="flex-1 w-full space-y-4 max-w-full overflow-hidden">
           <div
             className={`flex flex-col gap-2 items-center ${
-              isCurrentUser
-                ? "sm:flex-row justify-between"
-                : "md:items-start"
+              isCurrentUser ? "sm:flex-row justify-between" : "md:items-start"
             }`}
           >
             <div
@@ -330,7 +327,9 @@ export function ProfileHeader({
                     isCurrentUser ? "sm:justify-start" : "md:justify-start"
                   }`}
                 >
-                  <span className="break-words max-w-[90%]">{profileData.bio}</span>
+                  <span className="break-words max-w-[90%]">
+                    {profileData.bio}
+                  </span>
                   {isCurrentUser && (
                     <button onClick={() => setBioDialogOpen(true)}>
                       <PenSquare className="w-4 h-4 text-gray-500 hover:text-rose-500 transition-colors flex-shrink-0" />
@@ -524,8 +523,12 @@ export function ProfileHeader({
           {isUploadingPicture && (
             <div className="absolute inset-0 bg-white/80 flex flex-col items-center justify-center z-50 cursor-not-allowed">
               <Loader2 className="w-10 h-10 text-rose-500 animate-spin" />
-              <span className="mt-4 text-lg font-semibold text-rose-500">Uploading image...</span>
-              <p className="text-sm text-gray-500 mt-2">Please wait until the upload completes</p>
+              <span className="mt-4 text-lg font-semibold text-rose-500">
+                Uploading image...
+              </span>
+              <p className="text-sm text-gray-500 mt-2">
+                Please wait until the upload completes
+              </p>
             </div>
           )}
         </DialogContent>
