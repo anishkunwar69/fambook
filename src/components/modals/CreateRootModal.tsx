@@ -87,7 +87,7 @@ const CreateRootModal: React.FC<CreateRootModalProps> = ({
       });
       if (!response.ok) {
         const errorResult = await response.json();
-        throw new Error(errorResult.message || "Failed to create family tree");
+        throw new Error("Failed to create family tree");
       }
       return response.json();
     },
@@ -99,7 +99,7 @@ const CreateRootModal: React.FC<CreateRootModalProps> = ({
       reset();
     },
     onError: (error) => {
-      toast.error(error.message || "An error occurred.");
+      toast.error("An error occurred.");
     },
   });
 

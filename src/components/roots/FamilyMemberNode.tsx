@@ -30,9 +30,6 @@ type FamilyMemberNodeProps = {
 export const FamilyMemberNode = memo(({ data, selected }: FamilyMemberNodeProps) => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
-  console.log("[DEBUG] Node data:", data);
-  console.log("[DEBUG] linkedMemberId:", data.linkedMemberId);
-
   const getInitials = (firstName: string, lastName: string) => {
     return `${firstName[0]}${lastName[0]}`.toUpperCase();
   };

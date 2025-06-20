@@ -70,7 +70,7 @@ export default function LikesModal({
       );
       const result = await response.json();
       if (!result.success) {
-        throw new Error(result.message || "Failed to fetch likers");
+        throw new Error("Failed to fetch likers");
       }
       return result.data;
     },

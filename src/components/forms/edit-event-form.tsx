@@ -116,18 +116,18 @@ export function EditEventForm({
 
       const result = await response.json();
       if (!response.ok) {
-        throw new Error(result.message || "Failed to update event");
+        throw new Error("Failed to update event");
       }
       return result;
     },
     onSuccess: (result) => {
-      toast.success(result.message || "Event updated successfully");
+      toast.success("Event updated successfully");
       queryClient.invalidateQueries({ queryKey: ["special-days"] }); // Invalidate all special-days queries
       queryClient.invalidateQueries({ queryKey: ["special-days", eventToEdit.id] }); // Invalidate specific event query if you have one
       onSuccess?.();
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to update event");
+      toast.error("Failed to update event");
     },
   });
 

@@ -164,7 +164,7 @@ function EditAlbumModal({
       onClose();
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Could not update album.");
+      toast.error("Could not update album.");
     },
   });
 
@@ -305,7 +305,7 @@ function DeleteAlbumConfirmationModal({
       onClose();
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Could not delete album.");
+      toast.error("Could not delete album.");
     },
   });
 
@@ -420,7 +420,7 @@ export default function AlbumsPage() {
       const response = await fetch("/api/albums");
       const result = await response.json();
       if (!result.success) {
-        throw new Error(result.message);
+        throw new Error("Something went wrong!");
       }
       return result.data;
     },
@@ -433,7 +433,7 @@ export default function AlbumsPage() {
       const response = await fetch("/api/families");
       const result = await response.json();
       if (!result.success) {
-        throw new Error(result.message);
+        throw new Error("Something went wrong!");
       }
       return result.data;
     },

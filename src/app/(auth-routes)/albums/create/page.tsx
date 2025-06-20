@@ -63,7 +63,7 @@ export default function CreateAlbumPage() {
       const response = await fetch("/api/families");
       const result = await response.json();
       if (!result.success) {
-        throw new Error(result.message || "Failed to fetch families");
+        throw new Error("Failed to fetch families");
       }
       return result.data.filter(
         (family: any) => family.userMembershipStatus === "APPROVED"
@@ -101,7 +101,7 @@ export default function CreateAlbumPage() {
 
       const result = await response.json();
       if (!result.success) {
-        throw new Error(result.message || "Failed to create album(s)");
+        throw new Error("Failed to create album(s)");
       }
       return result.data;
     },
@@ -113,7 +113,7 @@ export default function CreateAlbumPage() {
       router.push(`/albums`);
     },
     onError: (error: Error) => {
-      toast.error(error.message || "An error occurred.");
+      toast.error("Failed to create album");
     },
   });
 

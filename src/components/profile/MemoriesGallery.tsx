@@ -251,7 +251,7 @@ export function MemoriesGallery({
       return response.json();
     },
     onSuccess: (data) => {
-      toast.success(data.message || "Memory removed successfully");
+      toast.success("Memory removed successfully");
       queryClient.invalidateQueries({
         queryKey: ["memories", userId, activeTab],
       });
@@ -260,7 +260,7 @@ export function MemoriesGallery({
       setMemoryToDelete(null);
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to remove memory");
+      toast.error("Failed to remove memory");
       // Close dialog on error as well
       setIsDeleteMemoryConfirmModalOpen(false);
       setMemoryToDelete(null);
@@ -277,7 +277,7 @@ export function MemoriesGallery({
         });
         const result = await response.json();
         if (!result.success) {
-          throw new Error(result.message);
+          throw new Error("Something went wrong!");
         }
         return result.data;
       } finally {
@@ -417,7 +417,7 @@ export function MemoriesGallery({
       setSelectedPostIdForDeletion(null);
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to delete post. Please try again.");
+      toast.error("Failed to delete post. Please try again.");
       setIsDeletePostModalOpen(false);
       setSelectedPostIdForDeletion(null);
     },

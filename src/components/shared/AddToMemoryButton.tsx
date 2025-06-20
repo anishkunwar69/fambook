@@ -52,7 +52,7 @@ export function AddToMemoryButton({
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to add to memories");
+        throw new Error("Failed to add to memories");
       }
 
       return response.json();
@@ -77,8 +77,7 @@ export function AddToMemoryButton({
     onError: (error) => {
       toast({
         title: "Error",
-        description:
-          error instanceof Error ? error.message : "Failed to add to memories",
+        description: "Failed to add to memories",
         variant: "destructive",
       });
     },

@@ -96,12 +96,12 @@ export function BasicInfoFormDialog({
         });
         onSuccess();
       } else {
-        throw new Error(responseData.message || "Failed to update basic information");
+        throw new Error("Failed to update basic information");
       }
     } catch (error) {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update basic information",
+        description: "Failed to update basic information",
         variant: "destructive",
       });
     } finally {

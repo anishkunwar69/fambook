@@ -260,7 +260,7 @@ export default function FamilyPage() {
       const response = await fetch(`/api/families/${familyId}`);
       const result = await response.json();
       if (!result.success) {
-        throw new Error(result.message);
+        throw new Error("Something went wrong!");
       }
       return result.data;
     },
@@ -272,7 +272,7 @@ export default function FamilyPage() {
       const response = await fetch(`/api/families/${familyId}/stats`);
       const result = await response.json();
       if (!result.success) {
-        throw new Error(result.message);
+        throw new Error("Something went wrong!");
       }
       return result.data;
     },
@@ -709,13 +709,14 @@ export default function FamilyPage() {
               </div>
             ) : isMembersError ? (
               <div className="text-center py-6 sm:py-8">
-                <p className="text-red-500 mb-4 text-sm sm:text-base">
+                <p className="text-red-500 mb-4 text-xs sm:text-base font-medium font-lora">
                   Failed to load members
                 </p>
                 <Button
                   onClick={() => window.location.reload()}
                   variant="outline"
                   size="sm"
+                  className="bg-rose-500 font-lora text-white text-xs sm:text-base"
                 >
                   Retry
                 </Button>

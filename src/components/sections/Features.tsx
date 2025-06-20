@@ -1,5 +1,4 @@
 "use client";
-import { useInView } from "framer-motion";
 import {
   Check,
   Home,
@@ -13,7 +12,6 @@ import Container from "../Container";
 
 export default function Features() {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true });
   const [videoPaused, setVideoPaused] = useState<Record<number, boolean>>({});
   const videoRefs = useRef<Record<number, HTMLVideoElement | null>>({});
 

@@ -91,7 +91,7 @@ export default function NotificationsPage() {
       const response = await fetch("/api/notifications");
       const result = await response.json();
       if (!result.success) {
-        throw new Error(result.message);
+        throw new Error("Something went wrong!");
       }
       return result.data;
     },
@@ -109,14 +109,14 @@ export default function NotificationsPage() {
       });
       const result = await response.json();
       if (!result.success) {
-        throw new Error(result.message);
+        throw new Error("Something went wrong!");
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
     },
     onError: (error) => {
-      toast.error(error.message); 
+      toast.error("Failed to mark notification as read"); 
     },
   });
 

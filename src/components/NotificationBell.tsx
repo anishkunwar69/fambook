@@ -18,7 +18,7 @@ export default function NotificationBell() {
       const response = await fetch("/api/notifications");
       const result = await response.json();
       if (!result.success) {
-        throw new Error(result.message);
+        throw new Error("Failed to fetch notifications");
       }
       return result.data as Notification[];
     },

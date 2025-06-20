@@ -159,13 +159,13 @@ export function InterestsFormDialog({
         setInterestsList(finalInterestsList);
         onSuccess();
       } else {
-        throw new Error(responseData.message || "Failed to update interests");
+        throw new Error("Failed to update interests");
       }
     } catch (error) {
       toast({
         title: "Error",
         description:
-          error instanceof Error ? error.message : "Failed to update interests",
+          "Failed to update interests",
         variant: "destructive",
       });
     } finally {

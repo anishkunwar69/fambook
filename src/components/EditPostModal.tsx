@@ -146,7 +146,7 @@ export function EditPostModal({
         
         const result = await response.json();
         if (!result.success) {
-          throw new Error(result.message || "Failed to update post.");
+          throw new Error("Failed to update post.");
         }
         return result.data;
       } catch (error) {

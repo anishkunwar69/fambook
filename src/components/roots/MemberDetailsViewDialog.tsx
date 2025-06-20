@@ -69,10 +69,6 @@ export function MemberDetailsViewDialog({
     );
   })();
 
-  console.log("[DEBUG] Dialog member data:", member);
-  console.log("[DEBUG] Dialog linkedMemberId:", member.linkedMemberId);
-  console.log("[DEBUG] Dialog familyId:", familyId);
-
   const getAge = (birth: string, death?: string | null) => {
     const birthDate = new Date(birth);
     const endDate = death ? new Date(death) : new Date();
@@ -95,10 +91,6 @@ export function MemberDetailsViewDialog({
 
     try {
       setIsNavigating(true);
-      console.log(
-        "[DEBUG] Fetching user ID for member:",
-        member.linkedMemberId
-      );
 
       const response = await fetch(
         `/api/families/${familyId}/members/${member.linkedMemberId}/user`

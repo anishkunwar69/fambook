@@ -228,16 +228,13 @@ export function WorkHistoryFormDialog({
         onSuccess();
         resetForm();
       } else {
-        throw new Error(responseData.message || "Operation failed");
+        throw new Error("Operation failed");
       }
     } catch (error) {
       console.error("[WorkHistoryDialog] Error in handleSubmit:", error);
       toast({
         title: "Error",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Failed to save work history entry",
+        description: "Failed to save work history entry",
         variant: "destructive",
       });
     } finally {

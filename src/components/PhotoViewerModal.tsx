@@ -310,7 +310,7 @@ export function PhotoViewerModal({
       );
       const result = await response.json();
       if (!result.success) {
-        throw new Error(result.message || "Failed to fetch comments");
+        throw new Error("Failed to fetch comments");
       }
       return result.data;
     },
@@ -345,7 +345,7 @@ export function PhotoViewerModal({
         body: JSON.stringify(newComment),
       });
       const result = await response.json();
-      if (!result.success) throw new Error(result.message);
+      if (!result.success) throw new Error("Failed to post comment");
       return result.data as Comment; // Assuming the API returns the created comment
     },
     onSuccess: (newCommentData) => {
@@ -361,7 +361,7 @@ export function PhotoViewerModal({
     onError: (error: Error) => {
       toast({
         title: "Error posting comment",
-        description: error.message,
+        description: "Failed to post comment",
         variant: "destructive",
       });
     },
@@ -378,7 +378,7 @@ export function PhotoViewerModal({
         const errorData = await response
           .json()
           .catch(() => ({ message: "Failed to delete comment" }));
-        throw new Error(errorData.message);
+        throw new Error("Failed to delete comment");
       }
       // For 204 No Content, no JSON to parse
       if (response.status === 204) return null;
@@ -392,7 +392,7 @@ export function PhotoViewerModal({
     onError: (error: Error) => {
       toast({
         title: "Error deleting comment",
-        description: error.message,
+        description: "Failed to delete comment",
         variant: "destructive",
       });
     },

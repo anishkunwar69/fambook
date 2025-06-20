@@ -203,7 +203,7 @@ export function AdvancedCreatePostModal({
 
       const result = await response.json();
       if (!result.success)
-        throw new Error(result.message || "Failed to create post.");
+        throw new Error("Failed to create post.");
       return result.data;
     },
     onSuccess: () => {
@@ -274,9 +274,7 @@ export function AdvancedCreatePostModal({
         media: uploadedMedia as { url: string; type: "PHOTO" | "VIDEO" }[],
       });
     } catch (error) {
-      toast.error(
-        `Upload failed: ${error instanceof Error ? error.message : "Unknown error"}`
-      );
+      toast.error("Upload failed: Unknown error");
       setIsSharing(false);
     }
   };

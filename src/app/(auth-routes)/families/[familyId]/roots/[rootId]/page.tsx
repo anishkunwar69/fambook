@@ -125,7 +125,7 @@ export default function RootEditorPage() {
       const result = await response.json();
       console.log("result", result);
       if (!result.success) {
-        throw new Error(result.message);
+        throw new Error("Something went wrong!");
       }
       return result.data;
     },
@@ -292,7 +292,7 @@ export default function RootEditorPage() {
       );
       const result = await response.json();
       console.log("result", result);
-      if (!result.success) throw new Error(result.message);
+      if (!result.success) throw new Error("Something went wrong!");
       return result.data;
     },
     onSuccess: () => {
@@ -302,10 +302,7 @@ export default function RootEditorPage() {
     },
     onError: (error) => {
       console.log(error.message);
-      toast.error(
-        error instanceof Error ? error.message : "Failed to save changes",
-        { id: "saving-changes" }
-      );
+      toast.error("Something went wrong!");
     },
   });
 
@@ -713,7 +710,7 @@ export default function RootEditorPage() {
 
       // If validation fails, show error and return early
       if (validationError) {
-        toast.error(validationError);
+        toast.error("Validation failed!");
         return;
       }
 

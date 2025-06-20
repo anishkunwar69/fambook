@@ -19,7 +19,6 @@ function Navbar() {
   const { signOut } = useClerk();
   const { user, isSignedIn } = useUser();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  console.log("logged in user", user);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);

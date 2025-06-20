@@ -206,7 +206,10 @@ function CreatePostModal({
       queryClient.invalidateQueries({ queryKey: ["feed"] });
       toast.success("Post created successfully!");
       onClose();
-    }
+    },
+    onError: (error: Error) => {
+      toast.error("Failed to create post");
+    },
   });
 
   // Handle post submission
@@ -572,7 +575,7 @@ export default function FeedPage() {
       const response = await fetch("/api/families");
       const result = await response.json();
       if (!result.success) {
-        throw new Error(result.message);
+        throw new Error("Something went wrong!");
       }
       return result.data;
     },
@@ -611,7 +614,7 @@ export default function FeedPage() {
       const response = await fetch(`/api/feed?${searchParams}`);
       const result = await response.json();
       if (!result.success) {
-        throw new Error(result.message);
+        throw new Error("Something went wrong!");
       }
       return result.data;
     },
@@ -640,7 +643,7 @@ export default function FeedPage() {
         });
         const result = await response.json();
         if (!result.success) {
-          throw new Error(result.message);
+          throw new Error("Something went wrong!");
         }
         return result.data;
       } finally {
@@ -844,7 +847,7 @@ export default function FeedPage() {
       handleCloseDeleteCommentModal();
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to delete comment");
+      toast.error("Failed to delete comment");
       handleCloseDeleteCommentModal();
     },
   });
@@ -876,7 +879,7 @@ export default function FeedPage() {
       setSelectedPostIdForDeletion(null);
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to delete post. Please try again.");
+      toast.error("Failed to delete post. Please try again.");
       setIsDeletePostModalOpen(false); // Optionally close modal on error or allow retry
       setSelectedPostIdForDeletion(null);
     },

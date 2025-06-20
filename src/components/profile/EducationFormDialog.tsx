@@ -180,12 +180,12 @@ export function EducationFormDialog({
         onSuccess();
         resetForm();
       } else {
-        throw new Error(responseData.message || "Operation failed");
+        throw new Error("Operation failed");
       }
     } catch (error) {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to save education entry",
+        description: "Failed to save education entry",
         variant: "destructive",
       });
     } finally {

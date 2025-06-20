@@ -199,7 +199,7 @@ export default function CommentModal({
         body: JSON.stringify(newComment),
       });
       const result = await response.json();
-      if (!result.success) throw new Error(result.message);
+      if (!result.success) throw new Error("Failed to post comment");
       return result.data;
     },
     onSuccess: () => {
@@ -208,7 +208,7 @@ export default function CommentModal({
       queryClient.invalidateQueries({ queryKey: ["feed"] });
     },
     onError: (error: Error) => {
-      toast({ title: "Error posting comment", description: error.message, variant: "destructive" });
+      toast({ title: "Error posting comment", description: "Failed to post comment", variant: "destructive" });
     },
   });
 
@@ -220,7 +220,7 @@ export default function CommentModal({
       });
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ message: "Failed to delete comment" }));
-        throw new Error(errorData.message);
+        throw new Error("Failed to delete comment");
       }
       if (response.status === 204) return null;
       return response.json();
@@ -231,7 +231,7 @@ export default function CommentModal({
       toast({ title: "Comment deleted", variant: "default" });
     },
     onError: (error: Error) => {
-      toast({ title: "Error deleting comment", description: error.message, variant: "destructive" });
+      toast({ title: "Error deleting comment", description: "Failed to delete comment", variant: "destructive" });
     },
     onSettled: () => {
       setDeletingCommentId(null);

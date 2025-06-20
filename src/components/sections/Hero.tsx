@@ -2,15 +2,9 @@
 import React from "react";
 import Container from "../Container";
 import { Button } from "../ui/button";
-import Link from "next/link";
 import {
   Heart,
-  Users,
-  Calendar,
   Image as PhotoIcon,
-  Shield,
-  Home,
-  MessageCircle,
   Palmtree,
   Bell,
 } from "lucide-react";

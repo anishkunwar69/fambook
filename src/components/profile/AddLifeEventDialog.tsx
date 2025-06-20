@@ -151,14 +151,12 @@ export function AddLifeEventDialog({
         // Call the success callback
         onSuccess();
       } else {
-        throw new Error(responseData.message || "Operation failed");
+        throw new Error("Operation failed");
       }
     } catch (error) {
       console.error("Error saving life event:", error);
       toast.error(
-        error instanceof Error
-          ? error.message
-          : "An error occurred while saving your life event"
+        "An error occurred while saving your life event"
       );
     } finally {
       setIsSubmitting(false);

@@ -277,17 +277,17 @@ export default function ProfileInfoEditPage() {
         const data = await response.json();
 
         if (!response.ok || !data.success) {
-          throw new Error(data.message || "Failed to update profile");
+          throw new Error("Failed to update profile");
         }
 
-        toast.success(data.message || "Profile updated successfully", {
+        toast.success("Profile updated successfully", {
           id: toastId,
         });
 
         return data;
       } catch (error) {
         toast.error(
-          error instanceof Error ? error.message : "Failed to update profile",
+          "Failed to update profile",
           {
             id: toastId,
           }

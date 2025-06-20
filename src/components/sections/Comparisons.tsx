@@ -46,9 +46,6 @@ export default function Comparisons() {
     },
   ];
 
-  // Add console log for debugging
-  console.log("Comparisons data:", comparisons);
-
   return (
     <section
       ref={ref}

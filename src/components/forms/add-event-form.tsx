@@ -120,20 +120,20 @@ export function AddEventForm({ onSuccess, defaultDate }: AddEventFormProps) {
 
       const result = await response.json();
       if (!response.ok) {
-        throw new Error(result.message || "Failed to create event");
+        throw new Error("Failed to create event");
       }
 
       return result;
     },
     onSuccess: (result) => {
-      toast.success(result.message || "Event created successfully");
+      toast.success("Event created successfully");
       form.reset();
       queryClient.invalidateQueries({ queryKey: ["special-days"] });
       onSuccess?.();
     },
     onError: (error: Error) => {
       console.error("Error creating event:", error);
-      toast.error(error.message || "Failed to create event");
+      toast.error("Failed to create event");
     },
   });
 

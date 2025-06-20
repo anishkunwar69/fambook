@@ -163,17 +163,17 @@ export function LifeTimeline({ userId, isCurrentUser }: LifeTimelineProps) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to delete event");
+        throw new Error("Failed to delete event");
       }
 
       return response.json();
     },
     onSuccess: (data) => {
-      toast.success(data.message || "Event deleted successfully");
+      toast.success("Event deleted successfully");
       queryClient.invalidateQueries({ queryKey: ["lifeEvents", userId] });
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to delete event");
+      toast.error("Failed to delete event");
     },
   });
 

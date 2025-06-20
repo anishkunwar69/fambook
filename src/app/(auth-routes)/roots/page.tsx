@@ -183,7 +183,7 @@ export default function AllFamilyRootsPage() {
       const response = await fetch("/api/roots");
       const result = await response.json();
       if (!result.success) {
-        throw new Error(result.message || "Failed to fetch roots");
+        throw new Error("Failed to fetch roots");
       }
       return result; // The API now returns { success, data, currentInternalUserId }
     },
@@ -211,7 +211,7 @@ export default function AllFamilyRootsPage() {
       setRootToDelete(null);
     },
     onError: (err: Error) => {
-      toast.error(err.message || "Could not delete family tree.");
+      toast.error("Could not delete family tree.");
     },
   });
 
@@ -223,7 +223,7 @@ export default function AllFamilyRootsPage() {
         const response = await fetch("/api/families");
         const result = await response.json();
         if (!result.success) {
-          throw new Error(result.message || "Failed to fetch families");
+          throw new Error("Failed to fetch families");
         }
         return result.data;
       },

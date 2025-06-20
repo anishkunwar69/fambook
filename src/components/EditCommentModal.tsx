@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
   useMutation,
-  useQueryClient,
+  useQueryClient, 
 } from "@tanstack/react-query";
 import {
   Loader2,
@@ -79,7 +79,7 @@ export function EditCommentModal({
       
       const result = await response.json();
       if (!result.success) {
-        throw new Error(result.message || "Failed to update comment");
+        throw new Error("Failed to update comment");
       }
       return result.data;
     },
@@ -92,7 +92,7 @@ export function EditCommentModal({
       onClose();
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to update comment");
+      toast.error("Failed to update comment");
     },
   });
 

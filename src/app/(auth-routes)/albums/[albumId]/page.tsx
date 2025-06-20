@@ -427,7 +427,7 @@ export default function AlbumPage() {
       const response = await fetch(`/api/albums/${params.albumId}`);
       const result = await response.json();
       if (!result.success) {
-        throw new Error(result.message);
+        throw new Error("Something went wrong!");
       }
       return result.data;
     },
@@ -495,7 +495,7 @@ export default function AlbumPage() {
       toast.success("Media uploaded successfully!");
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      toast.error("Failed to upload media");
     },
   });
 
@@ -511,7 +511,7 @@ export default function AlbumPage() {
       );
       const result = await response.json();
       if (!result.success) {
-        throw new Error(result.message);
+        throw new Error("Something went wrong!");
       }
       return result.data;
     },
@@ -521,7 +521,7 @@ export default function AlbumPage() {
       setDeletingMediaId(null); // Clear deleting ID
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      toast.error("Failed to delete media");
       setDeletingMediaId(null); // Clear deleting ID
     },
   });

@@ -3,16 +3,9 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import NotificationBell from "@/components/NotificationBell";
 import {
   Calendar,
-  Heart,
-  Image as ImageIcon,
-  LayoutDashboard,
-  MessageSquare,
-  TreePine,
   User,
-  Users,
 } from "lucide-react";
 
 type NavigationItem = {

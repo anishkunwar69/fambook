@@ -209,7 +209,7 @@ export default function EventsPage() {
       setEventToDeleteName("");
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to delete event");
+      toast.error("Failed to delete event");
     },
   });
 
@@ -239,7 +239,7 @@ export default function EventsPage() {
       );
       const result = await response.json();
       if (!result.success) {
-        throw new Error(result.message);
+        throw new Error("Something went wrong!");
       }
       return result.data;
     },
@@ -252,7 +252,7 @@ export default function EventsPage() {
       const response = await fetch("/api/families");
       const result = await response.json();
       if (!result.success) {
-        throw new Error(result.message);
+        throw new Error("Something went wrong!");
       }
       return result.data;
     },

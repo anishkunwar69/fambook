@@ -73,8 +73,7 @@ export default function AlbumPage() {
     },
     onError: (error: Error) => {
       toast({
-        title: "Error",
-        description: error.message,
+        description: "Something went wrong!",
         variant: "destructive",
       });
     },
@@ -100,8 +99,7 @@ export default function AlbumPage() {
     },
     onError: (error: Error) => {
       toast({
-        title: "Error",
-        description: error.message,
+        description: "Something went wrong!",
         variant: "destructive",
       });
     },

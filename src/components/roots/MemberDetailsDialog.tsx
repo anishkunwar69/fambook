@@ -243,17 +243,6 @@ export function MemberDetailsDialog({
         const shouldWaitForMembers =
           initialData.linkedMemberId && isLoadingMembers;
 
-        console.log(
-          "[DEBUG] Edit mode - linkedMemberId:",
-          initialData.linkedMemberId
-        );
-        console.log("[DEBUG] Edit mode - isLoadingMembers:", isLoadingMembers);
-        console.log(
-          "[DEBUG] Edit mode - shouldWaitForMembers:",
-          shouldWaitForMembers
-        );
-        console.log("[DEBUG] Edit mode - unlinkedMembers:", unlinkedMembers);
-
         if (!shouldWaitForMembers) {
           // Transform dates from string to Date objects for editing
           const transformedData = {
