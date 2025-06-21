@@ -183,7 +183,7 @@ export default function ProfileInfoEditPage() {
 
   // Fetch the current user's profile data
   const { data: profileData, isLoading: isLoadingProfile } = useQuery({
-    queryKey: ["userProfile", userId],
+    queryKey: ["profile", userId],
     queryFn: async () => {
       const response = await fetch(`/api/users/${userId}/profile`);
       if (!response.ok) {
@@ -286,24 +286,21 @@ export default function ProfileInfoEditPage() {
 
         return data;
       } catch (error) {
-        toast.error(
-          "Failed to update profile",
-          {
-            id: toastId,
-          }
-        );
+        toast.error("Failed to update profile", {
+          id: toastId,
+        });
         throw error;
       }
     },
     onMutate: async (newData) => {
       // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ["userProfile", userId] });
+      await queryClient.cancelQueries({ queryKey: ["profile", userId] });
 
       // Save previous data
-      const previousData = queryClient.getQueryData(["userProfile", userId]);
+      const previousData = queryClient.getQueryData(["profile", userId]);
 
       // Optimistically update the cache
-      queryClient.setQueryData(["userProfile", userId], (old: any) => ({
+      queryClient.setQueryData(["profile", userId], (old: any) => ({
         ...old,
         data: {
           ...old.data,
@@ -328,12 +325,15 @@ export default function ProfileInfoEditPage() {
     onError: (error: Error, variables, context) => {
       // Revert the optimistic update on error
       if (context?.previousData) {
-        queryClient.setQueryData(["userProfile", userId], context.previousData);
+        queryClient.setQueryData(["profile", userId], context.previousData);
       }
     },
     onSuccess: (data) => {
       // Invalidate and refetch relevant queries
-      queryClient.invalidateQueries({ queryKey: ["userProfile", userId] });
+      queryClient.invalidateQueries({ queryKey: ["profile", userId] });
+      
+      // Force refetch to ensure profile data is updated before navigation
+      queryClient.refetchQueries({ queryKey: ["profile", userId] });
 
       // Navigate back to profile page after a short delay to allow the toast to be seen
       setTimeout(() => {
