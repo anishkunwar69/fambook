@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Cake, Edit2, Heart, Link } from "lucide-react";
+import { Cake, Edit2, Heart, Link, Trash2 } from "lucide-react";
 import { memo, useState } from "react";
 import { Handle, Position } from "reactflow";
 import { MemberDetailsViewDialog } from "./MemberDetailsViewDialog";
@@ -22,7 +22,9 @@ type FamilyMemberNodeProps = {
     isCurrentUserNode: boolean;
     familyId: string;
     isAdmin?: boolean;
+    canDelete?: boolean;
     onEdit?: () => void;
+    onDelete?: () => void;
   };
   selected: boolean;
 };
@@ -57,8 +59,8 @@ export const FamilyMemberNode = memo(({ data, selected }: FamilyMemberNodeProps)
   })();
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Only open details if the click wasn't on the edit button
-    if (!(e.target as HTMLElement).closest('.edit-button')) {
+    // Only open details if the click wasn't on the edit or delete button
+    if (!(e.target as HTMLElement).closest('.action-button')) {
       setIsDetailsOpen(true);
     }
   };
@@ -67,6 +69,13 @@ export const FamilyMemberNode = memo(({ data, selected }: FamilyMemberNodeProps)
     e.stopPropagation();
     if (data.onEdit) {
       data.onEdit();
+    }
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (data.onDelete) {
+      data.onDelete();
     }
   };
 
@@ -114,15 +123,29 @@ export const FamilyMemberNode = memo(({ data, selected }: FamilyMemberNodeProps)
         />
         
         {data.isAdmin && (
-          <Button
-            size="icon"
-            variant="outline"
-            className="edit-button absolute top-2 right-2 h-8 w-8 bg-white opacity-0 group-hover:opacity-100 transition-opacity"
-            onClick={handleEditClick}
-            title="Edit member"
-          >
-            <Edit2 className="h-4 w-4 text-gray-500" />
-          </Button>
+          <div className="absolute top-2 right-2 flex space-x-1">
+            <Button
+              size="icon"
+              variant="outline"
+              className="action-button edit-button h-8 w-8 bg-white opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={handleEditClick}
+              title="Edit member"
+            >
+              <Edit2 className="h-4 w-4 text-gray-500" />
+            </Button>
+            
+            {data.canDelete && (
+              <Button
+                size="icon"
+                variant="outline"
+                className="action-button delete-button h-8 w-8 bg-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50 hover:border-red-200 hover:text-red-500"
+                onClick={handleDeleteClick}
+                title="Delete member"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         )}
         
         <div className="flex items-center gap-3">

@@ -273,21 +273,21 @@ function DeleteFamilyModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md bg-white border-red-100/50">
         <DialogHeader>
-          <DialogTitle className="text-red-600 flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5" />
+          <DialogTitle className="text-red-600 flex items-center gap-2 sm:text-lg text-base">
+            <AlertTriangle className="sm:w-5 sm:h-5 w-4 h-4" />
             Delete Family Confirmation
           </DialogTitle>
-          <DialogDescription className="pt-2">
+          <DialogDescription className="pt-2 max-sm:text-xs">
             Are you absolutely sure you want to delete the family "
             <strong className="text-gray-800">{familyToDelete.name}</strong>"?
             This action is permanent and cannot be undone. All associated data
             (members, posts, albums, events) will be lost.
           </DialogDescription>
         </DialogHeader>
-        <div className="py-4 space-y-2">
+        <div className="py-4 sm:space-y-2 space-y-0">
           <Label
             htmlFor="confirmationName"
-            className="text-sm font-medium text-gray-700"
+            className="sm:text-sm text-xs font-medium text-gray-700"
           >
             To confirm deletion, please type the family name:{" "}
             <strong className="text-gray-800">{familyToDelete.name}</strong>
@@ -371,18 +371,21 @@ export default function FamiliesPage() {
         throw new Error(result.message);
       }
 
-      const currentInternalUserId = result.currentInternalUserId;
-
-      if (currentInternalUserId && result.data) {
-        return result.data.map((f: any) => ({
-          ...f,
-          isAdmin: f.createdById === currentInternalUserId,
-        }));
-      }
-      return result.data?.map((f: any) => ({ ...f, isAdmin: false })) || [];
+      // Use the isAdmin flag directly from the API response
+      return result.data || [];
     },
     enabled: isSignedIn,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: true, // Refetch when window regains focus
+    refetchOnMount: true, // Always refetch when component mounts
   });
+
+  // Force refetch when component mounts to ensure fresh data
+  useEffect(() => {
+    if (isSignedIn) {
+      refetch();
+    }
+  }, [isSignedIn, refetch]);
 
   // Edit Family Mutation
   const editFamilyMutation = useMutation({
@@ -453,6 +456,13 @@ export default function FamiliesPage() {
   const renderFamilyCard = (family: FamilyWithStatus, index: number) => {
     const isPending = family.userMembershipStatus === "PENDING";
     const hasJoinRequests = family.isAdmin && family.pendingRequestsCount > 0;
+    
+    // Debug log to track isAdmin status
+    console.log(`Family ${family.name} (${family.id}):`, { 
+      isAdmin: family.isAdmin, 
+      createdById: family.createdById,
+      pendingRequestsCount: family.pendingRequestsCount
+    });
 
     return (
       <motion.div
@@ -495,7 +505,7 @@ export default function FamiliesPage() {
         )}
 
         {family.isAdmin && !isPending && (
-          <div className="absolute top-3 sm:top-4 right-3 sm:right-4 flex items-center space-x-1">
+          <div className="absolute top-3 sm:top-4 right-3 sm:right-4 flex items-center space-x-3">
             <Button
               variant="ghost"
               size="icon"

@@ -33,6 +33,7 @@ import { RelationshipDialog } from "@/components/roots/RelationshipDialog";
 import { RelationshipEdge } from "@/components/roots/RelationshipEdge";
 import { useQueryClient } from "@tanstack/react-query";
 import dagre from "dagre";
+import { DeleteMemberNodeModal } from "@/components/roots/DeleteMemberNodeModal";
 
 const nodeTypes = {
   familyMember: FamilyMemberNode,
@@ -111,6 +112,11 @@ export default function RootEditorPage() {
   const [hasPositionChanges, setHasPositionChanges] = useState(false);
   const queryClient = useQueryClient();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [nodeToDelete, setNodeToDelete] = useState<{
+    id: string;
+    firstName: string;
+    lastName: string;
+  } | null>(null);
 
   // Add ref for ReactFlow wrapper
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
@@ -131,6 +137,38 @@ export default function RootEditorPage() {
     },
   });
 
+  // Add mutation for deleting nodes
+  const deleteMemberNodeMutation = useMutation({
+    mutationFn: async (nodeId: string) => {
+      const response = await fetch(
+        `/api/families/${familyId}/roots/${rootId}/nodes/${nodeId}`,
+        {
+          method: "DELETE",
+        }
+      );
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error("Failed to delete member node");
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast.success("Family member deleted successfully!");
+      queryClient.invalidateQueries({ queryKey: ["root", rootId] });
+      setNodeToDelete(null);
+      
+      // Remove the node from the nodes state
+      if (nodeToDelete) {
+        setNodes((nds) => nds.filter((node) => node.id !== nodeToDelete.id));
+      }
+    },
+    onError: (err: Error) => {
+      toast.error("Could not delete family member");
+    },
+  });
+
   // Update isAdmin state when root data is fetched
   useEffect(() => {
     if (root?.isAdmin !== undefined) {
@@ -144,37 +182,36 @@ export default function RootEditorPage() {
       console.log("Root data:", root);
 
       // Transform nodes data
-      const nodesData = root.nodes.map((node) => {
+      const nodesData: Node[] = root.nodes.map((node) => {
+        // Check if the node has any relationships
+        const hasRelationships = root.relations.some(
+          (relation) => 
+            relation.fromNodeId === node.id || 
+            relation.toNodeId === node.id
+        );
+        
+        const canDelete = !hasRelationships;
+        
         return {
           id: node.id,
           type: "familyMember",
-          // Use saved positions if they exist, otherwise use default positions
           position: {
-            x:
-              typeof node.positionX === "number"
-                ? node.positionX
-                : Math.random() * 500,
-            y:
-              typeof node.positionY === "number"
-                ? node.positionY
-                : Math.random() * 500,
+            x: typeof node.positionX === "number" ? node.positionX : 0,
+            y: typeof node.positionY === "number" ? node.positionY : 0,
           },
           data: {
             ...node,
-            fullName: `${node.firstName} ${node.lastName}`,
-            familyId: familyId, // Add familyId to node data
-            isAdmin: root.isAdmin, // Pass isAdmin flag to node data
+            familyId,
+            isAdmin: root.isAdmin,
+            canDelete,
             onEdit: () => {
-              // Add edit handler function that will be called by the edit button
               setDialogState({
                 type: "member",
                 mode: "edit",
-                data: {
-                  ...node,
-                  fullName: `${node.firstName} ${node.lastName}`,
-                },
+                data: { nodeId: node.id },
               });
             },
+            onDelete: () => handleDeleteNode(node.id),
           },
         };
       });
@@ -832,6 +869,38 @@ export default function RootEditorPage() {
     [onAddNode, reactFlowInstance]
   );
 
+  // Add this function to check if a node can be deleted and open the delete modal
+  const handleDeleteNode = async (nodeId: string) => {
+    try {
+      // Find the node in the nodes state
+      const nodeToDelete = nodes.find((n) => n.id === nodeId);
+      
+      if (!nodeToDelete) {
+        toast.error("Node not found");
+        return;
+      }
+      
+      // Check if the node has any relationships
+      const hasRelationships = edges.some(
+        (edge) => edge.source === nodeId || edge.target === nodeId
+      );
+      
+      if (hasRelationships) {
+        toast.error("Cannot delete a node with existing relationships. Remove all relationships first.");
+        return;
+      }
+      
+      // Set the node to delete
+      setNodeToDelete({
+        id: nodeId,
+        firstName: nodeToDelete.data.firstName,
+        lastName: nodeToDelete.data.lastName,
+      });
+    } catch (error) {
+      toast.error("Failed to check if node can be deleted");
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -919,6 +988,14 @@ export default function RootEditorPage() {
           isAdmin={isAdmin}
         />
       )}
+
+      <DeleteMemberNodeModal
+        isOpen={!!nodeToDelete}
+        onClose={() => setNodeToDelete(null)}
+        memberToDelete={nodeToDelete}
+        onConfirmDelete={(nodeId) => deleteMemberNodeMutation.mutate(nodeId)}
+        isDeleting={deleteMemberNodeMutation.isPending}
+      />
     </div>
   );
 }

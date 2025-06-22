@@ -82,13 +82,18 @@ export async function GET(request: NextRequest) {
           },
           select: {
             status: true,
+            role: true,
           },
         });
+
+        // Check if user is admin (either the creator or has ADMIN role)
+        const isAdmin = family.createdById === user.id || userMembership?.role === "ADMIN";
 
         return {
           ...family,
           userMembershipStatus: userMembership?.status || null,
           pendingRequestsCount: family._count.members,
+          isAdmin, // Include isAdmin flag directly in the API response
         };
       })
     );
