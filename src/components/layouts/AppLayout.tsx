@@ -14,11 +14,10 @@ import {
   LayoutDashboard,
   Loader2,
   Menu,
-  MessageSquare,
   TreePine,
   User,
   Users,
-  X,
+  X
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -421,7 +420,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         >
           {pathname.includes("/roots") && pathname.includes("/families") ? (
             <>
-              <div className="lg:hidden absolute top-4 left-4 z-30">
+              <div className="lg:hidden absolute sm:top-4 top-[25px] left-4 z-30">
                 <Button
                   variant="ghost"
                   size="icon"

@@ -69,6 +69,7 @@ export default function AlbumPage() {
       toast({
         title: "Success",
         description: "Media uploaded successfully",
+        
       });
     },
     onError: (error: Error) => {

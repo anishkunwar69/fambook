@@ -1481,7 +1481,7 @@ function PostCard({
           itemType="post"
           variant="default"
           size="sm"
-          className="bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200/80 shadow-sm hover:shadow-md transition-all rounded-lg h-8 px-2 sm:h-auto sm:px-3 text-xs sm:text-sm"
+          className="bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200/80 shadow-sm hover:shadow-md transition-all rounded-lg h-8 px-2 sm:h-auto sm:px-3 py-2 text-xs sm:text-sm"
           initialIsInMemory={post.isInMemory}
         />
       </div>

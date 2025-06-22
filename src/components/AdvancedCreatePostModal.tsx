@@ -9,23 +9,23 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft,
+  Check,
   ChevronLeft,
   ChevronRight,
   ImagePlus,
   Loader2,
   UploadCloud,
+  Users,
   X,
 } from "lucide-react";
 import React, { useCallback, useRef, useState } from "react";
@@ -85,8 +85,8 @@ export function AdvancedCreatePostModal({
   const [direction, setDirection] = useState(0);
 
   const [caption, setCaption] = useState("");
-  const [selectedFamilyId, setSelectedFamilyId] = useState<string | undefined>(
-    undefined
+  const [selectedFamilyIds, setSelectedFamilyIds] = useState<Set<string>>(
+    new Set()
   );
   const [isSharing, setIsSharing] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
@@ -98,7 +98,7 @@ export function AdvancedCreatePostModal({
     setSelectedMedia([]);
     setPostDetailsMediaIndex(0);
     setCaption("");
-    setSelectedFamilyId(undefined);
+    setSelectedFamilyIds(new Set());
     setIsSharing(false);
     setFileError(null);
     onClose();
@@ -188,28 +188,24 @@ export function AdvancedCreatePostModal({
 
   const createPostMutation = useMutation({
     mutationFn: async (postData: {
+      familyId: string;
       text: string;
       media: { url: string; type: "PHOTO" | "VIDEO" }[];
     }) => {
-      if (!selectedFamilyId) throw new Error("Family not selected.");
-
-      const response = await fetch(`/api/families/${selectedFamilyId}/posts`, {
+      const response = await fetch(`/api/families/${postData.familyId}/posts`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(postData),
+        body: JSON.stringify({
+          text: postData.text,
+          media: postData.media,
+        }),
       });
 
       const result = await response.json();
-      if (!result.success)
-        throw new Error("Failed to create post.");
+      if (!result.success) throw new Error("Failed to create post.");
       return result.data;
-    },
-    onSuccess: () => {
-      toast.success("Post shared successfully!");
-      queryClient.invalidateQueries({ queryKey: ["feed"] });
-      resetModal();
     },
     onSettled: () => {
       setIsSharing(false);
@@ -217,8 +213,8 @@ export function AdvancedCreatePostModal({
   });
 
   const handleShare = async () => {
-    if (!selectedFamilyId) {
-      toast.error("Please select a family to share with.");
+    if (selectedFamilyIds.size === 0) {
+      toast.error("Please select at least one family to share with.");
       return;
     }
     if (!caption && selectedMedia.length === 0) {
@@ -268,11 +264,24 @@ export function AdvancedCreatePostModal({
 
       const uploadedMedia = await Promise.all(uploadPromises);
 
-      // 3. Create the post in our database
-      await createPostMutation.mutateAsync({
-        text: caption,
-        media: uploadedMedia as { url: string; type: "PHOTO" | "VIDEO" }[],
-      });
+      // 3. Create the post in our database for each selected family
+      const postPromises = Array.from(selectedFamilyIds).map(
+        async (familyId) => {
+          return createPostMutation.mutateAsync({
+            familyId,
+            text: caption,
+            media: uploadedMedia as { url: string; type: "PHOTO" | "VIDEO" }[],
+          });
+        }
+      );
+
+      await Promise.all(postPromises);
+
+      toast.success(
+        `Post shared with ${selectedFamilyIds.size} ${selectedFamilyIds.size === 1 ? "family" : "families"}!`
+      );
+      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      resetModal();
     } catch (error) {
       toast.error("Upload failed: Unknown error");
       setIsSharing(false);
@@ -484,7 +493,6 @@ export function AdvancedCreatePostModal({
                   maxLength={2200}
                   disabled={isSharing}
                 />
-                
 
                 {fileError && (
                   <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md my-2">
@@ -493,26 +501,102 @@ export function AdvancedCreatePostModal({
                 )}
 
                 {families && families.length > 0 && (
-                  <Select
-                    value={selectedFamilyId}
-                    onValueChange={setSelectedFamilyId}
-                    disabled={isSharing}
-                  >
-                    <SelectTrigger className="w-full text-sm">
-                      <SelectValue placeholder="Select a family to share with" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {families.map((family) => (
-                        <SelectItem
-                          key={family.id}
-                          value={family.id}
-                          className="text-sm"
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Share with:
+                    </label>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-between h-10 text-sm"
+                          disabled={isSharing}
                         >
-                          {family.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
+                            <Users className="w-4 h-4 shrink-0" />
+                            <span className="truncate">
+                              {selectedFamilyIds.size === 0
+                                ? "Select families..."
+                                : selectedFamilyIds.size === families.length
+                                  ? "All Families"
+                                  : `${selectedFamilyIds.size} ${selectedFamilyIds.size === 1 ? "Family" : "Families"} Selected`}
+                            </span>
+                          </div>
+                          <ChevronRight className="w-4 h-4 shrink-0" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-[--trigger-width] max-w-[90vw]">
+                        <div className="p-2">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              if (selectedFamilyIds.size === families.length) {
+                                setSelectedFamilyIds(new Set());
+                              } else {
+                                setSelectedFamilyIds(
+                                  new Set(families.map((f) => f.id))
+                                );
+                              }
+                            }}
+                            className="w-full justify-start mb-2 h-8"
+                            disabled={isSharing}
+                          >
+                            <div className="flex items-center gap-2">
+                              {selectedFamilyIds.size === families.length ? (
+                                <X className="w-4 h-4" />
+                              ) : (
+                                <Users className="w-4 h-4" />
+                              )}
+                              <span className="text-sm">
+                                {selectedFamilyIds.size === families.length
+                                  ? "Clear All"
+                                  : "Select All"}
+                              </span>
+                            </div>
+                          </Button>
+                          <div className="h-px bg-gray-100 -mx-2 mb-2" />
+                          <div className="max-h-[150px] overflow-y-auto space-y-1">
+                            {families.map((family) => (
+                              <Button
+                                key={family.id}
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedFamilyIds((prev) => {
+                                    const newSet = new Set(prev);
+                                    if (newSet.has(family.id)) {
+                                      newSet.delete(family.id);
+                                    } else {
+                                      newSet.add(family.id);
+                                    }
+                                    return newSet;
+                                  });
+                                }}
+                                className="w-full justify-start h-8"
+                                disabled={isSharing}
+                              >
+                                <div className="flex items-center gap-2 min-w-0 flex-1">
+                                  {selectedFamilyIds.has(family.id) ? (
+                                    <div className="w-4 h-4 rounded-sm bg-rose-500 flex items-center justify-center shrink-0">
+                                      <Check className="w-3 h-3 text-white" />
+                                    </div>
+                                  ) : (
+                                    <div className="w-4 h-4 rounded-sm border border-gray-300 shrink-0" />
+                                  )}
+                                  <span className="truncate text-sm">
+                                    {family.name}
+                                  </span>
+                                </div>
+                              </Button>
+                            ))}
+                          </div>
+                        </div>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 )}
                 <Button
                   onClick={openFileDialog}
@@ -560,7 +644,9 @@ export function AdvancedCreatePostModal({
         {isSharing && (
           <div className="absolute inset-0 bg-white/70 flex items-center justify-center z-50 cursor-not-allowed">
             <Loader2 className="w-10 h-10 text-rose-500 animate-spin" />
-            <span className="ml-4 text-lg font-semibold text-rose-500">Uploading...</span>
+            <span className="ml-4 text-lg font-semibold text-rose-500">
+              Uploading...
+            </span>
           </div>
         )}
       </DialogContent>

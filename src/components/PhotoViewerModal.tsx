@@ -424,7 +424,7 @@ export function PhotoViewerModal({
   const currentMedia = post.media[currentIndex];
 
   const imageDisplayArea = (
-    <div className="flex items-center justify-center relative h-[45vh] w-full lg:h-full lg:flex-1 lg:w-auto bg-black pt-0 pb-0 px-0 safe-area-inset-top">
+    <div className="flex items-center justify-center relative h-full w-full 1220:h-full 1220:flex-1 1220:w-auto bg-black pt-0 pb-0 px-0 safe-area-inset-top">
       {currentMedia.type === "PHOTO" ? (
         <Image
           src={currentMedia.url}
@@ -472,7 +472,7 @@ export function PhotoViewerModal({
   );
 
   const sidebarContent = (
-    <div className="flex flex-col w-full lg:w-[400px] lg:flex-none flex-1 min-h-0 lg:h-full bg-white text-gray-800 lg:border-l border-gray-200">
+    <div className="flex flex-col w-full 1220:w-[400px] 1220:flex-none flex-1 min-h-0 1220:h-full bg-white text-gray-800 1220:border-l border-gray-200">
       {/* Header: User Info & Post Text */}
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center gap-3 mb-2">
@@ -667,11 +667,11 @@ export function PhotoViewerModal({
         
         {/* Close button as a separate element outside the main content */}
         <div className="fixed top-0 left-0 right-0 z-[9999] pointer-events-none w-full">
-          <div className="absolute sm:top-4 top-2 right-4 pointer-events-auto">
+          <div className="absolute 1220:top-1 -top-1 right-1 pointer-events-auto">
             <Button
               variant="ghost"
               size="icon"
-              className="lg:bg-black/70 text-white rounded-full h-10 w-10 shadow-lg"
+              className="1220:bg-black/70 text-white rounded-full h-10 w-10 shadow-lg"
               onClick={handleClose}
               aria-label="Close viewer"
             >
@@ -680,9 +680,9 @@ export function PhotoViewerModal({
           </div>
         </div>
         
-        <div className="flex-1 flex flex-col lg:flex-row min-h-0 relative h-full w-full">
+        <div className="flex-1 flex flex-col 1220:flex-row min-h-0 relative h-full w-full">
           {/* Image/Video view */}
-          <div className="flex-1 lg:w-[calc(100%-420px)] bg-black/95 dark:bg-black/90 flex items-center justify-center relative overflow-hidden">
+          <div className="h-[50vh] 1220:h-auto flex-1 1220:w-[calc(100%-420px)] bg-black/95 dark:bg-black/90 flex items-center justify-center relative overflow-hidden">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentIndex}

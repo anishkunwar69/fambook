@@ -15,6 +15,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
@@ -22,6 +27,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { z } from "zod";
+import { Check, ChevronRight, Users, X } from "lucide-react";
 
 const eventTypes = [
   "BIRTHDAY",
@@ -52,9 +58,6 @@ const formSchema = z.object({
   type: z.enum(eventTypes, {
     required_error: "Please select an event type",
   }),
-  familyId: z.string({
-    required_error: "Please select a family",
-  }),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -71,6 +74,8 @@ interface AddEventFormProps {
 
 export function AddEventForm({ onSuccess, defaultDate }: AddEventFormProps) {
   const [families, setFamilies] = useState<Family[]>([]);
+  const [selectedFamilyIds, setSelectedFamilyIds] = useState<Set<string>>(new Set());
+  const [formError, setFormError] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   // Fetch user's families
@@ -80,7 +85,10 @@ export function AddEventForm({ onSuccess, defaultDate }: AddEventFormProps) {
         const response = await fetch("/api/families");
         const result = await response.json();
         if (result.success) {
-          setFamilies(result.data);
+          const approvedFamilies = result.data.filter(
+            (family: any) => family.userMembershipStatus === "APPROVED"
+          );
+          setFamilies(approvedFamilies);
         }
       } catch (error) {
         console.error("Error fetching families:", error);
@@ -102,42 +110,66 @@ export function AddEventForm({ onSuccess, defaultDate }: AddEventFormProps) {
     },
   });
 
+  // Clear error when families are selected
+  useEffect(() => {
+    if (selectedFamilyIds.size > 0) {
+      setFormError(null);
+    }
+  }, [selectedFamilyIds]);
+
   const { mutate: createEvent, isPending } = useMutation({
     mutationFn: async (values: FormValues) => {
+      if (selectedFamilyIds.size === 0) {
+        throw new Error("Please select at least one family");
+      }
+
       // Convert date to ISO string for API
       const payload = {
         ...values,
         date: values.date.toISOString(),
       };
 
-      const response = await fetch("/api/special-days", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      const results = await Promise.all(
+        Array.from(selectedFamilyIds).map(async (familyId) => {
+          const response = await fetch("/api/special-days", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ ...payload, familyId }),
+          });
 
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error("Failed to create event");
-      }
+          const result = await response.json();
+          if (!response.ok) {
+            throw new Error(`Failed to create event for family: ${result.message || "Unknown error"}`);
+          }
 
-      return result;
+          return result;
+        })
+      );
+
+      return results;
     },
-    onSuccess: (result) => {
-      toast.success("Event created successfully");
+    onSuccess: (results) => {
+      toast.success(`Event created successfully in ${selectedFamilyIds.size} ${selectedFamilyIds.size === 1 ? "family" : "families"}`);
       form.reset();
+      setSelectedFamilyIds(new Set());
       queryClient.invalidateQueries({ queryKey: ["special-days"] });
       onSuccess?.();
     },
     onError: (error: Error) => {
       console.error("Error creating event:", error);
+      setFormError(error.message);
       toast.error("Failed to create event");
     },
   });
 
   function onSubmit(values: FormValues) {
+    if (selectedFamilyIds.size === 0) {
+      setFormError("Please select at least one family");
+      return;
+    }
+    setFormError(null);
     createEvent(values);
   }
 
@@ -148,7 +180,7 @@ export function AddEventForm({ onSuccess, defaultDate }: AddEventFormProps) {
           control={form.control}
           name="title"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="sm:space-y-2 space-y-0">
               <FormLabel>Title</FormLabel>
               <FormControl>
                 <Input placeholder="Enter event title" {...field} />
@@ -162,7 +194,7 @@ export function AddEventForm({ onSuccess, defaultDate }: AddEventFormProps) {
           control={form.control}
           name="date"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="sm:space-y-2 space-y-0">
               <FormLabel>Date</FormLabel>
               <FormControl>
                 <Input
@@ -183,7 +215,7 @@ export function AddEventForm({ onSuccess, defaultDate }: AddEventFormProps) {
           control={form.control}
           name="time"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="sm:space-y-2 space-y-0">
               <FormLabel>Time</FormLabel>
               <FormControl>
                 <Input
@@ -203,7 +235,7 @@ export function AddEventForm({ onSuccess, defaultDate }: AddEventFormProps) {
           control={form.control}
           name="venue"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="sm:space-y-2 space-y-0">
               <FormLabel>Venue</FormLabel>
               <FormControl>
                 <Input
@@ -222,7 +254,7 @@ export function AddEventForm({ onSuccess, defaultDate }: AddEventFormProps) {
           control={form.control}
           name="type"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="sm:space-y-2 space-y-0">
               <FormLabel>Event Type</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
@@ -243,30 +275,100 @@ export function AddEventForm({ onSuccess, defaultDate }: AddEventFormProps) {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="familyId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Family</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select family" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
+        {/* Multi-Family Selection */}
+        <FormItem className="sm:space-y-2 space-y-0">
+          <FormLabel>Families</FormLabel>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-between h-10"
+                disabled={isPending}
+              >
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <Users className="w-4 h-4 shrink-0" />
+                  <span className="truncate">
+                    {selectedFamilyIds.size === 0
+                      ? "Select families..."
+                      : selectedFamilyIds.size === families.length
+                        ? "All Families"
+                        : `${selectedFamilyIds.size} ${selectedFamilyIds.size === 1 ? "Family" : "Families"} Selected`}
+                  </span>
+                </div>
+                <ChevronRight className="w-4 h-4 shrink-0" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-[--trigger-width] max-w-[90vw]" side="top">
+              <div className="p-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    if (selectedFamilyIds.size === families.length) {
+                      setSelectedFamilyIds(new Set());
+                    } else {
+                      setSelectedFamilyIds(new Set(families.map((f) => f.id)));
+                    }
+                  }}
+                  className="w-full justify-start mb-2 h-8"
+                  disabled={isPending}
+                >
+                  <div className="flex items-center gap-2">
+                    {selectedFamilyIds.size === families.length ? (
+                      <X className="w-4 h-4" />
+                    ) : (
+                      <Users className="w-4 h-4" />
+                    )}
+                    <span className="text-sm">
+                      {selectedFamilyIds.size === families.length
+                        ? "Clear All"
+                        : "Select All"}
+                    </span>
+                  </div>
+                </Button>
+                <div className="h-px bg-gray-100 -mx-2 mb-2" />
+                <div className="max-h-[150px] overflow-y-auto space-y-1">
                   {families.map((family) => (
-                    <SelectItem key={family.id} value={family.id}>
-                      {family.name}
-                    </SelectItem>
+                    <Button
+                      key={family.id}
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedFamilyIds((prev) => {
+                          const newSet = new Set(prev);
+                          if (newSet.has(family.id)) {
+                            newSet.delete(family.id);
+                          } else {
+                            newSet.add(family.id);
+                          }
+                          return newSet;
+                        });
+                      }}
+                      className="w-full justify-start h-8"
+                      disabled={isPending}
+                    >
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        {selectedFamilyIds.has(family.id) ? (
+                          <div className="w-4 h-4 rounded-sm bg-rose-500 flex items-center justify-center shrink-0">
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                        ) : (
+                          <div className="w-4 h-4 rounded-sm border border-gray-300 shrink-0" />
+                        )}
+                        <span className="truncate text-sm">{family.name}</span>
+                      </div>
+                    </Button>
                   ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
+                </div>
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          {formError && (
+            <p className="text-sm text-red-500 mt-2">{formError}</p>
           )}
-        />
+        </FormItem>
 
         <Button
           type="submit"

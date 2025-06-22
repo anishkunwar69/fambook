@@ -878,10 +878,11 @@ export default function RootEditorPage() {
               size="sm"
               onClick={handleSave}
               disabled={isSaving}
+              className="bg-rose-500 hover:bg-rose-600 max-sm:mt-1 sm:text-sm text-xs"
             >
               {isSaving ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="sm:w-4 sm:h-4 w-3 h-3 mr-2 animate-spin" />
                   Saving...
                 </>
               ) : (

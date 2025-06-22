@@ -112,17 +112,17 @@ export function AddToMemoryButton({
       >
         {addToMemoriesMutation.isPending ? (
           <>
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2 animate-spin" />
             Adding...
           </>
         ) : isSuccess ? (
           <>
-            <Check className="h-4 w-4 mr-2" />
+            <Check className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
             Added to Memories
           </>
         ) : (
           <>
-            <BookmarkPlus className="h-4 w-4 mr-2" />
+            <BookmarkPlus className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
             Add to Memories
           </>
         )}
@@ -140,10 +140,10 @@ export function AddToMemoryButton({
             <div className="mx-auto mb-4 bg-green-100 rounded-full p-3 w-16 h-16 flex items-center justify-center">
               <Check className="h-8 w-8 text-green-600" />
             </div>
-            <p className="text-gray-700">
+            <p className="text-gray-700 text-xs sm:text-sm">
               This {itemType} has been added to your memories.
             </p>
-            <p className="text-gray-600 text-sm mt-2 font-medium">
+            <p className="text-gray-600 text-xs sm:text-sm mt-2 font-medium">
               You can view it anytime in your profile's{" "}
               <span className="text-rose-500 font-bold">Memories</span> section.
             </p>
