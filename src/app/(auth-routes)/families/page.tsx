@@ -456,12 +456,12 @@ export default function FamiliesPage() {
   const renderFamilyCard = (family: FamilyWithStatus, index: number) => {
     const isPending = family.userMembershipStatus === "PENDING";
     const hasJoinRequests = family.isAdmin && family.pendingRequestsCount > 0;
-    
+
     // Debug log to track isAdmin status
-    console.log(`Family ${family.name} (${family.id}):`, { 
-      isAdmin: family.isAdmin, 
+    console.log(`Family ${family.name} (${family.id}):`, {
+      isAdmin: family.isAdmin,
       createdById: family.createdById,
-      pendingRequestsCount: family.pendingRequestsCount
+      pendingRequestsCount: family.pendingRequestsCount,
     });
 
     return (

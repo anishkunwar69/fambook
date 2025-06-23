@@ -44,10 +44,8 @@ export function DeleteMemberNodeModal({
   const fullName = memberToDelete
     ? `${memberToDelete.firstName} ${memberToDelete.lastName}`
     : "";
-  
-  const isMatch = memberToDelete
-    ? confirmationName === fullName
-    : false;
+
+  const isMatch = memberToDelete ? confirmationName === fullName : false;
 
   if (!memberToDelete) return null;
 
@@ -61,8 +59,8 @@ export function DeleteMemberNodeModal({
           </DialogTitle>
           <DialogDescription className="pt-2 max-sm:text-xs">
             Are you absolutely sure you want to delete the family member "
-            <strong className="text-gray-800">{fullName}</strong>"?
-            This action is permanent and cannot be undone. All associated data will be lost.
+            <strong className="text-gray-800">{fullName}</strong>"? This action
+            is permanent and cannot be undone. All associated data will be lost.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 sm:space-y-2 space-y-0">
@@ -103,4 +101,4 @@ export function DeleteMemberNodeModal({
       </DialogContent>
     </Dialog>
   );
-} 
+}

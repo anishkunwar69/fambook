@@ -17,7 +17,7 @@ import {
   TreePine,
   User,
   Users,
-  X
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -434,7 +434,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </>
           ) : (
             <div className="bg-amber-50">
-                            {/* Mobile Notification Bell - Only visible on mobile */}
+              {/* Mobile Notification Bell - Only visible on mobile */}
               {!pathname.includes("/notifications") && (
                 <div className="lg:hidden absolute sm:top-[24px] top-[18px] right-7 z-30">
                   <NotificationBell />

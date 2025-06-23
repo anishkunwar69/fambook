@@ -87,7 +87,8 @@ export async function GET(request: NextRequest) {
         });
 
         // Check if user is admin (either the creator or has ADMIN role)
-        const isAdmin = family.createdById === user.id || userMembership?.role === "ADMIN";
+        const isAdmin =
+          family.createdById === user.id || userMembership?.role === "ADMIN";
 
         return {
           ...family,

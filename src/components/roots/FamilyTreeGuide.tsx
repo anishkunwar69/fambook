@@ -1,71 +1,74 @@
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import {
   ArrowDown,
   ArrowLeftRight,
-  ArrowUp,
   ChevronLeft,
   ChevronRight,
   Info,
   Users,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 
 const steps = [
   {
     title: "Admin Privileges",
-    content: "Only admins can add and edit member nodes in the family tree. Regular members can only view the tree.",
+    content:
+      "Only admins can add and edit member nodes in the family tree. Regular members can only view the tree.",
     icon: <Info className="sm:w-5 sm:h-5 w-4 h-4" />,
   },
   {
     title: "Deleting Nodes",
-    content: "Only nodes without relationships can be deleted. Once relationships are created, nodes can only be edited.",
+    content:
+      "Only nodes without relationships can be deleted. Once relationships are created, nodes can only be edited.",
     icon: <X className="sm:w-5 sm:h-5 w-4 h-4" />,
   },
   {
     title: "Creating Relationships",
-    content: "First add all family members before creating connections. This helps organize your tree structure properly.",
+    content:
+      "First add all family members before creating connections. This helps organize your tree structure properly.",
     icon: <Users className="sm:w-5 sm:h-5 w-4 h-4" />,
   },
   {
     title: "Spouse Connections",
-    content: "Connect male's bottom dot to female's bottom dot to establish a spouse relationship between two members.",
+    content:
+      "Connect male's bottom dot to female's bottom dot to establish a spouse relationship between two members.",
     icon: <ArrowLeftRight className="sm:w-5 sm:h-5 w-4 h-4" />,
     visual: {
       type: "spouse",
       description: "Male → Female (bottom to bottom)",
-    }
+    },
   },
   {
     title: "Parent-Child Connections",
-    content: "Connect parent's bottom dot to child's top dot. Start with the father's node for best results.",
+    content:
+      "Connect parent's bottom dot to child's top dot. Start with the father's node for best results.",
     icon: <ArrowDown className="sm:w-5 sm:h-5 w-4 h-4" />,
     visual: {
       type: "parent-child",
       description: "Parent → Child (bottom to top)",
-    }
+    },
   },
   {
     title: "Member Details",
-    content: "Click any node to view detailed information about that family member, including their profile and relationships.",
+    content:
+      "Click any node to view detailed information about that family member, including their profile and relationships.",
     icon: <Info className="sm:w-5 sm:h-5 w-4 h-4" />,
   },
   {
     title: "Linked Members",
-    content: "Admins can link FamBook users to their family nodes, allowing access to their full profiles when clicked.",
+    content:
+      "Admins can link FamBook users to their family nodes, allowing access to their full profiles when clicked.",
     icon: <Users className="sm:w-5 sm:h-5 w-4 h-4" />,
   },
   {
     title: "Perfect Tree Example",
-    content: "Here's how a well-structured family tree should look with proper relationships.",
+    content:
+      "Here's how a well-structured family tree should look with proper relationships.",
     icon: <Users className="sm:w-5 sm:h-5 w-4 h-4" />,
-    image: "/perfect-tree.png"
+    image: "/perfect-tree.png",
   },
 ];
 
@@ -114,7 +117,6 @@ export function FamilyTreeGuide() {
               <Users className="sm:w-5 sm:h-5 w-4 h-4 text-rose-500" />
               Family Tree Guide
             </DialogTitle>
-            
           </div>
 
           {/* Progress bar */}
@@ -135,7 +137,9 @@ export function FamilyTreeGuide() {
               </h3>
             </div>
 
-            <p className="text-gray-700 mb-5 leading-relaxed sm:text-base text-sm">{steps[currentStep].content}</p>
+            <p className="text-gray-700 mb-5 leading-relaxed sm:text-base text-sm">
+              {steps[currentStep].content}
+            </p>
 
             {steps[currentStep].visual && (
               <div className="bg-rose-50 rounded-lg p-4 mb-5 border border-rose-100">
@@ -149,7 +153,7 @@ export function FamilyTreeGuide() {
                     {steps[currentStep].visual.description}
                   </span>
                 </div>
-                
+
                 {steps[currentStep].visual.type === "spouse" && (
                   <div className="flex justify-center items-center gap-10 mt-3">
                     <div className="relative">
@@ -167,7 +171,7 @@ export function FamilyTreeGuide() {
                     </div>
                   </div>
                 )}
-                
+
                 {steps[currentStep].visual.type === "parent-child" && (
                   <div className="flex flex-col items-center gap-6 mt-3">
                     <div className="relative">
@@ -196,9 +200,9 @@ export function FamilyTreeGuide() {
                   Example of a well-structured family tree
                 </p>
                 <div className="relative w-full h-[200px] sm:h-[250px] overflow-hidden rounded-md">
-                  <Image 
-                    src={steps[currentStep].image} 
-                    alt="Perfect family tree example" 
+                  <Image
+                    src={steps[currentStep].image}
+                    alt="Perfect family tree example"
                     fill
                     className="object-contain"
                   />
@@ -223,7 +227,9 @@ export function FamilyTreeGuide() {
               </span>
 
               <Button
-                variant={currentStep === steps.length - 1 ? "outline" : "default"}
+                variant={
+                  currentStep === steps.length - 1 ? "outline" : "default"
+                }
                 size="sm"
                 onClick={() => {
                   if (currentStep === steps.length - 1) {
@@ -233,8 +239,8 @@ export function FamilyTreeGuide() {
                   }
                 }}
                 className={`h-9 px-4 ${
-                  currentStep === steps.length - 1 
-                    ? "border-rose-200 text-rose-700 hover:bg-rose-50" 
+                  currentStep === steps.length - 1
+                    ? "border-rose-200 text-rose-700 hover:bg-rose-50"
                     : "bg-rose-500 hover:bg-rose-600"
                 }`}
               >
