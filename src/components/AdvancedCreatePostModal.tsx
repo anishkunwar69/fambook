@@ -51,6 +51,14 @@ const variants = {
 const MAX_FILE_SIZE_MB = 100;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
+// Add new constants for media limits
+const MAX_MEDIA_COUNT = 5;
+const MAX_VIDEO_COUNT = 1;
+const MAX_IMAGE_SIZE_MB = 10;
+const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024;
+const MAX_VIDEO_SIZE_MB = 100;
+const MAX_VIDEO_SIZE_BYTES = MAX_VIDEO_SIZE_MB * 1024 * 1024;
+
 type Family = {
   id: string;
   name: string;
@@ -108,12 +116,43 @@ export function AdvancedCreatePostModal({
     async (files: File[]) => {
       setFileError(null);
 
+      // Check if adding these files would exceed the total media limit
+      if (selectedMedia.length + files.length > MAX_MEDIA_COUNT) {
+        setFileError(`You can only add up to ${MAX_MEDIA_COUNT} media items per post in the free plan.`);
+        return;
+      }
+
+      // Count existing videos
+      const existingVideoCount = selectedMedia.filter(item => item.type === "video").length;
+
       const validFiles: File[] = [];
       for (const file of files) {
-        if (file.size > MAX_FILE_SIZE_BYTES) {
-          setFileError(`Each file can only be up to ${MAX_FILE_SIZE_MB}MB.`);
-          return; // Stop processing this batch
+        const isImage = file.type.startsWith("image/");
+        const isVideo = file.type.startsWith("video/");
+
+        // Check file type
+        if (!isImage && !isVideo) {
+          setFileError("Only images and videos are allowed.");
+          return;
         }
+
+        // Check video count limit
+        if (isVideo && existingVideoCount + validFiles.filter(f => f.type.startsWith("video/")).length >= MAX_VIDEO_COUNT) {
+          setFileError(`You can only include ${MAX_VIDEO_COUNT} video per post in the free plan.`);
+          return;
+        }
+
+        // Check file size based on type
+        if (isImage && file.size > MAX_IMAGE_SIZE_BYTES) {
+          setFileError(`Images can only be up to ${MAX_IMAGE_SIZE_MB}MB in the free plan.`);
+          return;
+        }
+
+        if (isVideo && file.size > MAX_VIDEO_SIZE_BYTES) {
+          setFileError(`Videos can only be up to ${MAX_VIDEO_SIZE_MB}MB in the free plan.`);
+          return;
+        }
+
         validFiles.push(file);
       }
 
@@ -166,6 +205,13 @@ export function AdvancedCreatePostModal({
 
   const openFileDialog = () => {
     if (isSharing) return;
+    
+    // Check if we've reached the media limit
+    if (selectedMedia.length >= MAX_MEDIA_COUNT) {
+      setFileError(`You can only add up to ${MAX_MEDIA_COUNT} media items per post in the free plan.`);
+      return;
+    }
+    
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
       fileInputRef.current.click();
@@ -175,15 +221,27 @@ export function AdvancedCreatePostModal({
   };
 
   const handleDragOver = useCallback(
-    (event: React.DragEvent<HTMLDivElement>) => event.preventDefault(),
-    []
+    (event: React.DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      // Don't allow drag if at media limit
+      if (selectedMedia.length >= MAX_MEDIA_COUNT) {
+        event.dataTransfer.dropEffect = "none";
+      }
+    },
+    [selectedMedia.length]
   );
+  
   const handleDrop = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
       event.preventDefault();
+      // Don't process files if at media limit
+      if (selectedMedia.length >= MAX_MEDIA_COUNT) {
+        setFileError(`You can only add up to ${MAX_MEDIA_COUNT} media items per post in the free plan.`);
+        return;
+      }
       processFiles(Array.from(event.dataTransfer.files));
     },
-    [processFiles]
+    [processFiles, selectedMedia.length]
   );
 
   const createPostMutation = useMutation({
@@ -220,6 +278,24 @@ export function AdvancedCreatePostModal({
     if (!caption && selectedMedia.length === 0) {
       toast.error("Please add a caption or some media.");
       return;
+    }
+
+    // Check if the post limit has been reached for any selected family
+    try {
+      for (const familyId of selectedFamilyIds) {
+        const response = await fetch(`/api/families/${familyId}/stats`);
+        const result = await response.json();
+        
+        if (result.success && 
+            result.data.postStats.currentMonthPosts >= result.data.postStats.postLimit) {
+          toast.error("Monthly post limit reached. Upgrade to Premium for unlimited posts.");
+          onClose(); // Close the modal
+          return;
+        }
+      }
+    } catch (error) {
+      console.log("Error checking post limits:", error);
+      // Continue with post creation even if we can't check the limits
     }
 
     setIsSharing(true);
@@ -311,6 +387,15 @@ export function AdvancedCreatePostModal({
                   {fileError}
                 </p>
               )}
+              <div className="text-xs text-gray-500 mb-4">
+                <p>Free plan limits:</p>
+                <ul className="mt-1 space-y-1 list-disc list-inside">
+                  <li>Total 5 media items per post</li>
+                  <li>Maximum 1 video per post</li>
+                  <li>Images: up to 10MB each</li>
+                  <li>Videos: up to 100MB each</li>
+                </ul>
+              </div>
               <Button
                 onClick={openFileDialog}
                 variant="default"
@@ -494,6 +579,15 @@ export function AdvancedCreatePostModal({
                   disabled={isSharing}
                 />
 
+                <div className="flex justify-between items-center text-xs text-gray-500">
+                  <span>
+                    Media: {selectedMedia.length}/{MAX_MEDIA_COUNT}
+                  </span>
+                  <span>
+                    Videos: {selectedMedia.filter(m => m.type === "video").length}/{MAX_VIDEO_COUNT}
+                  </span>
+                </div>
+
                 {fileError && (
                   <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md my-2">
                     {fileError}
@@ -601,9 +695,13 @@ export function AdvancedCreatePostModal({
                 <Button
                   onClick={openFileDialog}
                   className="w-full text-sm bg-rose-500 hover:bg-rose-600 text-white mt-auto"
-                  disabled={isSharing}
+                  disabled={isSharing || selectedMedia.length >= MAX_MEDIA_COUNT}
                 >
-                  <ImagePlus className="w-4 h-4 mr-2" /> Add more media
+                  <ImagePlus className="w-4 h-4 mr-2" /> 
+                  {selectedMedia.length >= MAX_MEDIA_COUNT ? 
+                    "Media limit reached" : 
+                    "Add more media"
+                  }
                 </Button>
               </div>
             </div>

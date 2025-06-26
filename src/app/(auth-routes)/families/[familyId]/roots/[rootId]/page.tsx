@@ -22,9 +22,13 @@ import ReactFlow, {
   useReactFlow,
 } from "reactflow";
 import "reactflow/dist/style.css";
+import { ArrowLeft, Users, AlertTriangle } from "lucide-react";
+import { v4 as uuidv4 } from "uuid";
+import { FamilyMemberLimitBanner } from "@/components/roots/FamilyMemberLimitBanner";
 
 // Custom node types
 import { AddMemberNode } from "@/components/roots/AddMemberNode";
+import { DeleteMemberNodeModal } from "@/components/roots/DeleteMemberNodeModal";
 import { FamilyMemberNode } from "@/components/roots/FamilyMemberNode";
 import { FamilyTreeGuide } from "@/components/roots/FamilyTreeGuide";
 import { FamilyTreeInfo } from "@/components/roots/FamilyTreeInfo";
@@ -33,7 +37,6 @@ import { RelationshipDialog } from "@/components/roots/RelationshipDialog";
 import { RelationshipEdge } from "@/components/roots/RelationshipEdge";
 import { useQueryClient } from "@tanstack/react-query";
 import dagre from "dagre";
-import { DeleteMemberNodeModal } from "@/components/roots/DeleteMemberNodeModal";
 
 const nodeTypes = {
   familyMember: FamilyMemberNode,
@@ -93,8 +96,6 @@ type DialogState = {
   targetNode?: any;
 } | null;
 
-
-
 export default function RootEditorPage() {
   const params = useParams();
   const familyId = params.familyId as string;
@@ -146,19 +147,19 @@ export default function RootEditorPage() {
           method: "DELETE",
         }
       );
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error("Failed to delete member node");
       }
-      
+
       return response.json();
     },
     onSuccess: () => {
       toast.success("Family member deleted successfully!");
       queryClient.invalidateQueries({ queryKey: ["root", rootId] });
       setNodeToDelete(null);
-      
+
       // Remove the node from the nodes state
       if (nodeToDelete) {
         setNodes((nds) => nds.filter((node) => node.id !== nodeToDelete.id));
@@ -185,13 +186,12 @@ export default function RootEditorPage() {
       const nodesData: Node[] = root.nodes.map((node) => {
         // Check if the node has any relationships
         const hasRelationships = root.relations.some(
-          (relation) => 
-            relation.fromNodeId === node.id || 
-            relation.toNodeId === node.id
+          (relation) =>
+            relation.fromNodeId === node.id || relation.toNodeId === node.id
         );
-        
+
         const canDelete = !hasRelationships;
-        
+
         return {
           id: node.id,
           type: "familyMember",
@@ -208,7 +208,7 @@ export default function RootEditorPage() {
               setDialogState({
                 type: "member",
                 mode: "edit",
-                data: { nodeId: node.id },
+                data: node,
               });
             },
             onDelete: () => handleDeleteNode(node.id),
@@ -246,7 +246,21 @@ export default function RootEditorPage() {
               setDialogState({
                 type: "member",
                 mode: "add",
-                data: { position: { x: 0, y: 0 } },
+                data: {
+                  position: { x: 0, y: 0 },
+                  firstName: "",
+                  lastName: "",
+                  gender: "MALE",
+                  dateOfBirth: new Date(),
+                  isAlive: true,
+                  dateOfDeath: null,
+                  birthPlace: "",
+                  currentPlace: "",
+                  profileImage: null,
+                  biography: "",
+                  customFields: {},
+                  linkedMemberId: null,
+                },
               });
             },
           },
@@ -491,92 +505,151 @@ export default function RootEditorPage() {
 
   // Handle member save
   const handleMemberSave = async (data: any) => {
-    const isEdit = dialogState?.mode === "edit";
     try {
-      toast.loading("Saving member...", { id: "save-member" });
-      console.log("[DEBUG] Saving member with data:", data);
-      const nodeId = isEdit ? dialogState?.data?.id : `node-${Date.now()}`;
+      setIsAddingMember(true);
 
-      // Create node data matching exactly with the Prisma RootNode model structure
-      const newNodeData = {
+      // Create a unique ID for the new node
+      const nodeId = data.id || uuidv4();
+
+      // Prepare node data
+      const nodeData = {
         id: nodeId,
-        rootId: rootId,
+        rootId,
         firstName: data.firstName,
         lastName: data.lastName,
-        dateOfBirth: data.dateOfBirth.toISOString(),
-        dateOfDeath: data.dateOfDeath ? data.dateOfDeath.toISOString() : null,
+        dateOfBirth: data.dateOfBirth,
+        dateOfDeath: data.dateOfDeath,
         gender: data.gender,
-        isAlive: data.isAlive ?? true,
-        profileImage: data.profileImage || null,
+        isAlive: data.isAlive,
+        profileImage: data.profileImage,
         birthPlace: data.birthPlace || "",
         currentPlace: data.currentPlace || "",
-        biography: data.biography || null,
+        biography: data.biography,
         customFields: data.customFields || {},
-        userId: null,
-        linkedMemberId: data.linkedMemberId || null,
+        linkedMemberId: data.linkedMemberId,
+        positionX: data.position ? data.position.x : 0,
+        positionY: data.position ? data.position.y : 0,
       };
 
-      console.log("[DEBUG] Created node data:", newNodeData);
-
-      // Close the dialog first
-      setDialogState(null);
-
-      // Prepare save data with only the nodes being modified
-      const saveData = {
-        nodes: [newNodeData],
-        relations: edges.map((e) => ({
-          id: e.id,
-          fromNodeId: e.source,
-          toNodeId: e.target,
-          relationType: e.data?.type,
-          marriageDate: e.data?.marriageDate || null,
-          divorceDate: e.data?.divorceDate || null,
-          isActive: e.data?.isActive ?? true,
-        })),
-      };
-
-      console.log("[DEBUG] Final save data:", saveData);
-
-      // Save the changes
-      const response = await fetch(
-        `/api/families/${familyId}/roots/${rootId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(saveData),
+      // Add the node to the local state
+      if (dialogState?.mode === "add") {
+        // Check if we already have 5 nodes (excluding the add-member node)
+        const memberCount = nodes.filter(node => node.type === "familyMember").length;
+        if (memberCount >= 20) {
+          toast.error("Maximum limit of 20 members per family tree reached.");
+          setDialogState(null);
+          setIsAddingMember(false);
+          return;
         }
-      );
 
-      if (!response.ok) {
-        const error = await response.json();
-        console.error("[DEBUG] Save failed:", error);
-        throw new Error(error.message || "Failed to save changes");
+        const newNode = {
+          id: nodeId,
+          type: "familyMember",
+          position: {
+            x: typeof data.position?.x === "number" ? data.position.x : 0,
+            y: typeof data.position?.y === "number" ? data.position.y : 0,
+          },
+          data: {
+            ...nodeData,
+            familyId,
+            isAdmin,
+            canDelete: true,
+            onEdit: () => {
+              setDialogState({
+                type: "member",
+                mode: "edit",
+                data: { nodeId },
+              });
+            },
+            onDelete: () => handleDeleteNode(nodeId),
+          },
+        };
+
+        setNodes((nds) => [...nds, newNode]);
+      } else {
+        // Update existing node
+        setNodes((nds) =>
+          nds.map((node) => {
+            if (node.id === nodeData.id) {
+              return {
+                ...node,
+                data: {
+                  ...node.data,
+                  ...nodeData,
+                  onEdit: node.data.onEdit,
+                  onDelete: node.data.onDelete,
+                  familyId,
+                  isAdmin,
+                },
+              };
+            }
+            return node;
+          })
+        );
       }
 
+      // Save all nodes and relationships to the backend
+      const response = await fetch(`/api/families/${familyId}/roots/${rootId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nodes: nodes
+            .filter((node) => node.type === "familyMember")
+            .map((node) => ({
+              ...node.data,
+              id: node.id,
+              rootId,
+              positionX: node.position.x,
+              positionY: node.position.y,
+            }))
+            .concat([nodeData]),
+          relations: edges.map((edge) => ({
+            id: edge.id,
+            rootId,
+            fromNodeId: edge.source,
+            toNodeId: edge.target,
+            relationType: edge.data?.relationType || "PARENT",
+            marriageDate: edge.data?.marriageDate || null,
+            divorceDate: edge.data?.divorceDate || null,
+            isActive: edge.data?.isActive ?? true,
+          })),
+        }),
+      });
+
       const result = await response.json();
-      console.log("[DEBUG] Save successful:", result);
 
-      // Show success message
-      toast.success("Member saved successfully!", { id: "save-member" });
+      if (!response.ok) {
+        if (result.limitReached) {
+          toast.error("Maximum limit of 20 members per family tree reached.");
+          
+          // Remove the node we just added if it was a new node
+          if (dialogState?.mode === "add") {
+            setNodes((nds) => nds.filter((node) => node.id !== nodeId));
+          }
+        } else {
+          toast.error("Failed to save family member");
+        }
+        throw new Error("Failed to save family member");
+      }
 
-      // Invalidate and refetch root data and unlinked members
+      // Close the dialog
+      setDialogState(null);
+
+      // Refresh the data
       queryClient.invalidateQueries({ queryKey: ["root", rootId] });
-      queryClient.invalidateQueries({
-        queryKey: ["unlinked-members", familyId],
-      });
-    } catch (error) {
-      console.error("Failed to save member:", error);
-      toast.error(
-        error instanceof Error ? error.message : "Failed to save member",
-        { id: "save-member" }
+
+      toast.success(
+        dialogState?.mode === "add"
+          ? "Family member added successfully!"
+          : "Family member updated successfully!"
       );
-      setDialogState({
-        type: "member",
-        mode: isEdit ? "edit" : "add",
-        data: { ...data, position: dialogState?.data?.position },
-      });
+    } catch (error) {
+      toast.error("Failed to save family member");
+      console.error("Error saving member:", error);
+    } finally {
+      setIsAddingMember(false);
     }
   };
 
@@ -738,6 +811,14 @@ export default function RootEditorPage() {
     try {
       const { sourceNode, targetNode } = dialogState!;
 
+      // Add explicit debugging for relationship type
+      console.log("[DEBUG] Creating relationship with data:", {
+        sourceNode: sourceNode.id,
+        targetNode: targetNode.id,
+        relationType: data.relationType,
+        formData: data
+      });
+
       // Run relationship validation first
       const validationError = validateRelationship(
         sourceNode.id,
@@ -760,7 +841,7 @@ export default function RootEditorPage() {
         target: targetNode.id,
         type: "relationship",
         data: {
-          // Keep the original relationship type for proper handling
+          // Ensure relationType is explicitly set and not modified
           type: data.relationType,
           marriageDate: data.marriageDate,
           divorceDate: data.divorceDate,
@@ -799,6 +880,7 @@ export default function RootEditorPage() {
           id: e.id,
           fromNodeId: e.source,
           toNodeId: e.target,
+          // Ensure relationType is explicitly set from edge data
           relationType: e.data?.type,
           marriageDate: e.data?.marriageDate || null,
           divorceDate: e.data?.divorceDate || null,
@@ -874,22 +956,24 @@ export default function RootEditorPage() {
     try {
       // Find the node in the nodes state
       const nodeToDelete = nodes.find((n) => n.id === nodeId);
-      
+
       if (!nodeToDelete) {
         toast.error("Node not found");
         return;
       }
-      
+
       // Check if the node has any relationships
       const hasRelationships = edges.some(
         (edge) => edge.source === nodeId || edge.target === nodeId
       );
-      
+
       if (hasRelationships) {
-        toast.error("Cannot delete a node with existing relationships. Remove all relationships first.");
+        toast.error(
+          "Cannot delete a node with existing relationships. Remove all relationships first."
+        );
         return;
       }
-      
+
       // Set the node to delete
       setNodeToDelete({
         id: nodeId,
@@ -910,92 +994,104 @@ export default function RootEditorPage() {
   }
 
   return (
-    <div className="h-screen w-full relative max-lg:pb-20" ref={reactFlowWrapper}>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
-        onConnect={isAdmin ? onConnect : undefined}
-        onNodeClick={onNodeClick}
-        onEdgeClick={onEdgeClick}
-        onInit={setReactFlowInstance}
-        onNodeDoubleClick={onNodeDoubleClick}
-        connectionMode={ConnectionMode.Loose}
-        defaultViewport={{ x: 0, y: 0, zoom: 0.7 }}
-        minZoom={0.2}
-        maxZoom={1.5}
-        snapToGrid={false}
-        snapGrid={[1, 1]}
-        fitView
-        fitViewOptions={{
-          padding: 0.5,
-          minZoom: 0.5,
-          maxZoom: 1,
-        }}
-      >
-        <Background />
-        <Controls />
-        <Panel position="top-right" className="flex flex-col gap-2">
-          <div className="flex items-center gap-2"></div>
-
-          {hasPositionChanges && isAdmin && (
-            <Button
-              variant="default"
-              size="sm"
-              onClick={handleSave}
-              disabled={isSaving}
-              className="bg-rose-500 hover:bg-rose-600 max-sm:mt-1 sm:text-sm text-xs"
-            >
-              {isSaving ? (
-                <>
-                  <Loader2 className="sm:w-4 sm:h-4 w-3 h-3 mr-2 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                "Save Positions"
-              )}
-            </Button>
-          )}
-
-          <FamilyTreeGuide />
-        </Panel>
-      </ReactFlow>
-
-      <FamilyTreeInfo />
-
-      {/* Dialogs */}
-      <MemberDetailsDialog
-        isOpen={dialogState?.type === "member"}
-        onClose={() => setDialogState(null)}
-        onSubmit={handleMemberSave}
-        initialData={dialogState?.data}
-        mode={dialogState?.mode || "add"}
-        familyId={familyId}
-        isAdmin={isAdmin}
-      />
-
-      {dialogState?.type === "relationship" && (
-        <RelationshipDialog
-          isOpen={true}
-          onClose={() => setDialogState(null)}
-          onSubmit={handleRelationshipSave}
-          sourceNode={dialogState.sourceNode}
-          targetNode={dialogState.targetNode}
-          validateRelationship={validateRelationship}
-          isAdmin={isAdmin}
+          <div className="h-screen w-full flex flex-col">
+      {/* Replace the simple alert with the new banner component */}
+      {root && (
+        <FamilyMemberLimitBanner 
+          currentCount={root.nodes.length} 
+          maxCount={20} 
+          isAdmin={isAdmin} 
         />
       )}
 
-      <DeleteMemberNodeModal
-        isOpen={!!nodeToDelete}
-        onClose={() => setNodeToDelete(null)}
-        memberToDelete={nodeToDelete}
-        onConfirmDelete={(nodeId) => deleteMemberNodeMutation.mutate(nodeId)}
-        isDeleting={deleteMemberNodeMutation.isPending}
-      />
+      {/* Reactflow container */}
+      <div className="flex-1 h-full w-full" ref={reactFlowWrapper}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          onConnect={isAdmin ? onConnect : undefined}
+          onNodeClick={onNodeClick}
+          onEdgeClick={onEdgeClick}
+          onInit={setReactFlowInstance}
+          onNodeDoubleClick={onNodeDoubleClick}
+          connectionMode={ConnectionMode.Loose}
+          defaultViewport={{ x: 0, y: 0, zoom: 0.7 }}
+          minZoom={0.2}
+          maxZoom={1.5}
+          snapToGrid={false}
+          snapGrid={[1, 1]}
+          fitView
+          fitViewOptions={{
+            padding: 0.5,
+            minZoom: 0.5,
+            maxZoom: 1,
+          }}
+        >
+          <Background />
+          <Controls />
+          <Panel position="top-right" className="flex flex-col gap-2">
+            
+
+            {hasPositionChanges && isAdmin && (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleSave}
+                disabled={isSaving}
+                className="bg-rose-500 hover:bg-rose-600 max-sm:mt-1 sm:text-sm text-xs"
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="sm:w-4 sm:h-4 w-3 h-3 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  "Save Positions"
+                )}
+              </Button>
+            )}
+
+            <FamilyTreeGuide />
+          </Panel>
+        </ReactFlow>
+
+        <FamilyTreeInfo />
+
+        {/* Dialogs */}
+        <MemberDetailsDialog
+          isOpen={dialogState?.type === "member"}
+          onClose={() => setDialogState(null)}
+          onSubmit={handleMemberSave}
+          initialData={dialogState?.data}
+          mode={dialogState?.mode || "add"}
+          familyId={familyId}
+          isAdmin={isAdmin}
+        />
+
+        {dialogState?.type === "relationship" && (
+          <RelationshipDialog
+            isOpen={true}
+            onClose={() => setDialogState(null)}
+            onSubmit={handleRelationshipSave}
+            sourceNode={dialogState.sourceNode}
+            targetNode={dialogState.targetNode}
+            validateRelationship={validateRelationship}
+            isAdmin={isAdmin}
+          />
+        )}
+
+        <DeleteMemberNodeModal
+          isOpen={!!nodeToDelete}
+          onClose={() => setNodeToDelete(null)}
+          memberToDelete={nodeToDelete}
+          onConfirmDelete={(nodeId) => deleteMemberNodeMutation.mutate(nodeId)}
+          isDeleting={deleteMemberNodeMutation.isPending}
+        />
+      </div>
     </div>
   );
 }

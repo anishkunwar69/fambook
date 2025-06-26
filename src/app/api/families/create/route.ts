@@ -76,6 +76,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 4.5 Check if user already has a family (free plan restriction)
+    // Premium users will be able to create unlimited families
+    const userFamilyCount = await prisma.familyMember.count({
+      where: {
+        userId: user.id,
+        status: "APPROVED",
+      },
+    });
+
+    if (userFamilyCount >= 1) {
+      // User already has a family and is on free plan
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Free plan allows only one family. Please upgrade to Premium for unlimited families.",
+        },
+        { status: 402 } // 402 Payment Required
+      );
+    }
+
     console.log("after existing family and before transaction");
 
     // 5. Create family and notification in a transaction

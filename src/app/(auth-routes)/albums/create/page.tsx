@@ -20,13 +20,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Check, ChevronRight, Home, Loader2, Users, X } from "lucide-react";
+import { Check, ChevronRight, Crown, Home, Loader2, Users, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { z } from "zod";
+import PremiumUpgradeModal from "@/components/modals/PremiumUpgradeModal";
 
 const createAlbumSchema = z.object({
   name: z
@@ -39,7 +40,7 @@ const createAlbumSchema = z.object({
     .optional(),
   familyIds: z.array(z.string()).min(1, "Please select at least one family"),
   eventId: z.string().optional(),
-  mediaLimit: z.number().min(1).max(100).default(100),
+  mediaLimit: z.number().min(1).max(15).default(15),
 });
 
 type CreateAlbumInput = z.infer<typeof createAlbumSchema>;
@@ -56,6 +57,9 @@ export default function CreateAlbumPage() {
   const [selectedFamilyIds, setSelectedFamilyIds] = useState<Set<string>>(
     new Set()
   );
+  const [upgradePremiumModalOpen, setUpgradePremiumModalOpen] = useState(false);
+  const [checkingAlbumLimit, setCheckingAlbumLimit] = useState(true);
+  const [limitReached, setLimitReached] = useState(false);
 
   const { data: families, isLoading: loadingFamilies } = useQuery<Family[]>({
     queryKey: ["userFamiliesForAlbumCreation"],
@@ -71,13 +75,46 @@ export default function CreateAlbumPage() {
     },
   });
 
+  // Check if any family has reached the album limit
+  useEffect(() => {
+    const checkAlbumLimit = async () => {
+      if (!families || families.length === 0) return;
+      
+      setCheckingAlbumLimit(true);
+      
+      try {
+        // Check each family's album limit
+        for (const family of families) {
+          const response = await fetch(`/api/families/${family.id}/stats`);
+          const result = await response.json();
+          
+          if (result.success && 
+              result.data.albumStats.currentMonthAlbums >= result.data.albumStats.albumLimit) {
+            // Limit reached for at least one family
+            setLimitReached(true);
+            setUpgradePremiumModalOpen(true);
+            break;
+          }
+        }
+      } catch (error) {
+        console.error("Error checking album limit:", error);
+      } finally {
+        setCheckingAlbumLimit(false);
+      }
+    };
+    
+    if (families) {
+      checkAlbumLimit();
+    }
+  }, [families]);
+
   const form = useForm<CreateAlbumInput>({
     resolver: zodResolver(createAlbumSchema),
     defaultValues: {
       name: "",
       description: "",
       familyIds: [],
-      mediaLimit: 100,
+      mediaLimit: 15,
       eventId: undefined,
     },
   });
@@ -101,6 +138,9 @@ export default function CreateAlbumPage() {
 
       const result = await response.json();
       if (!result.success) {
+        if (response.status === 403 && result.message.includes("Monthly album limit")) {
+          throw new Error(`${result.message} Please upgrade to Premium for unlimited albums.`);
+        }
         throw new Error("Failed to create album(s)");
       }
       return result.data;
@@ -113,7 +153,15 @@ export default function CreateAlbumPage() {
       router.push(`/albums`);
     },
     onError: (error: Error) => {
+      if (error.message.includes("Monthly album limit")) {
+        toast.error(error.message, {
+          duration: 5000,
+          icon: <Crown className="h-5 w-5 text-amber-500" />,
+        });
+        setUpgradePremiumModalOpen(true);
+      } else {
       toast.error("Failed to create album");
+      }
     },
   });
 
@@ -128,7 +176,34 @@ export default function CreateAlbumPage() {
     createAlbum(data);
   };
 
+  // Show loading state while checking album limit
+  if (loadingFamilies || checkingAlbumLimit) {
+    return (
+      <div className="min-h-[90vh] lg:min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-8 h-8 animate-spin text-rose-500" />
+          <p className="text-gray-600">Checking album limits...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
+    <>
+      <PremiumUpgradeModal 
+        isOpen={upgradePremiumModalOpen} 
+        onClose={() => {
+          if (limitReached) {
+            router.back();
+          } else {
+            setUpgradePremiumModalOpen(false);
+          }
+        }}
+        featureContext="albums"
+        showCloseButton={!limitReached}
+        customActionLabel={limitReached ? "Go Back" : undefined}
+      />
+
     <div className="lg:min-h-[97vh] min-h-[92vh] bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8 flex flex-col">
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -150,7 +225,8 @@ export default function CreateAlbumPage() {
         <span className="text-rose-500 font-medium">Create Album</span>
       </motion.div>
 
-      <div className="flex-1 flex items-center justify-center">
+        {!limitReached && (
+          <div className="flex-1 flex items-center justify-center max-xs:mt-8 max-xs:mb-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -193,11 +269,7 @@ export default function CreateAlbumPage() {
                         </FormControl>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent className="w-[--trigger-width] max-h-60 overflow-y-auto p-2">
-                        {loadingFamilies ? (
-                          <div className="flex items-center justify-center p-2">
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          </div>
-                        ) : families && families.length > 0 ? (
+                            {families && families.length > 0 ? (
                           <>
                             <Button
                               type="button"
@@ -316,37 +388,22 @@ export default function CreateAlbumPage() {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="mediaLimit"
-                render={({ field }) => (
-                  <FormItem className="space-y-0 sm:space-y-2">
-                    <FormLabel>Media Limit</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min={1}
-                        max={100}
-                        {...field}
-                        onChange={(e) =>
-                          field.onChange(parseInt(e.target.value, 10) || 1)
-                        }
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Maximum media limit (1-100).
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  {/* Information about media limit */}
+                  <div className="bg-blue-50 p-3 rounded-md border border-blue-100 mb-4">
+                    <p className="sm:text-sm text-xs text-gray-700">
+                      <span className="font-medium">Note:</span> Each album can contain up to 15 media items (images up to 10MB, max 1 video up to 100MB).
+                    </p>
+                  </div>
 
               <div className="flex justify-end gap-4 pt-4">
-                <Link href="/albums">
-                  <Button variant="outline" type="button" disabled={isPending}>
+                    <Button 
+                      variant="outline" 
+                      type="button" 
+                      disabled={isPending}
+                      onClick={() => router.back()}
+                    >
                     Cancel
                   </Button>
-                </Link>
                 <Button
                   type="submit"
                   disabled={isPending}
@@ -366,6 +423,8 @@ export default function CreateAlbumPage() {
           </Form>
         </motion.div>
       </div>
+        )}
     </div>
+    </>
   );
 }

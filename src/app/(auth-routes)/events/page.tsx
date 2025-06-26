@@ -27,15 +27,24 @@ import {
   AlertTriangle,
   Cake,
   Calendar as CalendarIcon,
+  CalendarDays,
   Camera,
+  Check,
   CheckCircle2,
+  ChevronDown,
+  ChevronLeft,
   ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
   Clock,
+  Crown,
+  Filter,
   GraduationCap,
   Heart,
   Home,
   Info,
   Loader2,
+  Lock,
   MapPin,
   PartyPopper,
   Pencil,
@@ -47,9 +56,11 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { LiaRingSolid } from "react-icons/lia";
+import { cn } from "@/lib/utils";
+import PremiumUpgradeModal from "@/components/modals/PremiumUpgradeModal";
 
 type TimeFrame = "ALL" | "THIS WEEK" | "THIS MONTH" | "THIS YEAR";
 export type EventType =
@@ -162,6 +173,144 @@ function EventSkeletonCard() {
   );
 }
 
+// Add EventLimitProgressBar component after the debounce function
+function EventLimitProgressBar({
+  currentEvents,
+  eventLimit,
+  familyName = "your family",
+  onUpgradeClick,
+  resetDate,
+}: {
+  currentEvents: number;
+  eventLimit: number;
+  familyName?: string;
+  onUpgradeClick: () => void;
+  resetDate?: string;
+}) {
+  // Calculate the usage percentage
+  const percentage = Math.min((currentEvents / eventLimit) * 100, 100);
+
+  // Determine color and message based on percentage
+  const getColor = () => {
+    if (percentage <= 60) {
+      return "bg-green-500"; // Green for <= 60%
+    } else if (percentage <= 90) {
+      return "bg-amber-500"; // Yellow for 60-90%
+    } else {
+      return "bg-rose-500"; // Red for > 90%
+    }
+  };
+
+  // Background color - lighter version of the progress color
+  const getBgColor = () => {
+    if (percentage <= 60) {
+      return "bg-green-100";
+    } else if (percentage <= 90) {
+      return "bg-amber-100";
+    } else {
+      return "bg-rose-100";
+    }
+  };
+
+  // Get appropriate message based on percentage
+  const getMessage = () => {
+    if (percentage <= 60) {
+      return "You're all set! Keep adding important events for your family.";
+    } else if (percentage <= 90) {
+      return "You're almost at your monthly event limit. Plan your events wisely.";
+    } else if (percentage < 100) {
+      return "You're about to hit your monthly limit. Upgrade to keep adding events without interruptions.";
+    } else {
+      return "You've reached your monthly event limit. Upgrade to Premium to add more events.";
+    }
+  };
+
+  // Get the icon for the progress bar
+  const getIcon = () => {
+    if (percentage <= 60) {
+      return <CheckCircle2 className="w-4 h-4 text-green-600" />;
+    } else if (percentage <= 90) {
+      return <AlertTriangle className="w-4 h-4 text-amber-600" />;
+    } else {
+      return <Crown className="w-4 h-4 text-rose-600" />;
+    }
+  };
+
+  // Determine if we should show an upgrade button
+  const showUpgradeButton = percentage > 60;
+
+  // Events remaining count
+  const eventsRemaining = Math.max(0, eventLimit - currentEvents);
+
+  // Calculate days until reset if resetDate is provided
+  const getDaysUntilReset = () => {
+    if (!resetDate) return null;
+    
+    const today = new Date();
+    const reset = new Date(resetDate);
+    const diffTime = reset.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    return diffDays > 0 ? diffDays : null;
+  };
+  
+  const daysUntilReset = getDaysUntilReset();
+
+  return (
+    <div className={cn("rounded-lg p-3 mb-4 border mt-6", getBgColor())}>
+      <div className="flex items-start gap-2">
+        <div className="mt-0.5 flex-shrink-0">{getIcon()}</div>
+        <div className="flex-1">
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-sm font-medium">
+              Monthly Event Limit: {currentEvents}/{eventLimit}
+            </p>
+            <span className="text-xs">
+              {eventsRemaining} {eventsRemaining === 1 ? "event" : "events"}{" "}
+              remaining
+            </span>
+          </div>
+
+          <div className="relative h-2 w-full overflow-hidden rounded-full bg-white/50 mb-2">
+            <div
+              className={cn(
+                "h-full absolute top-0 left-0 transition-all duration-300",
+                getColor()
+              )}
+              style={{ width: `${percentage}%` }}
+            />
+          </div>
+
+          <p className="text-xs text-gray-700 mb-2">{getMessage()}</p>
+          
+          {/* Show reset countdown when limit is reached */}
+          {percentage >= 100 && daysUntilReset !== null && (
+            <p className="text-xs font-medium text-rose-700 mb-2">
+              Next events reset in {daysUntilReset} {daysUntilReset === 1 ? "day" : "days"}
+            </p>
+          )}
+
+          {showUpgradeButton && (
+            <Button
+              size="sm"
+              onClick={onUpgradeClick}
+              className={cn(
+                "h-7 text-xs w-full md:w-auto",
+                percentage > 90
+                  ? "bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white"
+                  : "bg-white text-amber-600 border border-amber-200 hover:bg-amber-50"
+              )}
+            >
+              <Crown className="w-3 h-3 mr-1.5" />
+              Upgrade to Premium
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function EventsPage() {
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
   const [timeFrame, setTimeFrame] = useState<TimeFrame>("ALL");
@@ -176,6 +325,8 @@ export default function EventsPage() {
   const [isCreatingAlbum, setIsCreatingAlbum] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [showPastEventTip, setShowPastEventTip] = useState(true);
+  // Add state for event limit modal
+  const [eventLimitModalOpen, setEventLimitModalOpen] = useState(false);
 
   // State for Edit Event Modal
   const [isEditEventModalOpen, setIsEditEventModalOpen] = useState(false);
@@ -190,6 +341,7 @@ export default function EventsPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
+  // Restore the deleteEventMutation
   const deleteEventMutation = useMutation({
     mutationFn: async (eventId: string) => {
       const response = await fetch(`/api/special-days/${eventId}`, {
@@ -212,6 +364,144 @@ export default function EventsPage() {
       toast.error("Failed to delete event");
     },
   });
+
+  // Event limit constants
+  const EVENT_LIMIT = 3; // 3 events per month for free plan
+
+  // Fetch user's families - Move this up before it's used
+  const { data: families } = useQuery({
+    queryKey: ["families"],
+    queryFn: async () => {
+      const response = await fetch("/api/families");
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error("Something went wrong!");
+      }
+      return result.data;
+    },
+  });
+
+  const hasJoinedFamilies =
+    families &&
+    families.filter((family: any) => family.userMembershipStatus === "APPROVED")
+      .length > 0;
+
+  // Add useEffect to auto-select the first family when user has only joined one family
+  useEffect(() => {
+    if (families && families.length === 1 && families[0].userMembershipStatus === "APPROVED") {
+      setSelectedFamily(families[0].id);
+    }
+  }, [families]);
+
+  // Fetch event limit data for the selected family
+  const { data: eventLimitData } = useQuery({
+    queryKey: ["eventLimit", selectedFamily],
+    queryFn: async () => {
+      try {
+        // If a specific family is selected, fetch its stats
+        if (selectedFamily !== "ALL") {
+          const response = await fetch(`/api/families/${selectedFamily}/stats`);
+          const result = await response.json();
+          
+          if (result.success) {
+            return {
+              familyId: selectedFamily,
+              familyName: families?.find((f: any) => f.id === selectedFamily)?.name || "Your Family",
+              currentEvents: result.data.eventStats?.currentMonthEvents || 0,
+              eventLimit: result.data.eventStats?.eventLimit || EVENT_LIMIT,
+              resetDate: result.data.eventStats?.resetDate
+            };
+          }
+        } 
+        
+        // If no specific family is selected, use the first available family
+        if (families && families.length > 0) {
+          // Find the first family with APPROVED status
+          const firstFamily = families.find((f: any) => f.userMembershipStatus === "APPROVED");
+          
+          if (firstFamily) {
+            const response = await fetch(`/api/families/${firstFamily.id}/stats`);
+            const result = await response.json();
+            
+            if (result.success) {
+              return {
+                familyId: firstFamily.id,
+                familyName: firstFamily.name,
+                currentEvents: result.data.eventStats?.currentMonthEvents || 0,
+                eventLimit: result.data.eventStats?.eventLimit || EVENT_LIMIT,
+                resetDate: result.data.eventStats?.resetDate
+              };
+            }
+          }
+        }
+        
+        // Fallback if API call fails
+        return {
+          familyId: "",
+          familyName: "Your Family",
+          currentEvents: 0,
+          eventLimit: EVENT_LIMIT,
+          resetDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toISOString()
+        };
+      } catch (error) {
+        console.error("Error fetching event limit data:", error);
+        // Fallback data
+        return {
+          familyId: "",
+          familyName: "Your Family",
+          currentEvents: 0,
+          eventLimit: EVENT_LIMIT,
+          resetDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toISOString()
+        };
+      }
+    },
+    // Refetch when family selection changes
+    enabled: hasJoinedFamilies,
+    // Don't cache the data for too long
+    staleTime: 30 * 1000, // 30 seconds
+    refetchOnMount: true,
+    refetchOnWindowFocus: true
+  });
+
+  // Update the Dialog trigger to check event limit before opening
+  const handleAddEventClick = async () => {
+    if (!hasJoinedFamilies) return;
+    
+    try {
+      // Get the family to check (either selected family or first available)
+      let familyId = "";
+      
+      if (selectedFamily !== "ALL") {
+        familyId = selectedFamily;
+      } else if (families && families.length > 0) {
+        const firstFamily = families.find((f: any) => f.userMembershipStatus === "APPROVED");
+        if (firstFamily) {
+          familyId = firstFamily.id;
+        }
+      }
+      
+      if (!familyId) {
+        toast.error("No family available to add events to");
+        return;
+      }
+      
+      // Check event limit with fresh data from API
+      const response = await fetch(`/api/families/${familyId}/stats`);
+      const result = await response.json();
+      
+      if (result.success && 
+          result.data.eventStats?.currentMonthEvents >= result.data.eventStats?.eventLimit) {
+        toast.error("Monthly event limit reached. Upgrade to Premium for unlimited events.");
+        setEventLimitModalOpen(true);
+      } else {
+        setIsAddEventOpen(true);
+      }
+    } catch (error) {
+      console.error("Error checking event limit:", error);
+      // If we can't check the limit, allow creating an event anyway
+      setIsAddEventOpen(true);
+    }
+  };
 
   // Debounced search handler
   const debouncedSetSearch = useCallback(
@@ -244,24 +534,6 @@ export default function EventsPage() {
       return result.data;
     },
   });
-
-  // Fetch user's families
-  const { data: families } = useQuery({
-    queryKey: ["families"],
-    queryFn: async () => {
-      const response = await fetch("/api/families");
-      const result = await response.json();
-      if (!result.success) {
-        throw new Error("Something went wrong!");
-      }
-      return result.data;
-    },
-  });
-
-  const hasJoinedFamilies =
-    families &&
-    families.filter((family: any) => family.userMembershipStatus === "APPROVED")
-      .length > 0;
 
   // Filter events based on search query, category, and family
   const filteredEvents = useMemo(() => {
@@ -405,7 +677,7 @@ export default function EventsPage() {
       queryClient.invalidateQueries({ queryKey: ["albums"] });
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to create album"
+        "Failed to create album"
       );
     } finally {
       setIsCreatingAlbum(false);
@@ -430,7 +702,7 @@ export default function EventsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8 max-lg:pb-20">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8 lg:mb-5 max-lg:pb-20">
       {/* Breadcrumb */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -447,8 +719,6 @@ export default function EventsPage() {
         <ChevronRight className="w-4 h-4 shrink-0" />
         <span className="text-rose-500 font-medium shrink-0">Events</span>
       </motion.div>
-
-     
 
       <Dialog open={isAddEventOpen} onOpenChange={setIsAddEventOpen}>
         {/* Header Section */}
@@ -470,20 +740,29 @@ export default function EventsPage() {
                   Keep track of all your family's special moments
                 </p>
               </div>
-              <DialogTrigger asChild>
-                <Button
-                  className="bg-rose-500 hover:bg-rose-600 w-full md:w-auto"
-                  disabled={!hasJoinedFamilies}
-                  title={
-                    !hasJoinedFamilies
-                      ? "Join a family to add events"
+              <Button
+                className={`flex items-center justify-center gap-2 w-full md:w-auto ${
+                  eventLimitData && eventLimitData.currentEvents >= eventLimitData.eventLimit
+                    ? "bg-gray-300 hover:bg-gray-300 cursor-not-allowed"
+                    : "bg-rose-500 hover:bg-rose-600"
+                }`}
+                onClick={handleAddEventClick}
+                disabled={!hasJoinedFamilies || (eventLimitData && eventLimitData.currentEvents >= eventLimitData.eventLimit)}
+                title={
+                  !hasJoinedFamilies
+                    ? "Join a family to add events"
+                    : (eventLimitData && eventLimitData.currentEvents >= eventLimitData.eventLimit)
+                      ? "Monthly event limit reached"
                       : "Add a new event"
-                  }
-                >
+                }
+              >
+                {eventLimitData && eventLimitData.currentEvents >= eventLimitData.eventLimit ? (
+                  <Lock className="w-4 h-4 mr-2" />
+                ) : (
                   <Plus className="w-4 h-4 mr-2" />
-                  Add Event
-                </Button>
-              </DialogTrigger>
+                )}
+                Add Event
+              </Button>
             </div>
 
             {/* Filters */}
@@ -526,12 +805,20 @@ export default function EventsPage() {
                     <Select
                       value={selectedFamily}
                       onValueChange={setSelectedFamily}
+                      disabled={families && families.filter((f: any) => f.userMembershipStatus === "APPROVED").length <= 1}
                     >
-                      <SelectTrigger className="w-full h-10 md:h-auto">
+                      <SelectTrigger className={`w-full h-10 md:h-auto ${
+                        families && families.filter((f: any) => f.userMembershipStatus === "APPROVED").length <= 1 
+                        ? "opacity-70" 
+                        : ""
+                      }`}>
                         <SelectValue placeholder="Select family" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="ALL">All Families</SelectItem>
+                        {/* Only show "All Families" option if user has more than one family */}
+                        {families && families.length > 1 && (
+                          <SelectItem value="ALL">All Families</SelectItem>
+                        )}
                         {families?.map((family: any) => (
                           <SelectItem key={family.id} value={family.id}>
                             {family.name}
@@ -575,6 +862,17 @@ export default function EventsPage() {
                   </div>
                 </div>
               </div>
+            )}
+
+            {/* Add the EventLimitProgressBar after the filters section */}
+            {hasJoinedFamilies && eventLimitData && selectedFamily !== "ALL" && (
+              <EventLimitProgressBar 
+                currentEvents={eventLimitData.currentEvents}
+                eventLimit={eventLimitData.eventLimit}
+                familyName={eventLimitData.familyName}
+                onUpgradeClick={() => setEventLimitModalOpen(true)}
+                resetDate={eventLimitData.resetDate}
+              />
             )}
           </div>
         </motion.div>
@@ -1015,6 +1313,13 @@ export default function EventsPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Premium Upgrade Modal for Event Limits */}
+      <PremiumUpgradeModal 
+        isOpen={eventLimitModalOpen} 
+        onClose={() => setEventLimitModalOpen(false)} 
+        featureContext="posts" 
+      />
     </div>
   );
 }

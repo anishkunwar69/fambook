@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { startOfMonth } from "date-fns";
 
 const createAlbumSchema = z.object({
   name: z
@@ -16,7 +17,7 @@ const createAlbumSchema = z.object({
     .array(z.string().min(1, "Family ID cannot be empty"))
     .min(1, "At least one family must be selected"),
   eventId: z.string().optional(),
-  mediaLimit: z.number().min(1).max(100).default(100),
+  mediaLimit: z.number().min(1).max(15).default(15),
 });
 
 export async function GET(request: NextRequest) {
@@ -170,6 +171,12 @@ export async function POST(request: NextRequest) {
       validatedData.data;
     const createdAlbums = [];
 
+    // The album limit for all families
+    const ALBUM_LIMIT = 5;
+
+    // Get the current month's start date
+    const currentMonthStart = startOfMonth(new Date());
+
     for (const familyId of familyIds) {
       const member = await prisma.familyMember.findFirst({
         where: { userId: dbUser.id, familyId: familyId, status: "APPROVED" },
@@ -182,6 +189,27 @@ export async function POST(request: NextRequest) {
         );
         // Optionally, collect errors/skipped families to report back
         continue;
+      }
+
+      // Check the current month's album count for this family
+      const currentMonthAlbumCount = await prisma.album.count({
+        where: {
+          familyId,
+          createdAt: {
+            gte: currentMonthStart,
+          },
+        },
+      });
+
+      // Check if the family has reached the monthly album limit
+      if (currentMonthAlbumCount >= ALBUM_LIMIT) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: `Monthly album limit reached for this family. You can create up to ${ALBUM_LIMIT} albums per month.`,
+          },
+          { status: 403 }
+        );
       }
 
       const album = await prisma.album.create({

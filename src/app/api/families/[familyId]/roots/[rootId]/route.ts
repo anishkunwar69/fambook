@@ -221,6 +221,34 @@ export async function PUT(
     const body = await request.json();
     console.log("Received body:", body); // Add logging
 
+    // Check if adding nodes would exceed the limit of 5 nodes per family tree
+    if (body.nodes) {
+      const existingNodes = await prisma.rootNode.findMany({
+        where: { rootId },
+        select: { id: true },
+      });
+      
+      // Get the unique node IDs from the request
+      const requestNodeIds = body.nodes.map((node: any) => node.id);
+      
+      // Count new nodes (nodes in the request that don't exist in the database)
+      const newNodeIds = requestNodeIds.filter(
+        (id: string) => !existingNodes.some((node) => node.id === id)
+      );
+      
+      // If adding new nodes would exceed the limit of 20, return an error
+      if (existingNodes.length + newNodeIds.length > 20) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Maximum limit of 20 members per family tree reached.",
+            limitReached: true,
+          },
+          { status: 400 }
+        );
+      }
+    }
+
     // Validate nodes if present
     console.log("before body.nodes");
     if (body.nodes) {
@@ -362,11 +390,14 @@ export async function PUT(
                     isActive: relation.isActive
                   });
 
-                  const relationType = relation.relationType || "PARENT";
+                  // FIXED: Don't default to PARENT - use the exact relationType sent from client
+                  // const relationType = relation.relationType || "PARENT";
+                  const relationType = relation.relationType;
                   
-                  // Log if there was a fallback to default
+                  // Log if relationType is missing
                   if (!relation.relationType) {
-                    console.warn("[DEBUG] RelationType was falsy, defaulting to PARENT for relation:", relation.id);
+                    console.error("[DEBUG] RelationType is missing for relation:", relation.id);
+                    throw new Error(`Missing relationship type for relation: ${relation.id}`);
                   }
                   
                   // Validate that we only accept PARENT or SPOUSE

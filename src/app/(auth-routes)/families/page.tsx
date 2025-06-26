@@ -23,6 +23,7 @@ import {
   ChevronRight,
   Clock,
   Copy,
+  Crown,
   Home,
   Loader2,
   Pencil,
@@ -37,6 +38,8 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { z } from "zod";
+import PremiumUpgradeModal from "@/components/modals/PremiumUpgradeModal";
+import { Progress } from "@/components/ui/progress";
 
 // Add debounce utility function
 function debounce<T extends (...args: any[]) => any>(
@@ -57,6 +60,7 @@ type FamilyWithStatus = Family & {
   pendingRequestsCount: number;
   isAdmin: boolean;
   createdById?: string;
+  memberCount: number;
 };
 
 const FAMILIES_PER_PAGE = 6; // Added for pagination
@@ -324,6 +328,34 @@ function DeleteFamilyModal({
   );
 }
 
+// Custom Progress Bar with dynamic color based on percentage
+function DynamicColorProgress({ value, className }: { value: number, className?: string }) {
+  // Determine color based on percentage
+  const getColor = () => {
+    if (value <= 50) {
+      return "bg-green-500"; // Green for < 50%
+    } else if (value <= 80) {
+      return "bg-amber-500"; // Yellow for 50-80%
+    } else {
+      return "bg-rose-500"; // Red for > 80%
+    }
+  };
+
+  // Use a different background when at limit (100%)
+  const getBgColor = () => {
+    return value >= 100 ? "bg-rose-100" : "bg-gray-100";
+  };
+
+  return (
+    <div className={cn("relative h-2 w-full overflow-hidden rounded-full", getBgColor(), className)}>
+      <div
+        className={cn("h-full absolute top-0 left-0 transition-all duration-300", getColor())}
+        style={{ width: `${Math.min(value, 100)}%` }}
+      />
+    </div>
+  );
+}
+
 export default function FamiliesPage() {
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const router = useRouter();
@@ -340,6 +372,8 @@ export default function FamiliesPage() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const queryClient = useQueryClient();
   const { user: clerkUser, isSignedIn } = useUser();
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [membersUpgradeModalOpen, setMembersUpgradeModalOpen] = useState(false);
 
   // Debounced search handler
   const debouncedSetSearch = useCallback(
@@ -371,8 +405,16 @@ export default function FamiliesPage() {
         throw new Error(result.message);
       }
 
-      // Use the isAdmin flag directly from the API response
-      return result.data || [];
+      // Debug log to check if the memberCount is being returned
+      console.log("API response data:", result.data);
+      
+      // Ensure memberCount is properly set, defaulting to 0 if not provided
+      const familiesWithMemberCount = (result.data || []).map((family: FamilyWithStatus) => ({
+        ...family,
+        memberCount: family.memberCount || 0
+      }));
+
+      return familiesWithMemberCount;
     },
     enabled: isSignedIn,
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -405,7 +447,7 @@ export default function FamiliesPage() {
         const errorResult = await response
           .json()
           .catch(() => ({ message: "Failed to update family" }));
-        throw new Error(errorResult.message || "Failed to update family");
+        throw new Error("Failed to update family");
       }
       return response.json();
     },
@@ -429,7 +471,7 @@ export default function FamiliesPage() {
         const errorResult = await response
           .json()
           .catch(() => ({ message: "Failed to delete family" }));
-        throw new Error(errorResult.message || "Failed to delete family");
+        throw new Error("Failed to delete family");
       }
       if (response.status === 204) {
         return { success: true };
@@ -456,12 +498,30 @@ export default function FamiliesPage() {
   const renderFamilyCard = (family: FamilyWithStatus, index: number) => {
     const isPending = family.userMembershipStatus === "PENDING";
     const hasJoinRequests = family.isAdmin && family.pendingRequestsCount > 0;
+    
+    // Use the actual member count from the API with fallback to ensure it's always defined
+    const memberCount = typeof family.memberCount === 'number' ? family.memberCount : 0;
+    const memberLimit =15; // Free plan limit - 15 members per family
+    
+    // In a full implementation, you would:
+    // 1. Check if the user has a premium subscription
+    // 2. Set the memberLimit to Infinity for premium users
+    // 3. Only show the upgrade prompts for non-premium users
+    // For this example, we're assuming all users are on the free plan
+    
+    const isAtLimit = memberCount >= memberLimit;
+    const percentFilled = Math.min((memberCount / memberLimit) * 100, 100); // Cap at 100%
 
-    // Debug log to track isAdmin status
-    console.log(`Family ${family.name} (${family.id}):`, {
+    // More detailed debug log
+    console.log(`Family ${family.name} (${family.id}) details:`, {
+      familyObject: family,
       isAdmin: family.isAdmin,
       createdById: family.createdById,
       pendingRequestsCount: family.pendingRequestsCount,
+      memberCount: memberCount,
+      rawMemberCount: family.memberCount,
+      isAtLimit,
+      percentFilled,
     });
 
     return (
@@ -479,6 +539,44 @@ export default function FamiliesPage() {
               : "border-rose-100/50 hover:border-rose-200"
         )}
       >
+        {/* Member Limit Indicator */}
+        {!isPending && (
+          <div className="mb-2 sm:mt-[22px] mt-8">
+            <div className="flex items-center justify-between mb-1.5">
+              <div className="flex items-center gap-1.5">
+                <Users className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
+                <span className="text-xs sm:text-sm text-gray-600 font-medium">
+                  Family Members
+                </span>
+              </div>
+              <span className="text-xs font-medium text-gray-500">
+                {memberCount !== undefined ? memberCount : "?"}/{memberLimit}
+              </span>
+            </div>
+            
+            <div className="relative">
+              <DynamicColorProgress 
+                value={percentFilled} 
+                className="h-1.5 sm:h-2"
+              />
+            </div>
+            
+            <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+              Members limit.
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMembersUpgradeModalOpen(true);
+                }}
+                className="text-rose-500 hover:text-rose-600 font-medium sm:text-sm text-xs"
+              >
+                Upgrade
+              </button> for unlimited
+            </p>
+          </div>
+        )}
+
         {/* Pending Requests Badge - Positioned at top of card */}
         {hasJoinRequests && (
           <motion.div
@@ -554,40 +652,69 @@ export default function FamiliesPage() {
 
         {/* Invite Code Section */}
         {!isPending && (
-          <div className="bg-rose-50/50 rounded-lg p-2 sm:p-3 mb-4 sm:mb-6 border border-rose-100">
-            <div className="flex items-center justify-between gap-2">
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-medium text-rose-600 mb-1 flex items-center gap-1">
-                  <Share2 className="w-3 h-3" />
-                  <span className="hidden sm:inline">Family Invite Code</span>
-                  <span className="sm:hidden">Code</span>
-                </p>
-                <code className="text-xs sm:text-sm font-mono text-gray-800 break-all">
-                  {family.joinToken}
-                </code>
+          <>
+            {isAtLimit ? (
+              <div className="bg-gradient-to-r from-rose-50 to-amber-50 rounded-lg p-2 sm:p-3 mb-4 sm:mb-6 border border-rose-100">
+                <div className="flex items-start gap-2">
+                  <Crown className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs sm:text-sm text-gray-700 font-medium">
+                      Members limit reached
+                    </p>
+                    <p className="text-xs text-gray-500 mt-0.5 mb-1.5">
+                      Upgrade to Premium for unlimited members and more features
+                    </p>
+                    <Button
+                      size="sm"
+                      className="w-full h-7 sm:h-8 text-xs sm:text-sm bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMembersUpgradeModalOpen(true);
+                      }}
+                    >
+                      <Crown className="w-3 h-3 mr-1.5" />
+                      Upgrade to Premium
+                    </Button>
+                  </div>
+                </div>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="shrink-0 hover:bg-rose-100 h-8 px-2 sm:h-auto sm:px-3"
-                onClick={() => copyToClipboard(family.joinToken)}
-              >
-                {copiedToken === family.joinToken ? (
-                  <>
-                    <Check className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 sm:mr-1.5" />
-                    <span className="text-green-600 text-xs hidden sm:inline">
-                      Copied!
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1.5" />
-                    <span className="text-xs hidden sm:inline">Copy</span>
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
+            ) : (
+              <div className="bg-rose-50/50 rounded-lg p-2 sm:p-3 mb-4 sm:mb-6 border border-rose-100">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-rose-600 mb-1 flex items-center gap-1">
+                      <Share2 className="w-3 h-3" />
+                      <span className="hidden sm:inline">Family Invite Code</span>
+                      <span className="sm:hidden">Code</span>
+                    </p>
+                    <code className="text-xs sm:text-sm font-mono text-gray-800 break-all">
+                      {family.joinToken}
+                    </code>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="shrink-0 hover:bg-rose-100 h-8 px-2 sm:h-auto sm:px-3"
+                    onClick={() => copyToClipboard(family.joinToken)}
+                  >
+                    {copiedToken === family.joinToken ? (
+                      <>
+                        <Check className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 sm:mr-1.5" />
+                        <span className="text-green-600 text-xs hidden sm:inline">
+                          Copied!
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1.5" />
+                        <span className="text-xs hidden sm:inline">Copy</span>
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         {/* Action Buttons */}
@@ -682,6 +809,12 @@ export default function FamiliesPage() {
     currentPage * FAMILIES_PER_PAGE
   );
 
+  // Determine if user should see upgrade prompt (has more than 1 approved family)
+  const approvedFamiliesCount = families?.filter(
+    (f) => f.userMembershipStatus === "APPROVED"
+  ).length ?? 0;
+  const shouldShowUpgradePrompt = approvedFamiliesCount >= 1;
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8 max-lg:pb-20">
       {/* Breadcrumb */}
@@ -723,12 +856,22 @@ export default function FamiliesPage() {
               Manage your family spaces and connections
             </p>
           </div>
-          <Link href="/families/create" className="w-full md:w-auto">
-            <Button className="bg-rose-500 hover:bg-rose-600 flex items-center justify-center gap-2 w-full md:w-auto">
+          {shouldShowUpgradePrompt ? (
+            <Button 
+              onClick={() => setShowUpgradeModal(true)}
+              className="bg-rose-500 hover:bg-rose-600 flex items-center justify-center gap-2 w-full md:w-auto"
+            >
               <PlusCircle className="w-4 h-4" />
-              <span>Create Family</span>
+              <span>Create More Families</span>
             </Button>
-          </Link>
+          ) : (
+            <Link href="/families/create" className="w-full md:w-auto">
+              <Button className="bg-rose-500 hover:bg-rose-600 flex items-center justify-center gap-2 w-full md:w-auto">
+                <PlusCircle className="w-4 h-4" />
+                <span>Create Family</span>
+              </Button>
+            </Link>
+          )}
         </div>
 
         {/* Search Section */}
@@ -748,8 +891,86 @@ export default function FamiliesPage() {
         )}
       </motion.div>
 
+     
       {/* Tabs Navigation */}
       {families && families.length > 0 && renderTabs()}
+
+      {/* Empty state - Updated to show upgrade message when needed */}
+      {!isLoading && !isError && filteredFamilies.length === 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white/80 backdrop-blur-md rounded-2xl p-6 sm:p-12 text-center border border-rose-100/50"
+        >
+          <div className="bg-rose-50 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
+            <Users className="w-6 h-6 sm:w-8 sm:h-8 text-rose-500" />
+          </div>
+          <h3 className="text-lg sm:text-xl font-lora font-bold text-gray-800 mb-2">
+            {search
+              ? "No Families Found"
+              : activeTab === "approved"
+                ? "No Families Yet"
+                : "No Pending Requests"}
+          </h3>
+          <p className="text-gray-600 max-w-md mx-auto mb-4 sm:mb-6 text-xs sm:text-base">
+            {search
+              ? `No families found matching "${search}". Try a different search term.`
+              : activeTab === "approved"
+                ? "Start your journey by creating a new family space or joining an existing one."
+                : "You don't have any pending join requests at the moment."}
+          </p>
+          {!search && activeTab === "approved" && (
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+              {shouldShowUpgradePrompt ? (
+                <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-3 items-center">
+                  <Button 
+                    onClick={() => setShowUpgradeModal(true)}
+                    className="bg-rose-500 hover:bg-rose-600 w-full sm:w-auto"
+                  >
+                    <PlusCircle className="w-4 h-4 mr-2" />
+                    Create More Family
+                  </Button>
+                  <Link href="/families/join" className="w-full sm:w-auto">
+                    <Button variant="outline" className="w-full sm:w-auto">
+                      <Users className="w-4 h-4 mr-2" />
+                      Join Family
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-3 items-center">
+                  <Link href="/families/create" className="w-full sm:w-auto">
+                    <Button className="bg-rose-500 hover:bg-rose-600 w-full sm:w-auto">
+                      <PlusCircle className="w-4 h-4 mr-2" />
+                      Create Family
+                    </Button>
+                  </Link>
+                  <Link href="/families/join" className="w-full sm:w-auto">
+                    <Button variant="outline" className="w-full sm:w-auto">
+                      <Users className="w-4 h-4 mr-2" />
+                      Join Family
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
+        </motion.div>
+      )}
+
+      {/* Premium Upgrade Modal */}
+      <PremiumUpgradeModal 
+        isOpen={showUpgradeModal} 
+        onClose={() => setShowUpgradeModal(false)} 
+        featureContext="families" 
+      />
+
+      {/* Members Limit Upgrade Modal */}
+      <PremiumUpgradeModal 
+        isOpen={membersUpgradeModalOpen} 
+        onClose={() => setMembersUpgradeModalOpen(false)} 
+        featureContext="members" 
+      />
 
       {/* Families Grid */}
       {isLoading ? (
@@ -782,46 +1003,6 @@ export default function FamiliesPage() {
           >
             Retry
           </Button>
-        </motion.div>
-      ) : !filteredFamilies.length ? (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white/80 backdrop-blur-md rounded-2xl p-6 sm:p-12 text-center border border-rose-100/50"
-        >
-          <div className="bg-rose-50 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
-            <Users className="w-6 h-6 sm:w-8 sm:h-8 text-rose-500" />
-          </div>
-          <h3 className="text-lg sm:text-xl font-lora font-bold text-gray-800 mb-2">
-            {search
-              ? "No Families Found"
-              : activeTab === "approved"
-                ? "No Families Yet"
-                : "No Pending Requests"}
-          </h3>
-          <p className="text-gray-600 max-w-md mx-auto mb-4 sm:mb-6 text-xs sm:text-base">
-            {search
-              ? `No families found matching "${search}". Try a different search term.`
-              : activeTab === "approved"
-                ? "Start your journey by creating a new family space or joining an existing one."
-                : "You don't have any pending join requests at the moment."}
-          </p>
-          {!search && activeTab === "approved" && (
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-              <Link href="/families/create" className="w-full sm:w-auto">
-                <Button className="bg-rose-500 hover:bg-rose-600 w-full sm:w-auto">
-                  <PlusCircle className="w-4 h-4 mr-2" />
-                  Create Family
-                </Button>
-              </Link>
-              <Link href="/families/join" className="w-full sm:w-auto">
-                <Button variant="outline" className="w-full sm:w-auto">
-                  <Users className="w-4 h-4 mr-2" />
-                  Join Family
-                </Button>
-              </Link>
-            </div>
-          )}
         </motion.div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 sm:gap-6">

@@ -1,10 +1,10 @@
 "use client";
 
-import { SignUp } from "@clerk/nextjs";
-import { useState } from "react";
-import Link from "next/link";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { SignUp } from "@clerk/nextjs";
+import Link from "next/link";
+import { useState } from "react";
 
 const Page = () => {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
@@ -25,34 +25,46 @@ const Page = () => {
             Create your account
           </h2>
           <p className="text-gray-600 mb-6 text-center max-sm:text-sm">
-            Before you sign up, please review and agree to our Terms and Conditions and Privacy Policy.
+            Before you sign up, please review and agree to our Terms and
+            Conditions and Privacy Policy.
           </p>
-          
+
           <div className="flex items-start space-x-3 mb-6">
-            <Checkbox 
-              id="terms" 
+            <Checkbox
+              id="terms"
               checked={agreedToTerms}
               onCheckedChange={handleAgreementChange}
               className="mt-1 data-[state=checked]:bg-rose-500 data-[state=checked]:border-rose-500"
             />
-            <Label htmlFor="terms" className="sm:text-sm text-xs text-gray-700 font-normal leading-relaxed">
+            <Label
+              htmlFor="terms"
+              className="sm:text-sm text-xs text-gray-700 font-normal leading-relaxed"
+            >
               I agree to the{" "}
-              <Link href="/terms-and-conditions" target="_blank" className="text-rose-500 hover:text-rose-600 underline">
+              <Link
+                href="/terms-and-conditions"
+                target="_blank"
+                className="text-rose-500 hover:text-rose-600 underline"
+              >
                 Terms and Conditions
               </Link>{" "}
               and{" "}
-              <Link href="/privacy-policy" target="_blank" className="text-rose-500 hover:text-rose-600 underline">
+              <Link
+                href="/privacy-policy"
+                target="_blank"
+                className="text-rose-500 hover:text-rose-600 underline"
+              >
                 Privacy Policy
               </Link>
             </Label>
           </div>
-          
+
           <button
             onClick={() => agreedToTerms && setShowSignUp(true)}
             disabled={!agreedToTerms}
             className={`w-full py-3 rounded-md text-white font-medium transition-colors ${
-              agreedToTerms 
-                ? "bg-rose-500 hover:bg-rose-600" 
+              agreedToTerms
+                ? "bg-rose-500 hover:bg-rose-600"
                 : "bg-gray-300 cursor-not-allowed"
             }`}
           >

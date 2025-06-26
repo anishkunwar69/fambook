@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
             },
           },
         },
-        // Include user's own membership status
+        // Include user's own membership status and counts
         _count: {
           select: {
             members: {
@@ -86,6 +86,23 @@ export async function GET(request: NextRequest) {
           },
         });
 
+        // Count total approved members directly from the included members array
+        const approvedMembersCount = family.members.length;
+
+        // Additional verification count from database (might be redundant but ensuring accuracy)
+        const dbApprovedMembersCount = await prisma.familyMember.count({
+          where: {
+            familyId: family.id,
+            status: "APPROVED",
+          },
+        });
+
+        // Log the counts for debugging
+        console.log(`Family ${family.id} member counts:`, {
+          fromIncludedMembers: approvedMembersCount,
+          fromDirectCount: dbApprovedMembersCount
+        });
+
         // Check if user is admin (either the creator or has ADMIN role)
         const isAdmin =
           family.createdById === user.id || userMembership?.role === "ADMIN";
@@ -94,6 +111,7 @@ export async function GET(request: NextRequest) {
           ...family,
           userMembershipStatus: userMembership?.status || null,
           pendingRequestsCount: family._count.members,
+          memberCount: dbApprovedMembersCount, // Use the direct count to be safe
           isAdmin, // Include isAdmin flag directly in the API response
         };
       })

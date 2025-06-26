@@ -26,6 +26,7 @@ import {
   Trash2,
   Upload,
   X,
+  Lock,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -104,6 +105,50 @@ function AlbumSkeleton() {
   );
 }
 
+function MediaLimitCard({
+  currentMedia,
+  mediaLimit,
+}: {
+  currentMedia: number;
+  mediaLimit: number;
+}) {
+  // Calculate the usage percentage
+  const percentage = Math.min((currentMedia / mediaLimit) * 100, 100);
+  const mediaRemaining = Math.max(0, mediaLimit - currentMedia);
+  const isFull = currentMedia >= mediaLimit;
+
+  return (
+    <div className={`rounded-lg p-3 mb-8 ${isFull ? 'bg-rose-50' : 'bg-green-50'}`}>
+      <div className="flex flex-col">
+        <div className="flex items-center justify-between mb-1">
+          <p className="text-sm font-medium">
+            Album Media Limit: {currentMedia}/{mediaLimit}
+          </p>
+          <span className="text-xs text-gray-600">
+            {mediaRemaining} {mediaRemaining === 1 ? "item" : "items"} remaining
+          </span>
+        </div>
+        
+        <div className="relative h-2 w-full overflow-hidden rounded-full bg-white mb-2">
+          <div
+            className={`h-full absolute top-0 left-0 transition-all duration-300 ${isFull ? 'bg-rose-500' : 'bg-green-500'}`}
+            style={{ width: `${percentage}%` }}
+          />
+        </div>
+        
+        <p className="text-xs text-gray-700">
+          {isFull 
+            ? "You've reached the media limit for this album. Each album can contain up to 15 media items." 
+            : `You can add ${mediaRemaining} more media ${mediaRemaining === 1 ? 'item' : 'items'} to this album.`}
+        </p>
+        <p className="text-xs text-gray-500 mt-1">
+          Maximum 1 video (up to 100MB) and images (up to 10MB each).
+        </p>
+      </div>
+    </div>
+  );
+}
+
 interface AddMediaDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -161,11 +206,16 @@ function AddMediaDialog({
 
     for (const file of files) {
       if (file.size > MAX_FILE_SIZE_BYTES) {
-        setFileError(
-          `File "${file.name}" is too large. Maximum size is ${MAX_FILE_SIZE_MB}MB.`
-        );
-        stopProcessing = true;
-        break;
+        const isVideo = file.type.startsWith('video/');
+        const maxSizeMB = isVideo ? MAX_FILE_SIZE_MB : 10;
+        
+        if ((isVideo && file.size > MAX_FILE_SIZE_BYTES) || (!isVideo && file.size > 10 * 1024 * 1024)) {
+          setFileError(
+            `File too large. ${isVideo ? 'Videos' : 'Images'} can be maximum ${maxSizeMB}MB.`
+          );
+          stopProcessing = true;
+          break;
+        }
       }
       newFilesToAdd.push(file);
     }
@@ -176,9 +226,18 @@ function AddMediaDialog({
       currentMediaCount + selectedFiles.length + newFilesToAdd.length;
     if (totalAfterAdd > mediaLimit) {
       setFileError(
-        `Cannot add ${newFilesToAdd.length} more file(s). Album limit is ${mediaLimit} items. You have ${
+        `Cannot add ${newFilesToAdd.length} more files. Album limit is ${mediaLimit} items. You have ${
           currentMediaCount + selectedFiles.length
         } / ${mediaLimit}.`
+      );
+      return;
+    }
+
+    const videoFiles = selectedFiles.filter(f => f.type.startsWith('video/')).length;
+    const newVideoFiles = newFilesToAdd.filter(f => f.type.startsWith('video/')).length;
+    if (videoFiles + newVideoFiles > 1) {
+      setFileError(
+        "Only one video file is allowed per album."
       );
       return;
     }
@@ -240,7 +299,7 @@ function AddMediaDialog({
         const uploadData = await uploadResponse.json();
         if (uploadData.error) {
           throw new Error(
-            `Upload failed for ${file.name}: ${uploadData.error.message}`
+            `Upload failed`
           );
         }
 
@@ -286,13 +345,13 @@ function AddMediaDialog({
             <Upload className="w-5 h-5" />
             Add Media to "{albumName}"
           </DialogTitle>
-          <DialogDescription>
-            Select photos or videos to upload. You can add up to {mediaLimit - currentMediaCount - selectedFiles.length} more items.
-            (Total limit: {mediaLimit})
+          <DialogDescription className="text-xs sm:text-sm text-gray-600">
+            Select photos or videos to upload. You can add up to {mediaLimit - currentMediaCount} more items.
+            (Maximum limit: {mediaLimit} items per album, including max 1 video up to 100MB and images up to 10MB each)
           </DialogDescription>
         </DialogHeader>
 
-        <div {...getRootProps()} className="py-4 space-y-4">
+        <div {...getRootProps()} className="pb-6 space-y-4">
           <input
             {...getInputProps()}
             ref={fileInputRefDialog}
@@ -711,15 +770,35 @@ export default function AlbumPage() {
             <div className="flex-1 md:flex-initial">
               <Button
                 onClick={() => setIsAddMediaDialogOpen(true)}
-                className="bg-rose-500 hover:bg-rose-600 flex items-center gap-2 w-full md:w-auto justify-center py-4"
+                className={`flex items-center gap-2 w-full md:w-auto justify-center py-4  ${
+                  album._count.media >= album.mediaLimit
+                    ? "bg-gray-300 hover:bg-gray-300 cursor-not-allowed "
+                    : "bg-rose-500 hover:bg-rose-600"
+                }`}
+                disabled={album._count.media >= album.mediaLimit}
+                title={
+                  album._count.media >= album.mediaLimit
+                    ? "Media limit reached"
+                    : "Add media to album"
+                }
               >
-                <Upload className="w-4 h-4" />
+                {album._count.media >= album.mediaLimit ? (
+                  <Lock className="w-4 h-4 mr-1" />
+                ) : (
+                  <Upload className="w-4 h-4" />
+                )}
                 Add Media
               </Button>
             </div>
           </div>
         </div>
       </motion.div>
+      
+      {/* Media Limit Card */}
+      <MediaLimitCard 
+        currentMedia={album._count.media} 
+        mediaLimit={album.mediaLimit} 
+      />
 
       {/* Media Grid */}
       {album.media.length === 0 ? (
@@ -734,9 +813,10 @@ export default function AlbumPage() {
           <h3 className="text-xl font-lora font-bold text-gray-800 mb-2">
             No Media Yet
           </h3>
-          <p className="text-gray-600 max-w-md mx-auto mb-6">
+          <p className="text-gray-600 max-w-md mx-auto mb-6 text-xs sm:text-base">
             Add photos and videos to create beautiful memories in this
-            album!
+            album! Each album can contain up to {album.mediaLimit} media items 
+            (maximum 1 video up to 100MB and images up to 10MB each).
           </p>
           <Button
             onClick={() => setIsAddMediaDialogOpen(true)}

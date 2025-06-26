@@ -49,6 +49,13 @@ function Navbar() {
                   </Button>
                 </Link>
 
+                <Link 
+                  href="/pricing" 
+                  className="font-poppins text-gray-600 hover:text-gray-900 hover:scale-105 transition-all"
+                >
+                  Pricing
+                </Link>
+
                 <NotificationBell />
 
                 <DropdownMenu>
@@ -93,6 +100,12 @@ function Navbar() {
                   className="font-poppins text-gray-600 hover:text-gray-900 hover:scale-105 transition-all"
                 >
                   Why Us
+                </Link>
+                <Link
+                  href="/pricing"
+                  className="font-poppins text-gray-600 hover:text-gray-900 hover:scale-105 transition-all"
+                >
+                  Pricing
                 </Link>
                 <Link href="/sign-in">
                   <Button
@@ -176,6 +189,14 @@ function Navbar() {
                     >
                       Dashboard
                     </Link>
+                    
+                    <Link
+                      href="/pricing"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block px-4 py-2 font-poppins text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors"
+                    >
+                      Pricing
+                    </Link>
 
                     <button
                       onClick={() => {
@@ -190,9 +211,30 @@ function Navbar() {
                 ) : (
                   // Public Mobile Navigation
                   <>
+                    <Link
+                      href="#features"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block px-4 py-2 font-poppins text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors"
+                    >
+                      Features
+                    </Link>
+                    <Link
+                      href="#comparisons"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block px-4 py-2 font-poppins text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors"
+                    >
+                      Why Us
+                    </Link>
+                    <Link
+                      href="/pricing"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block px-4 py-2 font-poppins text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors"
+                    >
+                      Pricing
+                    </Link>
                     <div className="px-4 py-2 space-y-2 flex flex-col gap-2">
                       <Link
-                        href="/sign-up"
+                        href="/sign-in"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         <Button

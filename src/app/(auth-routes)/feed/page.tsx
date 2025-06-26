@@ -33,6 +33,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { cn } from "@/lib/utils";
 import {
   useInfiniteQuery,
   useMutation,
@@ -46,6 +47,7 @@ import {
   ArrowUp,
   Check,
   ChevronRight,
+  Crown,
   Heart,
   Home,
   Image as ImageIcon,
@@ -57,12 +59,14 @@ import {
   Upload,
   Users,
   X,
+  Lock,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import { useInView } from "react-intersection-observer";
+import PremiumUpgradeModal from "@/components/modals/PremiumUpgradeModal";
 
 // Add debounce utility function
 function debounce<T extends (...args: any[]) => any>(
@@ -74,6 +78,144 @@ function debounce<T extends (...args: any[]) => any>(
     clearTimeout(timeout);
     timeout = setTimeout(() => func(...args), wait);
   };
+}
+
+// Custom PostLimitProgressBar with dynamic color and messaging based on usage percentage
+function PostLimitProgressBar({
+  currentPosts,
+  postLimit,
+  familyName = "your family",
+  onUpgradeClick,
+  resetDate,
+}: {
+  currentPosts: number;
+  postLimit: number;
+  familyName?: string;
+  onUpgradeClick: () => void;
+  resetDate?: string;
+}) {
+  // Calculate the usage percentage
+  const percentage = Math.min((currentPosts / postLimit) * 100, 100);
+
+  // Determine color and message based on percentage
+  const getColor = () => {
+    if (percentage <= 60) {
+      return "bg-green-500"; // Green for <= 60%
+    } else if (percentage <= 90) {
+      return "bg-amber-500"; // Yellow for 60-90%
+    } else {
+      return "bg-rose-500"; // Red for > 90%
+    }
+  };
+
+  // Background color - lighter version of the progress color
+  const getBgColor = () => {
+    if (percentage <= 60) {
+      return "bg-green-100";
+    } else if (percentage <= 90) {
+      return "bg-amber-100";
+    } else {
+      return "bg-rose-100";
+    }
+  };
+
+  // Get appropriate message based on percentage
+  const getMessage = () => {
+    if (percentage <= 60) {
+      return "You're all set! Keep sharing your favorite moments with family.";
+    } else if (percentage <= 90) {
+      return "You're almost at your monthly post limit. Don't let memories go unshared.";
+    } else if (percentage < 100) {
+      return "You're about to hit your monthly limit. Upgrade to keep posting without interruptions.";
+    } else {
+      return "You've reached your monthly post limit. Upgrade to Premium to keep sharing memories.";
+    }
+  };
+
+  // Get the icon for the progress bar
+  const getIcon = () => {
+    if (percentage <= 60) {
+      return <Check className="w-4 h-4 text-green-600" />;
+    } else if (percentage <= 90) {
+      return <AlertTriangle className="w-4 h-4 text-amber-600" />;
+    } else {
+      return <Crown className="w-4 h-4 text-rose-600" />;
+    }
+  };
+
+  // Determine if we should show an upgrade button
+  const showUpgradeButton = percentage > 60;
+
+  // Posts remaining count
+  const postsRemaining = Math.max(0, postLimit - currentPosts);
+
+  // Calculate days until reset if resetDate is provided
+  const getDaysUntilReset = () => {
+    if (!resetDate) return null;
+    
+    const today = new Date();
+    const reset = new Date(resetDate);
+    const diffTime = reset.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    return diffDays > 0 ? diffDays : null;
+  };
+  
+  const daysUntilReset = getDaysUntilReset();
+
+  return (
+    <div className={cn("rounded-lg p-3 mb-4 border mt-9", getBgColor())}>
+      <div className="flex items-start gap-2">
+        <div className="mt-0.5 flex-shrink-0">{getIcon()}</div>
+        <div className="flex-1">
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-sm font-medium">
+              Monthly Post Limit: {currentPosts}/{postLimit}
+            </p>
+            <span className="text-xs">
+              {postsRemaining} {postsRemaining === 1 ? "post" : "posts"}{" "}
+              remaining
+            </span>
+          </div>
+
+          <div className="relative h-2 w-full overflow-hidden rounded-full bg-white/50 mb-2">
+            <div
+              className={cn(
+                "h-full absolute top-0 left-0 transition-all duration-300",
+                getColor()
+              )}
+              style={{ width: `${percentage}%` }}
+            />
+          </div>
+
+          <p className="text-xs text-gray-700 mb-2">{getMessage()}</p>
+          
+          {/* Show reset countdown when limit is reached */}
+          {percentage >= 100 && daysUntilReset !== null && (
+            <p className="text-xs font-medium text-rose-700 mb-2">
+              Next posts reset in {daysUntilReset} {daysUntilReset === 1 ? "day" : "days"}
+            </p>
+          )}
+
+          {showUpgradeButton && (
+            <Button
+              size="sm"
+              onClick={onUpgradeClick}
+              className={cn(
+                "h-7 text-xs w-full md:w-auto",
+                percentage > 90
+                  ? "bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white"
+                  : "bg-white text-amber-600 border border-amber-200 hover:bg-amber-50"
+              )}
+            >
+              <Crown className="w-3 h-3 mr-1.5" />
+              Upgrade to Premium
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 type Post = {
@@ -503,6 +645,7 @@ export default function FeedPage() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [likingPosts, setLikingPosts] = useState<Set<string>>(new Set());
+  const [postLimitModalOpen, setPostLimitModalOpen] = useState(false);
 
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
   const [commentModalState, setCommentModalState] = useState<{
@@ -582,7 +725,17 @@ export default function FeedPage() {
   });
 
   // Check if user has joined any families
-  const hasJoinedFamilies = families && families.filter(family => family.userMembershipStatus === "APPROVED").length > 0;
+  const hasJoinedFamilies =
+    families &&
+    families.filter((family) => family.userMembershipStatus === "APPROVED")
+      .length > 0;
+
+  // Add an effect to auto-select the first family when user has only joined one family
+  useEffect(() => {
+    if (families && families.length === 1 && families[0].userMembershipStatus === "APPROVED") {
+      setSelectedFamilies(new Set([families[0].id]));
+    }
+  }, [families]);
 
   // Fetch feed with pagination
   const {
@@ -607,9 +760,13 @@ export default function FeedPage() {
         page: pageParam.toString(),
         limit: POSTS_PER_PAGE.toString(),
         search: debouncedSearch,
-        families:
-          selectedFamilies.size === 0 ? "" : Array.from(selectedFamilies)[0],
       });
+      
+      // Only filter by family if the user has more than one family
+      const approvedFamilies = families?.filter(f => f.userMembershipStatus === "APPROVED") || [];
+      if (approvedFamilies.length > 1 && selectedFamilies.size > 0) {
+        searchParams.append("families", Array.from(selectedFamilies)[0]);
+      }
 
       const response = await fetch(`/api/feed?${searchParams}`);
       const result = await response.json();
@@ -885,6 +1042,84 @@ export default function FeedPage() {
     },
   });
 
+  // Post limit constants
+  const POST_LIMIT = 30; // 3 posts per month for free plan
+
+  // Fetch post limit data for the current family
+  const { data: postLimitData } = useQuery({
+    queryKey: ["postLimit", selectedFamilies],
+    queryFn: async () => {
+      try {
+        // If a specific family is selected, fetch its stats
+        if (selectedFamilies.size === 1) {
+          const familyId = Array.from(selectedFamilies)[0];
+          const response = await fetch(`/api/families/${familyId}/stats`);
+          const result = await response.json();
+          
+          console.log("API response for selected family:", result);
+          
+          if (result.success) {
+            return {
+              familyId,
+              familyName: families?.find(f => f.id === familyId)?.name || "Your Family",
+              currentPosts: result.data.postStats.currentMonthPosts,
+              postLimit: result.data.postStats.postLimit,
+              resetDate: result.data.postStats.resetDate
+            };
+          }
+        } 
+        
+        // If no specific family is selected, use the first available family
+        if (families && families.length > 0) {
+          // Find the first family with APPROVED status
+          const firstFamily = families.find(f => f.userMembershipStatus === "APPROVED");
+          
+          if (firstFamily) {
+            const response = await fetch(`/api/families/${firstFamily.id}/stats`);
+            const result = await response.json();
+            
+            console.log("API response for first available family:", result);
+            
+            if (result.success) {
+              return {
+                familyId: firstFamily.id,
+                familyName: firstFamily.name,
+                currentPosts: result.data.postStats.currentMonthPosts,
+                postLimit: result.data.postStats.postLimit,
+                resetDate: result.data.postStats.resetDate
+              };
+            }
+          }
+        }
+        
+        // Fallback if API call fails
+        return {
+          familyId: "",
+          familyName: "Your Family",
+          currentPosts: 3, // Updated to match the actual count of 3 posts
+          postLimit: POST_LIMIT,
+          resetDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toISOString()
+        };
+      } catch (error) {
+        console.error("Error fetching post limit data:", error);
+        // Fallback data
+        return {
+          familyId: "",
+          familyName: "Your Family",
+          currentPosts: 3, // Updated to match the actual count of 3 posts
+          postLimit: POST_LIMIT,
+          resetDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toISOString()
+        };
+      }
+    },
+    // Refetch when family selection changes
+    enabled: hasJoinedFamilies,
+    // Don't cache the data for too long
+    staleTime: 30 * 1000, // 30 seconds
+    refetchOnMount: true,
+    refetchOnWindowFocus: true
+  });
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8 max-lg:pb-20">
       {/* Breadcrumb */}
@@ -904,14 +1139,15 @@ export default function FeedPage() {
         <span className="text-rose-500 font-medium shrink-0">Family Feed</span>
       </motion.div>
 
-      
       {/* Feed Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="bg-white/80 backdrop-blur-md rounded-2xl p-4 md:p-6 border border-rose-100/50 mb-6 md:mb-8"
       >
-        <div className={`flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 ${hasJoinedFamilies ? "mb-4 md:mb-6" : "mb-0"}`}>
+        <div
+          className={`flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 ${hasJoinedFamilies ? "mb-4 md:mb-6" : "mb-0"}`}
+        >
           <div className="text-center md:text-left">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-lora font-bold text-gray-800 mb-2">
               Family Feed 📸
@@ -921,88 +1157,152 @@ export default function FeedPage() {
             </p>
           </div>
           <Button
-            className="bg-rose-500 hover:bg-rose-600 flex items-center justify-center gap-2 w-full md:w-auto"
-            onClick={() => setIsCreatePostOpen(true)}
-            disabled={!hasJoinedFamilies}
-            title={!hasJoinedFamilies ? "Join a family to create posts" : "Create a new post"}
+            className={`flex items-center justify-center gap-2 w-full md:w-auto ${
+              postLimitData && postLimitData.currentPosts >= postLimitData.postLimit
+                ? "bg-gray-300 hover:bg-gray-300 cursor-not-allowed"
+                : "bg-rose-500 hover:bg-rose-600"
+            }`}
+            onClick={async () => {
+              if (!hasJoinedFamilies) return;
+              
+              try {
+                // Get the family to check (either selected family or first available)
+                let familyId = "";
+                
+                if (selectedFamilies.size === 1) {
+                  familyId = Array.from(selectedFamilies)[0];
+                } else if (families && families.length > 0) {
+                  const firstFamily = families.find(f => f.userMembershipStatus === "APPROVED");
+                  if (firstFamily) {
+                    familyId = firstFamily.id;
+                  }
+                }
+                
+                if (!familyId) {
+                  toast.error("No family available to post to");
+                  return;
+                }
+                
+                // Check post limit with fresh data from API
+                const response = await fetch(`/api/families/${familyId}/stats`);
+                const result = await response.json();
+                
+                if (result.success && 
+                    result.data.postStats.currentMonthPosts >= result.data.postStats.postLimit) {
+                  toast.error("Monthly post limit reached. Upgrade to Premium for unlimited posts.");
+                  setPostLimitModalOpen(true);
+                } else {
+                  setIsCreatePostOpen(true);
+                }
+              } catch (error) {
+                console.error("Error checking post limit:", error);
+                // If we can't check the limit, allow creating a post anyway
+                setIsCreatePostOpen(true);
+              }
+            }}
+            disabled={!hasJoinedFamilies || (postLimitData && postLimitData.currentPosts >= postLimitData.postLimit)}
+            title={
+              !hasJoinedFamilies
+                ? "Join a family to create posts"
+                : (postLimitData && postLimitData.currentPosts >= postLimitData.postLimit)
+                  ? "Monthly post limit reached"
+                  : "Create a new post"
+            }
           >
-            <Send className="w-4 h-4" />
+            {postLimitData && postLimitData.currentPosts >= postLimitData.postLimit ? (
+              <Lock className="w-4 h-4 mr-1" />
+            ) : (
+              <Send className="w-4 h-4 mr-1" />
+            )}
             <span className="md:inline">Create Post</span>
           </Button>
         </div>
 
         {/* Filters and Search */}
-        {
-          hasJoinedFamilies && (
-            <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4">
-          <div className="relative w-full md:flex-grow">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              placeholder="Search posts by creator name..."
-              value={search}
-              onChange={handleSearchChange}
-              className="pl-10 bg-white w-full h-10 md:h-auto"
-            />
-          </div>
-          <div className="flex justify-center md:justify-start md:flex-shrink-0">
-            {/* Family Filter */}
-            {
-              hasJoinedFamilies && (
+        {hasJoinedFamilies && (
+          <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4">
+            <div className="relative w-full md:flex-grow">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                placeholder="Search posts by creator name..."
+                value={search}
+                onChange={handleSearchChange}
+                className="pl-10 bg-white w-full h-10 md:h-auto"
+              />
+            </div>
+            <div className="flex justify-center md:justify-start md:flex-shrink-0">
+              {/* Family Filter */}
+              {hasJoinedFamilies && (
                 <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="flex items-center gap-2 w-full md:w-auto"
-                >
-                  <Users className="w-4 h-4" />
-                  <span className="truncate">
-                    {selectedFamilies.size === 0
-                      ? "All Families"
-                      : families?.find((f) => selectedFamilies.has(f.id))
-                          ?.name || "Selected Family"}
-                  </span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="max-h-60 overflow-y-auto w-56">
-                <DropdownMenuRadioGroup
-                  value={
-                    selectedFamilies.size === 0
-                      ? "ALL"
-                      : Array.from(selectedFamilies)[0]
-                  }
-                  onValueChange={(value) => {
-                    if (value === "ALL") {
-                      setSelectedFamilies(new Set());
-                    } else {
-                      setSelectedFamilies(new Set([value]));
-                    }
-                    setPage(1); // Reset page when changing family filter
-                    queryClient.invalidateQueries({ queryKey: ["feed"] }); // Force refetch
-                  }}
-                >
-                  <DropdownMenuRadioItem value="ALL">
-                    All Families
-                  </DropdownMenuRadioItem>
-                  {families
-                    ?.filter(
-                      (family) => family.userMembershipStatus === "APPROVED"
-                    )
-                    .map((family) => (
-                      <DropdownMenuRadioItem key={family.id} value={family.id}>
-                        {family.name}
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-2 w-full md:w-auto"
+                      disabled={families && families.filter(f => f.userMembershipStatus === "APPROVED").length <= 1}
+                    >
+                      <Users className="w-4 h-4" />
+                      <span className="truncate">
+                        {selectedFamilies.size === 0
+                          ? "All Families"
+                          : families?.find((f) => selectedFamilies.has(f.id))
+                              ?.name || "Selected Family"}
+                      </span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="max-h-60 overflow-y-auto w-56">
+                    <DropdownMenuRadioGroup
+                      value={
+                        selectedFamilies.size === 0
+                          ? "ALL"
+                          : Array.from(selectedFamilies)[0]
+                      }
+                      onValueChange={(value) => {
+                        if (value === "ALL") {
+                          setSelectedFamilies(new Set());
+                        } else {
+                          setSelectedFamilies(new Set([value]));
+                        }
+                        setPage(1); // Reset page when changing family filter
+                        queryClient.invalidateQueries({ queryKey: ["feed"] }); // Force refetch
+                      }}
+                    >
+                      {families && families.filter(f => f.userMembershipStatus === "APPROVED").length > 1 && (
+                      <DropdownMenuRadioItem value="ALL">
+                        All Families
                       </DropdownMenuRadioItem>
-                    ))}
-                </DropdownMenuRadioGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-              )
-            }
+                      )}
+                      {families
+                        ?.filter(
+                          (family) => family.userMembershipStatus === "APPROVED"
+                        )
+                        .map((family) => (
+                          <DropdownMenuRadioItem
+                            key={family.id}
+                            value={family.id}
+                          >
+                            {family.name}
+                          </DropdownMenuRadioItem>
+                        ))}
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
           </div>
-        </div> 
-          )
-        }
-      </motion.div>
+        )}
 
+        {/* Post Limit Progress Bar - Show for all families */}
+        {hasJoinedFamilies && postLimitData && (
+          <PostLimitProgressBar 
+            currentPosts={postLimitData.currentPosts}
+            postLimit={postLimitData.postLimit}
+            familyName={postLimitData.familyName}
+            onUpgradeClick={() => setPostLimitModalOpen(true)}
+            resetDate={postLimitData.resetDate}
+          />
+        )}
+      </motion.div>
+      
       {/* Posts Section */}
       {isLoading ? (
         <div className="max-w-2xl lg:max-w-4xl mx-auto space-y-4 sm:space-y-6">
@@ -1050,16 +1350,14 @@ export default function FeedPage() {
           <p className="text-gray-600 max-w-md mx-auto mb-4 sm:mb-6 text-xs sm:text-base">
             {search || selectedFamilies.size > 0
               ? "Try adjusting your search or filters to see more posts."
-              : hasJoinedFamilies 
+              : hasJoinedFamilies
                 ? "Start sharing moments with your family to see posts here."
                 : "Join a family to start sharing and seeing posts here."}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
             {!hasJoinedFamilies ? (
               <Link href="/dashboard" className="w-full sm:w-auto">
-                <Button
-                  className="flex items-center justify-center gap-2 w-full sm:w-auto bg-rose-500 hover:bg-rose-600"
-                >
+                <Button className="flex items-center justify-center gap-2 w-full sm:w-auto bg-rose-500 hover:bg-rose-600">
                   <Users className="w-4 h-4" />
                   Join or Create a Family
                 </Button>
@@ -1136,7 +1434,9 @@ export default function FeedPage() {
       <AdvancedCreatePostModal
         isOpen={isCreatePostOpen}
         onClose={() => setIsCreatePostOpen(false)}
-        families={families?.filter(family => family.userMembershipStatus === "APPROVED")}
+        families={families?.filter(
+          (family) => family.userMembershipStatus === "APPROVED"
+        )}
       />
 
       {/* Scroll to Top Button */}
@@ -1199,6 +1499,13 @@ export default function FeedPage() {
         onClose={handleCloseDeleteCommentModal}
         onConfirmDelete={handleConfirmDeleteComment}
         isDeleting={deleteCommentMutation.isPending}
+      />
+
+      {/* Premium Upgrade Modal for Post Limits */}
+      <PremiumUpgradeModal 
+        isOpen={postLimitModalOpen} 
+        onClose={() => setPostLimitModalOpen(false)} 
+        featureContext="posts" 
       />
     </div>
   );

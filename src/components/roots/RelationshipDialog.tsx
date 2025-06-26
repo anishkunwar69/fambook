@@ -39,7 +39,10 @@ import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 
 const relationshipSchema = z.object({
-  relationType: z.enum(["PARENT", "SPOUSE"]),
+  relationType: z.enum(["PARENT", "SPOUSE"], {
+    required_error: "Please select a relationship type",
+    invalid_type_error: "Relationship type must be either Parent or Spouse",
+  }),
   marriageDate: z.date().optional(),
   divorceDate: z.date().optional(),
   isActive: z.boolean(),
@@ -71,7 +74,7 @@ export function RelationshipDialog({
   const form = useForm<z.infer<typeof relationshipSchema>>({
     resolver: zodResolver(relationshipSchema),
     defaultValues: {
-      relationType: initialData?.relationType || "PARENT",
+      relationType: initialData?.relationType || undefined,
       marriageDate: initialData?.marriageDate,
       divorceDate: initialData?.divorceDate,
       isActive: initialData?.isActive ?? true,
@@ -80,6 +83,11 @@ export function RelationshipDialog({
 
   const { isSubmitting } = form.formState;
   const relationType = form.watch("relationType");
+
+  // Log whenever relationship type changes
+  useEffect(() => {
+    console.log("[DEBUG] RelationshipDialog - relationship type changed:", relationType);
+  }, [relationType]);
 
   // Validate relationship type whenever it changes
   useEffect(() => {

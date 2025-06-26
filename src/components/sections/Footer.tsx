@@ -1,13 +1,10 @@
-import { Heart, Mail, Shield, Zap } from "lucide-react";
-import Container from "../Container";
+import { Mail } from "lucide-react";
 import Link from "next/link";
+import Container from "../Container";
 
 export default function Footer() {
-
   return (
-    <section
-      className="py-8 md:py-[55px] bg-gradient-to-r from-rose-500 to-amber-500"
-    >
+    <section className="py-8 md:py-[55px] bg-gradient-to-r from-rose-500 to-amber-500">
       <Container>
         <div className="text-center text-white">
           <h2 className="font-lora text-2xl md:text-4xl lg:text-5xl font-bold mb-6">
@@ -24,9 +21,10 @@ export default function Footer() {
               🚀 We're in Beta - Your Feedback Matters!
             </h3>
             <p className="font-poppins md:text-lg text-sm mb-4 opacity-90">
-              <span className="font-bold">FamBook</span> is currently in MVP stage. We're constantly improving and
-              would love to hear your thoughts, suggestions, and feedback to
-              make this the perfect family platform.
+              <span className="font-bold">FamBook</span> is currently in MVP
+              stage. We're constantly improving and would love to hear your
+              thoughts, suggestions, and feedback to make this the perfect
+              family platform.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <a
@@ -34,7 +32,9 @@ export default function Footer() {
                 className="flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-all hover:scale-105 w-full"
               >
                 <Mail className="w-4 h-4" />
-                <span className="font-poppins max-sm:text-sm">anishkunwar808@gmail.com</span>
+                <span className="font-poppins max-sm:text-sm">
+                  anishkunwar808@gmail.com
+                </span>
               </a>
               <a
                 href="https://www.instagram.com/anishkunwar_21/"
@@ -55,29 +55,28 @@ export default function Footer() {
                     fill="currentColor"
                   />
                 </svg>
-                <span className="font-poppins max-sm:text-sm">anishkunwar_21</span>
+                <span className="font-poppins max-sm:text-sm">
+                  anishkunwar_21
+                </span>
               </a>
             </div>
           </div>
 
-          
-          
           {/* Legal Links */}
           <div className="mt-12 pt-6 border-t border-white/20">
             <div className="flex flex-wrap justify-center gap-6 text-sm">
-              <Link 
-                href="/privacy-policy" 
+              <Link
+                href="/privacy-policy"
                 className="text-white/70 hover:text-white transition-colors"
               >
                 Privacy Policy
               </Link>
-              <Link 
-                href="/terms-and-conditions" 
+              <Link
+                href="/terms-and-conditions"
                 className="text-white/70 hover:text-white transition-colors"
               >
                 Terms & Conditions
               </Link>
-              
             </div>
           </div>
         </div>

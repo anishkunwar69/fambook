@@ -1,4 +1,4 @@
-import { Heart, Link2, Cake, Info } from "lucide-react";
+import { Heart, Link2, Cake, Info, Users } from "lucide-react";
 import {
   HoverCard,
   HoverCardContent,
@@ -64,6 +64,8 @@ export function FamilyTreeInfo() {
                   </p>
                 </div>
               </div>
+
+              
             </div>
 
             <div className="pt-2">

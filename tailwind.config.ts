@@ -54,6 +54,7 @@ export default {
       screens: {
         xs: "450px",
         '1220': "1220px",
+        '1118': "1118px",
       },
       fontFamily: {
         poppins: ["var(--font-poppins)"],

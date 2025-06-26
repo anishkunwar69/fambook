@@ -4,12 +4,15 @@ import { ProfileCompletionPrompt } from "@/components/onboarding/ProfileCompleti
 import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useUser } from "@clerk/nextjs";
+import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   ChevronDown,
   ChevronRight,
   ChevronUp,
+  Crown,
   Home,
+  Loader2,
   PlusCircle,
   Sparkles,
   Users,
@@ -17,16 +20,50 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import PremiumUpgradeModal from "@/components/modals/PremiumUpgradeModal";
+
+// Type definition for family data
+interface FamilyWithStatus {
+  id: string;
+  name: string;
+  description?: string;
+  joinToken: string;
+  userMembershipStatus: "APPROVED" | "PENDING" | "REJECTED" | null;
+}
 
 export default function DashboardPage() {
   const { user } = useUser();
   const { user: currentUser, isLoading: isUserLoading } = useCurrentUser();
   const [isFirstLogin, setIsFirstLogin] = useState(false);
-  const [hasFamilies, setHasFamilies] = useState<boolean | null>(null);
-  const [isLoadingFamilies, setIsLoadingFamilies] = useState(true);
   const [showGuide, setShowGuide] = useState(true);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
-  // Check if this is the first login and if user has families
+  // Fetch families data using React Query
+  const { 
+    data: families,
+    isLoading: isLoadingFamilies,
+  } = useQuery<FamilyWithStatus[]>({
+    queryKey: ["families"],
+    queryFn: async () => {
+      const response = await fetch("/api/families");
+      if (!response.ok) {
+        throw new Error("Failed to fetch families");
+      }
+      const result = await response.json();
+      return result.data || [];
+    },
+    // Don't refetch on window focus to avoid UI flickering
+    refetchOnWindowFocus: false,
+    // Cache the data for 5 minutes
+    staleTime: 1000 * 60 * 5,
+    // Start fetching immediately, don't wait for component mount
+    enabled: !!currentUser
+  });
+
+  // Computed state for user having families
+  const hasFamilies = families && families.filter(f => f.userMembershipStatus === "APPROVED").length > 0;
+
+  // Check if this is the first login and setup guide preferences
   useEffect(() => {
     const hasVisitedDashboard = localStorage.getItem("has_visited_dashboard");
     const guideHidden = localStorage.getItem("dashboard_guide_hidden");
@@ -39,29 +76,7 @@ export default function DashboardPage() {
     if (guideHidden === "true") {
       setShowGuide(false);
     }
-
-    // Check if user has any families
-    const checkUserFamilies = async () => {
-      setIsLoadingFamilies(true);
-      try {
-        const response = await fetch("/api/families");
-        if (!response.ok) {
-          throw new Error("Failed to fetch families");
-        }
-        const data = await response.json();
-        setHasFamilies(data?.families?.length > 0);
-      } catch (error) {
-        console.error("Error fetching user families:", error);
-        setHasFamilies(false);
-      } finally {
-        setIsLoadingFamilies(false);
-      }
-    };
-
-    if (currentUser && !isUserLoading) {
-      checkUserFamilies();
-    }
-  }, [currentUser, isUserLoading]);
+  }, []);
 
   // Toggle guide visibility
   const toggleGuide = () => {
@@ -84,8 +99,47 @@ export default function DashboardPage() {
     languages: null,
   };
 
+  // Determine what to render for the Create Family button
+  const renderCreateFamilyButton = () => {
+    if (isLoadingFamilies) {
+      return (
+        <Button className="bg-rose-500 hover:bg-rose-600 w-full" disabled>
+          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          Loading...
+        </Button>
+      );
+    }
+
+    if (hasFamilies) {
+      return (
+        <Button 
+          onClick={() => setShowUpgradeModal(true)}
+          className="bg-rose-500 hover:bg-rose-600 w-full flex items-center gap-2"
+        >
+          <Crown className="w-4 h-4" />
+          Create More Family
+        </Button>
+      );
+    }
+
+    return (
+      <Link href="/families/create">
+        <Button className="bg-rose-500 hover:bg-rose-600 w-full">
+          Create Family
+        </Button>
+      </Link>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8 max-lg:pb-20">
+      {/* Premium Upgrade Modal */}
+      <PremiumUpgradeModal 
+        isOpen={showUpgradeModal} 
+        onClose={() => setShowUpgradeModal(false)} 
+        featureContext="families" 
+      />
+
       {/* Profile Completion Prompt - only show when user data is loaded */}
       {user && !isUserLoading && (
         <ProfileCompletionPrompt
@@ -238,11 +292,7 @@ export default function DashboardPage() {
           <p className="text-gray-600 mb-4 max-sm:text-xs">
             Start your own family space and invite your loved ones
           </p>
-          <Link href="/families/create">
-            <Button className="bg-rose-500 hover:bg-rose-600 w-full">
-              Create Family
-            </Button>
-          </Link>
+          {renderCreateFamilyButton()}
         </motion.div>
 
         {/* Join Family Card */}

@@ -133,7 +133,7 @@ model Album {
   coverImage  String?
   familyId    String
   mediaCount  Int      @default(0) // Track total media count
-  mediaLimit  Int      @default(100) // Limit for both photos and videos
+  mediaLimit  Int      @default(15) // Limit for both photos and videos
   createdById String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

@@ -19,15 +19,19 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertTriangle,
   ChevronRight,
+  Check,
   Clock,
+  Crown,
   Home,
   Image as ImageIcon,
   Loader2,
+  Lock,
   Pencil,
   Plus,
   Search,
@@ -38,6 +42,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { z } from "zod";
+import PremiumUpgradeModal from "@/components/modals/PremiumUpgradeModal";
 
 function debounce<T extends (...args: any[]) => any>(
   func: T,
@@ -72,6 +77,13 @@ type FilterType = "ALL" | "NORMAL" | "EVENTS";
 type SortType = "NEWEST" | "OLDEST" | "MOST_PHOTOS";
 
 const ALBUMS_PER_PAGE = 6;
+
+// First, fix the family type
+type Family = {
+  id: string;
+  name: string;
+  userMembershipStatus?: "APPROVED" | "PENDING" | null;
+};
 
 // Skeleton Card Component for Albums
 function AlbumSkeletonCard() {
@@ -294,14 +306,14 @@ function DeleteAlbumConfirmationModal({
       });
       const result = await response.json();
       if (!result.success && response.status !== 200) {
-        // Allow 200 for success with body, or 204 for no body
-        throw new Error(result.message || "Failed to delete album");
+        throw new Error("Failed to delete album");
       }
       return result;
     },
     onSuccess: () => {
       toast.success("Album deleted successfully!");
       queryClient.invalidateQueries({ queryKey: ["albums"] });
+      queryClient.invalidateQueries({ queryKey: ["albumLimit"] });
       onClose();
     },
     onError: (error: Error) => {
@@ -378,13 +390,190 @@ function DeleteAlbumConfirmationModal({
   );
 }
 
+// Add the AlbumLimitProgressBar component
+function AlbumLimitProgressBar({
+  currentAlbums,
+  albumLimit,
+  familyName = "your family",
+  onUpgradeClick,
+  resetDate,
+}: {
+  currentAlbums: number;
+  albumLimit: number;
+  familyName?: string;
+  onUpgradeClick: () => void;
+  resetDate?: string;
+}) {
+  // Calculate the usage percentage
+  const percentage = Math.min((currentAlbums / albumLimit) * 100, 100);
+
+  // Determine color and message based on percentage
+  const getColor = () => {
+    if (percentage <= 60) {
+      return "bg-green-500"; // Green for <= 60%
+    } else if (percentage <= 90) {
+      return "bg-amber-500"; // Yellow for 60-90%
+    } else {
+      return "bg-rose-500"; // Red for > 90%
+    }
+  };
+
+  // Background color - lighter version of the progress color
+  const getBgColor = () => {
+    if (percentage <= 60) {
+      return "bg-green-100";
+    } else if (percentage <= 90) {
+      return "bg-amber-100";
+    } else {
+      return "bg-rose-100";
+    }
+  };
+
+  // Get appropriate message based on percentage
+  const getMessage = () => {
+    if (percentage <= 60) {
+      return "You're all set! Keep creating albums for your family memories.";
+    } else if (percentage <= 90) {
+      return "You're almost at your monthly album limit. Plan your albums wisely.";
+    } else if (percentage < 100) {
+      return "You're about to hit your monthly limit. Upgrade to keep creating albums without interruptions.";
+    } else {
+      return "You've reached your monthly album limit. Upgrade to Premium to keep organizing memories.";
+    }
+  };
+
+  
+
+  // Determine if we should show an upgrade button
+  const showUpgradeButton = percentage > 60;
+
+  // Albums remaining count
+  const albumsRemaining = Math.max(0, albumLimit - currentAlbums);
+
+  // Calculate days until reset if resetDate is provided
+  const getDaysUntilReset = () => {
+    if (!resetDate) return null;
+    
+    const today = new Date();
+    const reset = new Date(resetDate);
+    const diffTime = reset.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    return diffDays > 0 ? diffDays : null;
+  };
+  
+  const daysUntilReset = getDaysUntilReset();
+
+  return (
+    <div className={cn("rounded-lg p-3 mb-4 border mt-9", getBgColor())}>
+      <div className="flex items-start gap-2">
+        <div className="flex-1">
+          <div className="flex items-center justify-between mb-1">
+            <p className="sm:text-sm text-xs font-medium">
+              Monthly Album Limit: {currentAlbums}/{albumLimit}
+            </p>
+            <span className="text-xs">
+              {albumsRemaining} {albumsRemaining === 1 ? "album" : "albums"}{" "}
+              remaining
+            </span>
+          </div>
+
+          <div className="relative h-2 w-full overflow-hidden rounded-full bg-white/50 mb-2">
+            <div
+              className={cn(
+                "h-full absolute top-0 left-0 transition-all duration-300",
+                getColor()
+              )}
+              style={{ width: `${percentage}%` }}
+            />
+          </div>
+
+          <p className="text-xs text-gray-700 mb-2">{getMessage()}</p>
+          
+          {/* Show reset countdown when limit is reached */}
+          {percentage >= 100 && daysUntilReset !== null && (
+            <p className="text-xs font-medium text-rose-700 mb-2">
+              Next albums reset in {daysUntilReset} {daysUntilReset === 1 ? "day" : "days"}
+            </p>
+          )}
+
+          {showUpgradeButton && (
+            <Button
+              size="sm"
+              onClick={onUpgradeClick}
+              className={cn(
+                "h-7 text-xs w-full md:w-auto",
+                percentage > 90
+                  ? "bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white"
+                  : "bg-white text-amber-600 border border-amber-200 hover:bg-amber-50"
+              )}
+            >
+              <Crown className="w-3 h-3 mr-1.5" />
+              Upgrade to Premium
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Add a MediaLimitIndicator component
+function MediaLimitIndicator({ current, limit = 15 }: { current: number; limit?: number }) {
+  // Calculate percentage of media limit used
+  const percentage = (current / limit) * 100;
+  
+  // Determine color based on percentage
+  const getColor = () => {
+    if (percentage <= 50) {
+      return "bg-green-500"; // Green for <= 50%
+    } else if (percentage <= 85) {
+      return "bg-amber-500"; // Amber for 50-85%
+    } else {
+      return "bg-rose-500"; // Red for > 85%
+    }
+  };
+  
+  // Determine text color based on percentage
+  const getTextColor = () => {
+    if (percentage <= 50) {
+      return "text-green-700"; // Green for <= 50%
+    } else if (percentage <= 85) {
+      return "text-amber-700"; // Amber for 50-85%
+    } else {
+      return "text-rose-700"; // Red for > 85%
+    }
+  };
+
+  return (
+    <div className="mt-2">
+      <div className="flex items-center justify-between mb-1">
+        <span className={`text-xs ${getTextColor()} font-medium`}>
+          Media: {current}/{limit}
+        </span>
+        <span className="text-xs text-gray-500">
+          {limit - current} remaining
+        </span>
+      </div>
+      <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+        <div 
+          className={`h-full ${getColor()} transition-all duration-300`}
+          style={{ width: `${Math.min(percentage, 100)}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function AlbumsPage() {
+  const queryClient = useQueryClient();
   const [filter, setFilter] = useState<FilterType>("ALL");
   const [sort, setSort] = useState<SortType>("NEWEST");
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedFamily, setSelectedFamily] = useState<string>("ALL");
   const [currentPage, setCurrentPage] = useState(1);
+  const [albumLimitModalOpen, setAlbumLimitModalOpen] = useState(false);
 
   // State for Edit Album Modal
   const [isEditAlbumModalOpen, setIsEditAlbumModalOpen] = useState(false);
@@ -442,6 +631,83 @@ export default function AlbumsPage() {
   // Check if user has joined any families
   const hasJoinedFamilies = families && families.filter((family: any) => family.userMembershipStatus === "APPROVED").length > 0;
 
+  // Add an effect to auto-select the first family when user has only joined one family
+  useEffect(() => {
+    if (families && families.length === 1 && families[0].userMembershipStatus === "APPROVED") {
+      setSelectedFamily(families[0].id);
+    }
+  }, [families]);
+
+  // Album limit data fetch based on selected family
+  const { data: albumLimitData } = useQuery({
+    queryKey: ["albumLimit", selectedFamily],
+    queryFn: async () => {
+      try {
+        // If a specific family is selected, fetch its stats
+        if (selectedFamily !== "ALL") {
+          const response = await fetch(`/api/families/${selectedFamily}/stats`);
+          const result = await response.json();
+          
+          if (result.success) {
+            return {
+              familyId: selectedFamily,
+              familyName: families?.find((f: Family) => f.id === selectedFamily)?.name || "Your Family",
+              currentAlbums: result.data.albumStats.currentMonthAlbums,
+              albumLimit: result.data.albumStats.albumLimit,
+              resetDate: result.data.albumStats.resetDate
+            };
+          }
+        } 
+        
+        // If no specific family is selected or API call failed, use the first available family
+        if (families && families.length > 0) {
+          // Find the first family with APPROVED status
+          const firstFamily = families.find((f: Family) => f.userMembershipStatus === "APPROVED");
+          
+          if (firstFamily) {
+            const response = await fetch(`/api/families/${firstFamily.id}/stats`);
+            const result = await response.json();
+            
+            if (result.success) {
+              return {
+                familyId: firstFamily.id,
+                familyName: firstFamily.name,
+                currentAlbums: result.data.albumStats.currentMonthAlbums,
+                albumLimit: result.data.albumStats.albumLimit,
+                resetDate: result.data.albumStats.resetDate
+              };
+            }
+          }
+        }
+        
+        // Fallback if API call fails
+        return {
+          familyId: "",
+          familyName: "Your Family",
+          currentAlbums: 0,
+          albumLimit: 5, // Default album limit
+          resetDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toISOString()
+        };
+      } catch (error) {
+        console.error("Error fetching album limit data:", error);
+        // Fallback data
+        return {
+          familyId: "",
+          familyName: "Your Family",
+          currentAlbums: 0,
+          albumLimit: 5, // Default album limit
+          resetDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toISOString()
+        };
+      }
+    },
+    // Refetch when family selection changes
+    enabled: hasJoinedFamilies,
+    // Don't cache the data for too long
+    staleTime: 30 * 1000, // 30 seconds
+    refetchOnMount: true,
+    refetchOnWindowFocus: true
+  });
+
   // Filter and sort albums
   const filteredAlbums = albums?.filter((album) => {
     // Apply search filter
@@ -452,8 +718,9 @@ export default function AlbumsPage() {
       return false;
     }
 
-    // Apply family filter
-    if (selectedFamily !== "ALL" && album.familyId !== selectedFamily) {
+    // Apply family filter - only filter if there's more than one family and a specific one is selected
+    const approvedFamilies = families?.filter((f: Family) => f.userMembershipStatus === "APPROVED") || [];
+    if (approvedFamilies.length > 1 && selectedFamily !== "ALL" && album.familyId !== selectedFamily) {
       return false;
     }
 
@@ -517,8 +784,6 @@ export default function AlbumsPage() {
         <span className="text-rose-500 font-medium shrink-0">Albums</span>
       </motion.div>
 
-      
-
       {/* Header Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -534,146 +799,215 @@ export default function AlbumsPage() {
               Create and view photo albums for your precious memories
             </p>
           </div>
-          <Link href="/albums/create" className="w-full md:w-auto">
+          <div className="w-full md:w-auto">
             <Button 
-              className="bg-rose-500 hover:bg-rose-600 flex items-center justify-center gap-2 w-full md:w-auto"
-              disabled={!hasJoinedFamilies}
-              title={!hasJoinedFamilies ? "Join a family to create albums" : "Create a new album"}
+              className={`flex items-center justify-center gap-2 w-full md:w-auto ${
+                albumLimitData && albumLimitData.currentAlbums >= albumLimitData.albumLimit
+                  ? "bg-gray-300 hover:bg-gray-300 cursor-not-allowed"
+                  : "bg-rose-500 hover:bg-rose-600"
+              }`}
+              disabled={!hasJoinedFamilies || (albumLimitData && albumLimitData.currentAlbums >= albumLimitData.albumLimit)}
+              title={
+                !hasJoinedFamilies 
+                  ? "Join a family to create albums" 
+                  : (albumLimitData && albumLimitData.currentAlbums >= albumLimitData.albumLimit)
+                    ? "Monthly album limit reached"
+                    : "Create a new album"
+              }
+              onClick={async () => {
+                if (!hasJoinedFamilies) return;
+                
+                try {
+                  // Get the family to check (either selected family or first available)
+                  let familyId = "";
+                  
+                  if (selectedFamily !== "ALL") {
+                    familyId = selectedFamily;
+                  } else if (families && families.length > 0) {
+                    const firstFamily = families.find((f: Family) => f.userMembershipStatus === "APPROVED");
+                    if (firstFamily) {
+                      familyId = firstFamily.id;
+                    }
+                  }
+                  
+                  if (!familyId) {
+                    toast.error("No family available to create album in");
+                    return;
+                  }
+                  
+                  // Check album limit with fresh data from API
+                  const response = await fetch(`/api/families/${familyId}/stats`);
+                  const result = await response.json();
+                  
+                  if (result.success && 
+                      result.data.albumStats.currentMonthAlbums >= result.data.albumStats.albumLimit) {
+                    toast.error("Monthly album limit reached. Upgrade to Premium for unlimited albums.");
+                    setAlbumLimitModalOpen(true);
+                  } else {
+                    // Navigate to album creation page
+                    window.location.href = "/albums/create";
+                  }
+                } catch (error) {
+                  console.error("Error checking album limit:", error);
+                  // If we can't check the limit, allow creating an album anyway
+                  window.location.href = "/albums/create";
+                }
+              }}
             >
-              <Plus className="w-4 h-4" />
+              {albumLimitData && albumLimitData.currentAlbums >= albumLimitData.albumLimit ? (
+                <Lock className="w-4 h-4 mr-1" />
+              ) : (
+                <Plus className="w-4 h-4 mr-1" />
+              )}
               <span>Create Album</span>
             </Button>
-          </Link>
+          </div>
         </div>
 
         {/* Filters and Search */}
         {
           hasJoinedFamilies && (
             <div className="flex flex-col xl:flex-row xl:items-center gap-3 md:gap-4">
-          <div className="relative w-full xl:flex-grow">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              placeholder="Search albums..."
-              value={search}
-              onChange={handleSearchChange}
-              className="pl-10 bg-white w-full h-10 md:h-auto"
-            />
-          </div>
-          <div className="flex flex-col md:flex-row md:w-full xl:w-auto gap-2 md:gap-2 xl:flex-shrink-0">
-            {/* Family Filter */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="flex items-center gap-2 w-full md:w-1/3 xl:w-auto h-10 md:h-auto"
-                >
-                  <Home className="w-4 h-4" />
-                  <span className="truncate text-sm sm:text-base">
-                    {selectedFamily === "ALL"
-                      ? "All Families"
-                      : families?.find((f: any) => f.id === selectedFamily)
-                          ?.name || "Select Family"}
-                  </span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="max-h-60 overflow-y-auto w-56">
-                <DropdownMenuRadioGroup
-                  value={selectedFamily}
-                  onValueChange={setSelectedFamily}
-                >
-                  <DropdownMenuRadioItem value="ALL">
-                    All Families
-                  </DropdownMenuRadioItem>
-                  {families?.map((family: any) => (
-                    <DropdownMenuRadioItem key={family.id} value={family.id}>
-                      {family.name}
-                    </DropdownMenuRadioItem>
-                  ))}
-                </DropdownMenuRadioGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              <div className="relative w-full xl:flex-grow">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  placeholder="Search albums..."
+                  value={search}
+                  onChange={handleSearchChange}
+                  className="pl-10 bg-white w-full h-10 md:h-auto"
+                />
+              </div>
+              <div className="flex flex-col md:flex-row md:w-full xl:w-auto gap-2 md:gap-2 xl:flex-shrink-0">
+                {/* Family Filter */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-2 w-full md:w-1/3 xl:w-auto h-10 md:h-auto"
+                      disabled={families && families.filter((f: Family) => f.userMembershipStatus === "APPROVED").length <= 1}
+                    >
+                      <Home className="w-4 h-4" />
+                      <span className="truncate text-sm sm:text-base">
+                        {selectedFamily === "ALL"
+                          ? "All Families"
+                          : families?.find((f: Family) => f.id === selectedFamily)?.name || "Select Family"}
+                      </span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="max-h-60 overflow-y-auto w-56">
+                    <DropdownMenuRadioGroup
+                      value={selectedFamily}
+                      onValueChange={(value) => {
+                        setSelectedFamily(value);
+                        queryClient.invalidateQueries({ queryKey: ["albumLimit"] }); // Force refetch of album limits
+                      }}
+                    >
+                      {families && families.filter((f: Family) => f.userMembershipStatus === "APPROVED").length > 1 && (
+                        <DropdownMenuRadioItem value="ALL">
+                          All Families
+                        </DropdownMenuRadioItem>
+                      )}
+                      {families?.map((family: Family) => (
+                        <DropdownMenuRadioItem key={family.id} value={family.id}>
+                          {family.name}
+                        </DropdownMenuRadioItem>
+                      ))}
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="flex items-center gap-2 w-full md:w-1/3 xl:w-auto h-10 md:h-auto"
-                >
-                  <SlidersHorizontal className="w-4 h-4" />
-                  <span className="truncate text-sm sm:text-base">
-                    {filter === "ALL"
-                      ? "All Albums"
-                      : filter === "NORMAL"
-                        ? "Normal Albums"
-                        : "Event Albums"}
-                  </span>
-                  <span className="ml-1 text-xs text-gray-500 hidden md:inline">
-                    (
-                    {filter === "ALL"
-                      ? counts.all
-                      : filter === "NORMAL"
-                        ? counts.normal
-                        : counts.events}
-                    )
-                  </span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56">
-                <DropdownMenuRadioGroup
-                  value={filter}
-                  onValueChange={(value) => setFilter(value as FilterType)}
-                >
-                  <DropdownMenuRadioItem value="ALL">
-                    All Albums ({counts.all})
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="NORMAL">
-                    Normal Albums ({counts.normal})
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="EVENTS">
-                    Event Albums ({counts.events})
-                  </DropdownMenuRadioItem>
-                </DropdownMenuRadioGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-2 w-full md:w-1/3 xl:w-auto h-10 md:h-auto"
+                    >
+                      <SlidersHorizontal className="w-4 h-4" />
+                      <span className="truncate text-sm sm:text-base">
+                        {filter === "ALL"
+                          ? "All Albums"
+                          : filter === "NORMAL"
+                            ? "Normal Albums"
+                            : "Event Albums"}
+                      </span>
+                      <span className="ml-1 text-xs text-gray-500 hidden md:inline">
+                        (
+                        {filter === "ALL"
+                          ? counts.all
+                          : filter === "NORMAL"
+                            ? counts.normal
+                            : counts.events}
+                        )
+                      </span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56">
+                    <DropdownMenuRadioGroup
+                      value={filter}
+                      onValueChange={(value) => setFilter(value as FilterType)}
+                    >
+                      <DropdownMenuRadioItem value="ALL">
+                        All Albums ({counts.all})
+                      </DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value="NORMAL">
+                        Normal Albums ({counts.normal})
+                      </DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value="EVENTS">
+                        Event Albums ({counts.events})
+                      </DropdownMenuRadioItem>
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
-            {/* Sort Button */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="flex items-center gap-2 w-full md:w-1/3 xl:w-auto h-10 md:h-auto"
-                >
-                  <Clock className="w-4 h-4" />
-                  <span className="truncate text-sm sm:text-base">
-                    {sort === "NEWEST"
-                      ? "Newest First"
-                      : sort === "OLDEST"
-                        ? "Oldest First"
-                        : "Most Photos"}
-                  </span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-48">
-                <DropdownMenuRadioGroup
-                  value={sort}
-                  onValueChange={(value) => setSort(value as SortType)}
-                >
-                  <DropdownMenuRadioItem value="NEWEST">
-                    Newest First
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="OLDEST">
-                    Oldest First
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="MOST_PHOTOS">
-                    Most Photos
-                  </DropdownMenuRadioItem>
-                </DropdownMenuRadioGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
+                {/* Sort Button */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-2 w-full md:w-1/3 xl:w-auto h-10 md:h-auto"
+                    >
+                      <Clock className="w-4 h-4" />
+                      <span className="truncate text-sm sm:text-base">
+                        {sort === "NEWEST"
+                          ? "Newest First"
+                          : sort === "OLDEST"
+                            ? "Oldest First"
+                            : "Most Photos"}
+                      </span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-48">
+                    <DropdownMenuRadioGroup
+                      value={sort}
+                      onValueChange={(value) => setSort(value as SortType)}
+                    >
+                      <DropdownMenuRadioItem value="NEWEST">
+                        Newest First
+                      </DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value="OLDEST">
+                        Oldest First
+                      </DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value="MOST_PHOTOS">
+                        Most Photos
+                      </DropdownMenuRadioItem>
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
           )
         }
+
+        {/* Album Limit Progress Bar - Show for all families */}
+        {hasJoinedFamilies && albumLimitData && (
+          <AlbumLimitProgressBar 
+            currentAlbums={albumLimitData.currentAlbums}
+            albumLimit={albumLimitData.albumLimit}
+            familyName={albumLimitData.familyName}
+            onUpgradeClick={() => setAlbumLimitModalOpen(true)}
+            resetDate={albumLimitData.resetDate}
+          />
+        )}
       </motion.div>
 
       {/* Albums Grid */}
@@ -813,6 +1147,9 @@ export default function AlbumsPage() {
                             )}
                           </span>
                         </div>
+                        
+                        {/* Add Media Limit Indicator */}
+                        <MediaLimitIndicator current={album.mediaCount} limit={15} />
                       </div>
                     </Link>
                   </motion.div>
@@ -881,6 +1218,13 @@ export default function AlbumsPage() {
         isOpen={isDeleteAlbumConfirmModalOpen}
         onClose={() => setIsDeleteAlbumConfirmModalOpen(false)}
         albumToDelete={albumToDelete}
+      />
+
+      {/* Add Premium Upgrade Modal for Album Limits */}
+      <PremiumUpgradeModal 
+        isOpen={albumLimitModalOpen} 
+        onClose={() => setAlbumLimitModalOpen(false)} 
+        featureContext="albums" 
       />
     </div>
   );

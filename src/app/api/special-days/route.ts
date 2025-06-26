@@ -3,7 +3,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { addMonths, addWeeks, addYears, subDays } from "date-fns";
+import { addMonths, addWeeks, addYears, subDays, startOfMonth } from "date-fns";
 
 const createSpecialDaySchema = z.object({
   title: z
@@ -199,7 +199,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 5. Create special day and notifications in a transaction
+    // 5. Check if the family has reached its monthly event limit
+    const EVENT_LIMIT = 3; // 3 events per month
+    const currentMonthStart = startOfMonth(new Date());
+    
+    const currentMonthEvents = await prisma.specialDay.count({
+      where: {
+        familyId: validatedData.data.familyId,
+        createdAt: {
+          gte: currentMonthStart,
+        },
+      },
+    });
+
+    if (currentMonthEvents >= EVENT_LIMIT) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          message: "Monthly event limit reached. Upgrade to Premium for unlimited events.",
+          limitReached: true
+        },
+        { status: 403 }
+      );
+    }
+
+    // 6. Create special day and notifications in a transaction
     const result = await prisma.$transaction(async (tx) => {
       // Create the special day
       const specialDay = await tx.specialDay.create({

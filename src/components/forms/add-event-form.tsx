@@ -27,7 +27,8 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { z } from "zod";
-import { Check, ChevronRight, Users, X } from "lucide-react";
+import { Check, ChevronRight, Crown, Users, X } from "lucide-react";
+import PremiumUpgradeModal from "@/components/modals/PremiumUpgradeModal";
 
 const eventTypes = [
   "BIRTHDAY",
@@ -76,6 +77,7 @@ export function AddEventForm({ onSuccess, defaultDate }: AddEventFormProps) {
   const [families, setFamilies] = useState<Family[]>([]);
   const [selectedFamilyIds, setSelectedFamilyIds] = useState<Set<string>>(new Set());
   const [formError, setFormError] = useState<string | null>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const queryClient = useQueryClient();
 
   // Fetch user's families
@@ -141,6 +143,10 @@ export function AddEventForm({ onSuccess, defaultDate }: AddEventFormProps) {
 
           const result = await response.json();
           if (!response.ok) {
+            // Check if this is a limit reached error
+            if (result.limitReached) {
+              throw new Error("EVENT_LIMIT_REACHED");
+            }
             throw new Error(`Failed to create event for family: ${result.message || "Unknown error"}`);
           }
 
@@ -155,12 +161,21 @@ export function AddEventForm({ onSuccess, defaultDate }: AddEventFormProps) {
       form.reset();
       setSelectedFamilyIds(new Set());
       queryClient.invalidateQueries({ queryKey: ["special-days"] });
+      // Also invalidate the event limit data
+      queryClient.invalidateQueries({ queryKey: ["eventLimit"] });
       onSuccess?.();
     },
     onError: (error: Error) => {
       console.error("Error creating event:", error);
+      
+      // Handle limit reached error
+      if (error.message === "EVENT_LIMIT_REACHED") {
+        setFormError("Monthly event limit reached. Upgrade to Premium for unlimited events.");
+        setShowUpgradeModal(true);
+      } else {
       setFormError(error.message);
       toast.error("Failed to create event");
+      }
     },
   });
 
@@ -174,6 +189,7 @@ export function AddEventForm({ onSuccess, defaultDate }: AddEventFormProps) {
   }
 
   return (
+    <>
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
@@ -366,7 +382,16 @@ export function AddEventForm({ onSuccess, defaultDate }: AddEventFormProps) {
             </DropdownMenuContent>
           </DropdownMenu>
           {formError && (
-            <p className="text-sm text-red-500 mt-2">{formError}</p>
+              <div className="text-sm text-red-500 mt-2 flex items-start gap-2 bg-red-50 p-3 rounded-md">
+                <div className="flex-shrink-0 mt-0.5">
+                  {formError.includes("limit") ? (
+                    <Crown className="w-4 h-4 text-red-500" />
+                  ) : (
+                    <X className="w-4 h-4 text-red-500" />
+                  )}
+                </div>
+                <p>{formError}</p>
+              </div>
           )}
         </FormItem>
 
@@ -379,5 +404,13 @@ export function AddEventForm({ onSuccess, defaultDate }: AddEventFormProps) {
         </Button>
       </form>
     </Form>
+
+      {/* Premium Upgrade Modal */}
+      <PremiumUpgradeModal 
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        featureContext="posts"
+      />
+    </>
   );
 }

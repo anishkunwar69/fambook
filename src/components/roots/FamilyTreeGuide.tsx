@@ -8,6 +8,7 @@ import {
   Info,
   Users,
   X,
+  Save,
 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -18,6 +19,12 @@ const steps = [
     content:
       "Only admins can add and edit member nodes in the family tree. Regular members can only view the tree.",
     icon: <Info className="sm:w-5 sm:h-5 w-4 h-4" />,
+  },
+  {
+    title: "Member Limit",
+    content:
+      "Each family tree is limited to 20 members. This helps keep your tree focused on your family. Upgrade to premium for unlimited members.",
+    icon: <Users className="sm:w-5 sm:h-5 w-4 h-4" />,
   },
   {
     title: "Deleting Nodes",
@@ -34,22 +41,28 @@ const steps = [
   {
     title: "Spouse Connections",
     content:
-      "Connect male's bottom dot to female's bottom dot to establish a spouse relationship between two members.",
+      "To create a spouse relationship, connect the bottom dot of one member to the bottom dot of another member. After connecting, make sure to select 'Spouse' in the relationship type dropdown.",
     icon: <ArrowLeftRight className="sm:w-5 sm:h-5 w-4 h-4" />,
     visual: {
       type: "spouse",
-      description: "Male → Female (bottom to bottom)",
+      description: "Connect bottom dots → Select 'Spouse' type",
     },
   },
   {
     title: "Parent-Child Connections",
     content:
-      "Connect parent's bottom dot to child's top dot. Start with the father's node for best results.",
+      "To create a parent-child relationship, connect the parent's bottom dot to the child's top dot. After connecting, make sure to select 'Parent' in the relationship type dropdown.",
     icon: <ArrowDown className="sm:w-5 sm:h-5 w-4 h-4" />,
     visual: {
       type: "parent-child",
-      description: "Parent → Child (bottom to top)",
+      description: "Parent → Child (bottom to top) → Select 'Parent' type",
     },
+  },
+  {
+    title: "Save Your Changes",
+    content:
+      "After arranging your family tree, always click the 'Save Changes' button in the top right corner to preserve the positions of your family members in the tree.",
+    icon: <Save className="sm:w-5 sm:h-5 w-4 h-4" />,
   },
   {
     title: "Member Details",

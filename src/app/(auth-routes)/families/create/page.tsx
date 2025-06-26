@@ -3,29 +3,65 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, QueryClient, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   Check,
   ChevronRight,
   Copy,
+  Crown,
   Home,
-  Users,
   Loader2,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { createFamilySchema, type CreateFamilyInput } from "@/types/family.types";
+import PremiumUpgradeModal from "@/components/modals/PremiumUpgradeModal";
 
+// Define the family type
+interface FamilyWithStatus {
+  id: string;
+  name: string;
+  description?: string;
+  joinToken: string;
+  userMembershipStatus: "APPROVED" | "PENDING" | "REJECTED" | null;
+}
 
 export default function CreateFamilyPage() {
   const router = useRouter();
   const [joinToken, setJoinToken] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const queryClient = useQueryClient();
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
+
+  // Check if user already has a family
+  const { data: families, isLoading: loadingFamilies } = useQuery<FamilyWithStatus[]>({
+    queryKey: ["families"],
+    queryFn: async () => {
+      const response = await fetch("/api/families");
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.message);
+      }
+      return result.data || [];
+    },
+  });
+
+  // Show premium modal if user already has a family
+  useEffect(() => {
+    if (!loadingFamilies && families) {
+      const approvedFamilies = families.filter(
+        (family: FamilyWithStatus) => family.userMembershipStatus === "APPROVED"
+      );
+      if (approvedFamilies.length >= 1) {
+        setShowPremiumModal(true);
+      }
+    }
+  }, [families, loadingFamilies]);
 
   const {
     register,
@@ -71,7 +107,28 @@ export default function CreateFamilyPage() {
     }
   };
 
+  // Show loading state while checking family count
+  if (loadingFamilies) {
+    return (
+      <div className="min-h-[90vh] lg:min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-8 h-8 animate-spin text-rose-500" />
+          <p className="text-gray-600">Checking your account...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
+    <>
+      <PremiumUpgradeModal 
+        isOpen={showPremiumModal} 
+        onClose={() => router.back()}
+        featureContext="families"
+        showCloseButton={false}
+        customActionLabel="Go Back"
+      />
+
     <div className="min-h-[90vh] lg:min-h-screen bg-gradient-to-b from-amber-50 via-rose-50/30 to-white p-4 sm:p-6 lg:p-8">
       {/* Breadcrumb */}
       <motion.div
@@ -235,5 +292,6 @@ export default function CreateFamilyPage() {
         )}
       </div>
     </div>
+    </>
   );
 } 

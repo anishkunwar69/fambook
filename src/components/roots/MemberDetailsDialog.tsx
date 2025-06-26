@@ -96,11 +96,11 @@ const memberSchema = z
       ),
     birthPlace: z
       .string()
-      .min(2, "Birth place must be at least 2 characters")
+      .min(1, "Birth place is required")
       .max(100, "Birth place cannot exceed 100 characters"),
     currentPlace: z
       .string()
-      .min(2, "Current place must be at least 2 characters")
+      .min(1, "Current place is required")
       .max(100, "Current place cannot exceed 100 characters"),
 
     // Optional Fields
@@ -108,8 +108,8 @@ const memberSchema = z
     biography: z
       .string()
       .nullable()
-      .refine((val) => !val || val.length >= 10, {
-        message: "Biography must be at least 10 characters",
+      .refine((val) => !val || val.length >= 10 || val.length === 0, {
+        message: "Biography must be at least 10 characters if provided",
       })
       .refine((val) => !val || val.length <= 1000, {
         message: "Biography cannot exceed 1000 characters",
@@ -159,39 +159,10 @@ export function MemberDetailsDialog({
   const [isUploading, setIsUploading] = useState(false);
   const isViewMode = mode === "view";
   const canEdit = true;
+  // Add a ref to track whether the component has mounted
+  const hasMounted = useRef(false);
 
-  // Calculate form completion status
-  const formValues = useForm<z.infer<typeof memberSchema>>({
-    resolver: zodResolver(memberSchema),
-    defaultValues: {
-      firstName: initialData?.firstName || "",
-      lastName: initialData?.lastName || "",
-      dateOfBirth: initialData?.dateOfBirth
-        ? new Date(initialData.dateOfBirth)
-        : new Date(),
-      dateOfDeath: initialData?.dateOfDeath
-        ? new Date(initialData.dateOfDeath)
-        : null,
-      gender: initialData?.gender || "MALE",
-      isAlive: initialData?.isAlive ?? true,
-      birthPlace: initialData?.birthPlace || "",
-      currentPlace: initialData?.currentPlace || "",
-      profileImage: initialData?.profileImage || null,
-      biography: initialData?.biography || null,
-      customFields: initialData?.customFields || {},
-      linkedMemberId: initialData?.linkedMemberId || null,
-    },
-  })?.getValues();
-  const isFormComplete = useMemo(() => {
-    if (!formValues) return false;
-
-    const hasProfileImage = !!formValues.profileImage;
-    const hasBiography =
-      formValues.biography && formValues.biography.length >= 100;
-
-    return hasProfileImage && hasBiography;
-  }, [formValues]);
-
+  // Define default values correctly
   const defaultValues: z.infer<typeof memberSchema> = {
     firstName: "",
     lastName: "",
@@ -207,10 +178,26 @@ export function MemberDetailsDialog({
     linkedMemberId: null,
   };
 
+  // Initialize form with proper default values
   const form = useForm<z.infer<typeof memberSchema>>({
     resolver: zodResolver(memberSchema),
-    defaultValues,
+    defaultValues: initialData ? {
+      ...defaultValues,
+      ...initialData,
+      dateOfBirth: initialData.dateOfBirth ? new Date(initialData.dateOfBirth) : new Date(),
+      dateOfDeath: initialData.dateOfDeath ? new Date(initialData.dateOfDeath) : null,
+    } : defaultValues,
   });
+
+  // Calculate form completion status
+  const formValues = form.getValues();
+  const isFormComplete = useMemo(() => {
+    const hasProfileImage = !!formValues.profileImage;
+    const hasBiography =
+      formValues.biography && formValues.biography.length >= 100;
+
+    return hasProfileImage && hasBiography;
+  }, [formValues]);
 
   // Fetch unlinked members
   const { data: unlinkedMembers, isLoading: isLoadingMembers } = useQuery({
@@ -232,34 +219,51 @@ export function MemberDetailsDialog({
     enabled: isOpen && !!familyId,
   });
 
-  // Reset form when dialog opens
+  // Reset form only when dialog opens or initialData changes
   useEffect(() => {
-    if (isOpen) {
-      if (mode === "add") {
-        // Reset to default values for new member
-        form.reset(defaultValues);
-      } else if (mode === "edit" && initialData) {
-        // For edit mode, wait for unlinked members to load if there's a linked member
-        const shouldWaitForMembers =
-          initialData.linkedMemberId && isLoadingMembers;
+    // Only execute after initial mount to prevent unnecessary resets
+    if (hasMounted.current) {
+      if (isOpen) {
+        console.log("[DEBUG MemberDetailsDialog] Dialog opened with mode:", mode);
+        console.log("[DEBUG MemberDetailsDialog] Initial data:", initialData);
 
-        if (!shouldWaitForMembers) {
-          // Transform dates from string to Date objects for editing
-          const transformedData = {
+        if (mode === "add") {
+          // For add mode, use clean default values
+          const addValues = initialData ? {
+            ...defaultValues,
             ...initialData,
-            dateOfBirth: initialData.dateOfBirth
-              ? new Date(initialData.dateOfBirth)
-              : new Date(),
-            dateOfDeath: initialData.dateOfDeath
-              ? new Date(initialData.dateOfDeath)
-              : null,
-          };
-          console.log("[DEBUG] Edit mode - transformedData:", transformedData);
-          form.reset(transformedData);
+            dateOfBirth: initialData.dateOfBirth ? new Date(initialData.dateOfBirth) : new Date(),
+            dateOfDeath: initialData.dateOfDeath ? new Date(initialData.dateOfDeath) : null,
+          } : defaultValues;
+
+          console.log("[DEBUG MemberDetailsDialog] Resetting form with add values:", addValues);
+          form.reset(addValues);
+        } else if (mode === "edit" && initialData) {
+          // For edit mode, wait for unlinked members to load if there's a linked member
+          const shouldWaitForMembers =
+            initialData.linkedMemberId && isLoadingMembers;
+
+          if (!shouldWaitForMembers) {
+            // Transform dates from string to Date objects for editing
+            const transformedData = {
+              ...initialData,
+              dateOfBirth: initialData.dateOfBirth
+                ? new Date(initialData.dateOfBirth)
+                : new Date(),
+              dateOfDeath: initialData.dateOfDeath
+                ? new Date(initialData.dateOfDeath)
+                : null,
+            };
+            console.log("[DEBUG MemberDetailsDialog] Edit mode - transformedData:", transformedData);
+            form.reset(transformedData);
+          }
         }
       }
+    } else {
+      // Mark as mounted after first render
+      hasMounted.current = true;
     }
-  }, [isOpen, mode, initialData, form, isLoadingMembers, unlinkedMembers]);
+  }, [isOpen, initialData, form, mode, isLoadingMembers, unlinkedMembers]);
 
   const { isSubmitting } = form.formState;
 
