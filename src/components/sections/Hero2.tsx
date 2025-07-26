@@ -236,7 +236,7 @@ function SocialProofSection() {
                   <div className="flex items-center gap-4">
                     <div className="relative">
                       <img
-                        src="https://scontent.fktm20-1.fna.fbcdn.net/v/t1.6435-9/202588405_10159358515153252_4826645853232762266_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=a5f93a&_nc_ohc=CRQYnkKn8o4Q7kNvwH5rciJ&_nc_oc=AdnH3dn8fy_XQ3JcPDjNO4Gwksb1v2gZ6VFBnfyfbdnIOnC3DXr8NKiT45-_vSQAqLQ&_nc_zt=23&_nc_ht=scontent.fktm20-1.fna&_nc_gid=QAX3nppcFUwkNUQtIR-NCw&oh=00_AfMNhMSKmIMDnpjiXgxkAOH3gkA3HkoxB3UH16UpXjjfPw&oe=6871D482"
+                        src="https://res.cloudinary.com/dmq5tx0bd/image/upload/v1753504130/178753170_10159210176883252_1935799937912702562_n_j1wbcj.jpg"
                         alt="Ramesh P."
                         className="w-14 h-14 rounded-full object-cover border-3 border-white shadow-lg group-hover:scale-105 transition-transform duration-300"
                       />
@@ -291,7 +291,7 @@ function SocialProofSection() {
                   <div className="flex items-center gap-4">
                     <div className="relative">
                       <img
-                        src="https://scontent.fktm20-1.fna.fbcdn.net/v/t1.6435-9/49439022_1589377927831461_4852754977904394240_n.jpg?_nc_cat=101&ccb=1-7&_nc_sid=a5f93a&_nc_ohc=u1ulZv8BO_4Q7kNvwGjmdLv&_nc_oc=AdkoovlfaF1pCNsg6SmN-DhcmS8oNp9vlsYpeXnWp281uRTvG5u0LkXoj_E1wxHnM6A&_nc_zt=23&_nc_ht=scontent.fktm20-1.fna&_nc_gid=GKkosLNMZEsS1c4xy5-uUg&oh=00_AfI2TZ0ndxJUoYNwVu1VBBhWGt9RNwVhZnWju8kuKtfLJA&oe=68638CB8"
+                        src="https://res.cloudinary.com/dmq5tx0bd/image/upload/v1753504255/49439022_1589377927831461_4852754977904394240_n_wv9vnj.jpg"
                         alt="Rachana Satyal"
                         className="w-14 h-14 rounded-full object-cover border-3 border-white shadow-lg group-hover:scale-105 transition-transform duration-300"
                       />
