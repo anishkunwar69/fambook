@@ -12,7 +12,6 @@ export default async function HomePage() {
         <Features />
         <Comparisons />
         <Pricing />
-        {/* <Testimonials /> */}
         <Footer />
       </section>
     </>

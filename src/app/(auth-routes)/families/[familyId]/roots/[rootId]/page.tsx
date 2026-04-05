@@ -1,5 +1,6 @@
 "use client";
 
+import { FamilyMemberLimitBanner } from "@/components/roots/FamilyMemberLimitBanner";
 import { Button } from "@/components/ui/button";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
@@ -22,9 +23,7 @@ import ReactFlow, {
   useReactFlow,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import { ArrowLeft, Users, AlertTriangle } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
-import { FamilyMemberLimitBanner } from "@/components/roots/FamilyMemberLimitBanner";
 
 // Custom node types
 import { AddMemberNode } from "@/components/roots/AddMemberNode";
@@ -241,7 +240,7 @@ export default function RootEditorPage() {
             positionX: 0,
             positionY: 0,
             isAdmin: root.isAdmin, // Add isAdmin flag to fix linter error
-            onEdit: () => {}, // Empty function to satisfy type requirements
+            onEdit: () => { }, // Empty function to satisfy type requirements
             onClick: () => {
               setDialogState({
                 type: "member",
@@ -508,8 +507,16 @@ export default function RootEditorPage() {
     try {
       setIsAddingMember(true);
 
-      // Create a unique ID for the new node
-      const nodeId = data.id || uuidv4();
+      const isEdit = dialogState?.mode === "edit";
+
+      // Get the correct nodeId
+      const nodeId = isEdit
+        ? (dialogState?.data?.id || dialogState?.data?.nodeId)
+        : (data.id || uuidv4());
+
+      const existingNode = nodes.find((n) => n.id === nodeId);
+      const positionX = existingNode ? existingNode.position.x : (dialogState?.data?.position?.x || 0);
+      const positionY = existingNode ? existingNode.position.y : (dialogState?.data?.position?.y || 0);
 
       // Prepare node data
       const nodeData = {
@@ -527,13 +534,13 @@ export default function RootEditorPage() {
         biography: data.biography,
         customFields: data.customFields || {},
         linkedMemberId: data.linkedMemberId,
-        positionX: data.position ? data.position.x : 0,
-        positionY: data.position ? data.position.y : 0,
+        positionX,
+        positionY,
       };
 
       // Add the node to the local state
-      if (dialogState?.mode === "add") {
-        // Check if we already have 5 nodes (excluding the add-member node)
+      if (!isEdit) {
+        // Check if we already have 20 nodes (excluding the add-member node)
         const memberCount = nodes.filter(node => node.type === "familyMember").length;
         if (memberCount >= 20) {
           toast.error("Maximum limit of 20 members per family tree reached.");
@@ -546,8 +553,8 @@ export default function RootEditorPage() {
           id: nodeId,
           type: "familyMember",
           position: {
-            x: typeof data.position?.x === "number" ? data.position.x : 0,
-            y: typeof data.position?.y === "number" ? data.position.y : 0,
+            x: typeof positionX === "number" ? positionX : 0,
+            y: typeof positionY === "number" ? positionY : 0,
           },
           data: {
             ...nodeData,
@@ -570,7 +577,7 @@ export default function RootEditorPage() {
         // Update existing node
         setNodes((nds) =>
           nds.map((node) => {
-            if (node.id === nodeData.id) {
+            if (node.id === nodeId) {
               return {
                 ...node,
                 data: {
@@ -589,13 +596,29 @@ export default function RootEditorPage() {
       }
 
       // Save all nodes and relationships to the backend
-      const response = await fetch(`/api/families/${familyId}/roots/${rootId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          nodes: nodes
+      const requestNodes = isEdit
+        ? nodes
+            .filter((node) => node.type === "familyMember")
+            .map((node) => {
+              if (node.id === nodeId) {
+                return {
+                  ...node.data,
+                  ...nodeData,
+                  id: nodeId,
+                  rootId,
+                  positionX: node.position.x,
+                  positionY: node.position.y,
+                };
+              }
+              return {
+                ...node.data,
+                id: node.id,
+                rootId,
+                positionX: node.position.x,
+                positionY: node.position.y,
+              };
+            })
+        : nodes
             .filter((node) => node.type === "familyMember")
             .map((node) => ({
               ...node.data,
@@ -604,7 +627,15 @@ export default function RootEditorPage() {
               positionX: node.position.x,
               positionY: node.position.y,
             }))
-            .concat([nodeData]),
+            .concat([nodeData]);
+
+      const response = await fetch(`/api/families/${familyId}/roots/${rootId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nodes: requestNodes,
           relations: edges.map((edge) => ({
             id: edge.id,
             rootId,
@@ -623,7 +654,7 @@ export default function RootEditorPage() {
       if (!response.ok) {
         if (result.limitReached) {
           toast.error("Maximum limit of 20 members per family tree reached.");
-          
+
           // Remove the node we just added if it was a new node
           if (dialogState?.mode === "add") {
             setNodes((nds) => nds.filter((node) => node.id !== nodeId));
@@ -994,13 +1025,13 @@ export default function RootEditorPage() {
   }
 
   return (
-          <div className="h-screen w-full flex flex-col">
+    <div className="h-screen w-full flex flex-col">
       {/* Replace the simple alert with the new banner component */}
       {root && (
-        <FamilyMemberLimitBanner 
-          currentCount={root.nodes.length} 
-          maxCount={20} 
-          isAdmin={isAdmin} 
+        <FamilyMemberLimitBanner
+          currentCount={root.nodes.length}
+          maxCount={20}
+          isAdmin={isAdmin}
         />
       )}
 
@@ -1034,7 +1065,7 @@ export default function RootEditorPage() {
           <Background />
           <Controls />
           <Panel position="top-right" className="flex flex-col gap-2">
-            
+
 
             {hasPositionChanges && isAdmin && (
               <Button
